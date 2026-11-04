@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0e1116">
+  <title>Charada Cubana</title>
+  <!-- Inocuo en produccion: dentro de la app no hace nada, fuera del simulador tampoco. -->
+  <script src="https://www.qvapay.com/miniapps/sdk-sim.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <!-- Intro splash: the logo inside a circle with an animated ring. It fades
+       out once the first view has painted, so it never delays content. -->
+  <div id="splash" class="splash" aria-hidden="true">
+    <div class="splash__ring">
+      <span class="splash__arc"></span>
+      <div class="splash__logo">
+        <img src="/assets/logo-192.png" alt="" width="96" height="96" decoding="async">
+      </div>
+    </div>
+  </div>
+
+  <!-- The scroll container excludes the bottom bar: only this region scrolls. -->
+  <div id="scroller" class="scroller">
+    <!-- Fallback chrome: solo se muestra si la app no trae su propia barra (< 3.7.0). -->
+    <header id="own-header" class="own-header">
+      <h1>Charada Cubana</h1>
+    </header>
+
+    <main id="view" role="main" aria-live="polite">
+      <p class="state state--loading">Cargando…</p>
+    </main>
+  </div>
+
+  <nav class="tabbar" role="tablist" aria-label="Secciones">
+    <button class="tabbar__item ripple ripple--on-accent is-active" role="tab" data-view="tiros" aria-selected="true">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Zm1-13h-2v6l5 3 1-1.7-4-2.3Z"/></svg>
+      <span>Tiros</span>
+    </button>
+    <button class="tabbar__item ripple ripple--on-accent" role="tab" data-view="analisis" aria-selected="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h3V10H4Zm6.5 0h3V4h-3Zm6.5 0h3v-6h-3Z"/></svg>
+      <span>Análisis</span>
+    </button>
+    <button class="tabbar__item ripple ripple--on-accent" role="tab" data-view="historial" aria-selected="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v2H4Zm0 6h16v2H4Zm0 6h10v2H4Z"/></svg>
+      <span>Historial</span>
+    </button>
+    <button class="tabbar__item ripple ripple--on-accent" role="tab" data-view="mas" aria-selected="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v2H4Zm0 5h16v2H4Zm0 5h10v2H4Z" opacity="0"/><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+      <span>Más</span>
+    </button>
+  </nav>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

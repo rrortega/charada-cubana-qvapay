@@ -1,0 +1,1566 @@
+/*
+ * Charada Cubana — mini-app styles.
+ *
+ * Design intent: a native-feeling mobile app, tuned to the pixel.
+ *   - Every colour derives from the host theme tokens (--bg, --text, --primary),
+ *     so a light theme or a different brand colour stays coherent.
+ *   - The accent is the host primary; greys are only used for secondary text.
+ *   - Touch feedback is a Material-style ripple on every interactive surface.
+ *   - Fixed 4/8/12/16 spacing scale and a tabular numeric scale so digits never
+ *     jitter between draws.
+ */
+
+:root {
+  color-scheme: dark light;
+  --bg: #0e1116;
+  --text: #f2f5fa;
+  --surface: #171b22;
+  --primary: #4c8dff;
+
+  --radius-card: 18px;
+  --radius-panel: 14px;
+  --radius-pill: 999px;
+  --tabbar-h: 62px;
+
+  /* Spacing scale */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Derived tokens live on :root so html-level rules (scrollbar colours) can read
+ * them too. A host theme writes to body, which still cascades to descendants. */
+:root {
+  --card-bg: color-mix(in srgb, var(--text) 5%, var(--bg));
+  --card-bg-raised: color-mix(in srgb, var(--text) 8%, var(--bg));
+  --hairline: color-mix(in srgb, var(--text) 10%, transparent);
+  --accent-soft: color-mix(in srgb, var(--primary) 16%, transparent);
+  --accent-strong: color-mix(in srgb, var(--primary) 88%, transparent);
+  --accent-hair: color-mix(in srgb, var(--primary) 38%, transparent);
+  --text-2: color-mix(in srgb, var(--text) 66%, var(--bg));
+  --text-3: color-mix(in srgb, var(--text) 42%, var(--bg));
+  --ripple: color-mix(in srgb, var(--primary) 42%, transparent);
+  --ripple-on-accent: color-mix(in srgb, var(--text) 55%, transparent);
+}
+
+/* Re-derive on body: when the host pushes a theme it writes here, and the
+ * custom properties must follow the new --bg/--text, not the defaults. */
+body {
+  --card-bg: color-mix(in srgb, var(--text) 5%, var(--bg));
+  --card-bg-raised: color-mix(in srgb, var(--text) 8%, var(--bg));
+  --hairline: color-mix(in srgb, var(--text) 10%, transparent);
+  --accent-soft: color-mix(in srgb, var(--primary) 16%, transparent);
+  --accent-strong: color-mix(in srgb, var(--primary) 88%, transparent);
+  --accent-hair: color-mix(in srgb, var(--primary) 38%, transparent);
+  --text-2: color-mix(in srgb, var(--text) 66%, var(--bg));
+  --text-3: color-mix(in srgb, var(--text) 42%, var(--bg));
+  --ripple: color-mix(in srgb, var(--primary) 42%, transparent);
+  --ripple-on-accent: color-mix(in srgb, var(--text) 55%, transparent);
+}
+
+* { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- Themed scrollbar --------------------------------------------
+ * Firefox uses the standard properties; WebKit/Blink use the pseudo-element.
+ * Both read the same derived tokens, so light and dark themes follow along.
+ */
+
+/* `thin` renders as a heavy band on some engines; keep the colour subtle and
+ * let the WebKit rule below do the real work where it is supported. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--primary) 34%, transparent) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--primary) 34%, transparent);
+  border-radius: var(--radius-pill);
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background-color 160ms var(--ease);
+}
+
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:active {
+  background: var(--primary);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* Whole-layout scrolling: smooth, and never chained past the edges. */
+html {
+  scroll-behavior: smooth;
+  /* No scrollbar-gutter: stable here. Reserving the gutter leaves a strip where
+   * html's background shows through and the body does not reach, which reads as
+   * a dark band on a light theme. scrollLock compensates when it locks. */
+  background: var(--bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* The page itself never scrolls; #scroller does. That keeps the bottom bar out
+ * of the scrollable area and stops the scrollbar from spanning it. */
+body {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior-y: none;
+}
+
+.scroller {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--s3) var(--s4) calc(var(--tabbar-h) + var(--s2) + var(--s5) + env(safe-area-inset-bottom));
+}
+
+/* When a drawer locks scrolling, the inner container stops too. */
+body.is-scroll-locked .scroller { overflow: hidden; }
+
+/* The app draws its own bar from 3.7.0 onward; never stack a second one. */
+html.in-qvapay .own-header { display: none; }
+
+.own-header { padding: var(--s1) var(--s1) var(--s4); }
+.own-header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.024em;
+}
+
+/* ---------- Ripple -------------------------------------------------------
+ * Applied to any .ripple surface. Two layers: a soft fill that fades, and the
+ * expanding circle. Falls back to a plain highlight where @property is absent.
+ */
+
+.ripple {
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  isolation: isolate;
+}
+
+.ripple__wave {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  opacity: 0.55;
+  background: radial-gradient(circle, var(--ripple) 0%, transparent 70%);
+  pointer-events: none;
+  animation: ripple-wave 560ms var(--ease) forwards;
+  z-index: 0;
+}
+
+.ripple--on-accent .ripple__wave {
+  background: radial-gradient(circle, var(--ripple-on-accent) 0%, transparent 70%);
+}
+
+@keyframes ripple-wave {
+  to { transform: scale(2.6); opacity: 0; }
+}
+
+/* Content sits above the ripple layer. */
+.ripple > *:not(.ripple__wave) { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ripple__wave { animation-duration: 1ms; }
+}
+
+/* ---------- States ------------------------------------------------------- */
+
+.state {
+  color: var(--text-2);
+  padding: var(--s6) var(--s3);
+  text-align: center;
+  font-size: 14px;
+}
+.state--error { color: var(--primary); }
+
+/* Skeleton loading, so the layout does not jump. */
+.skeleton {
+  border-radius: var(--radius-card);
+  background: linear-gradient(
+    100deg,
+    var(--card-bg) 30%,
+    var(--card-bg-raised) 50%,
+    var(--card-bg) 70%
+  );
+  background-size: 220% 100%;
+  animation: shimmer 1.4s var(--ease) infinite;
+  margin-bottom: var(--s3);
+}
+
+@keyframes shimmer {
+  from { background-position: 130% 0; }
+  to { background-position: -30% 0; }
+}
+
+/* ---------- Date header + countdown -------------------------------------- */
+
+.daybar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: var(--s1) var(--s1) var(--s4);
+}
+
+.daybar__box {
+  display: grid;
+  gap: 2px;
+  padding-top: 2px;
+}
+
+.daybar__date {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.012em;
+  line-height: 1.2;
+}
+
+.daybar__weekday {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  line-height: 1.3;
+}
+
+.next-draw {
+  display: grid;
+  justify-items: end;
+  gap: 1px;
+  text-align: right;
+}
+
+.next-draw__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--primary);
+  line-height: 1.4;
+}
+
+.next-draw__countdown {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  color: var(--primary);
+}
+
+/* ---------- Draw tabs (Mediodía / Noche) -------------------------------- */
+
+.drawtabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s1);
+  padding: var(--s1);
+  background: var(--card-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-pill);
+  margin-bottom: var(--s3);
+}
+
+.drawtabs__tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.006em;
+  padding: 10px var(--s2);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: color 180ms var(--ease), background-color 180ms var(--ease);
+}
+
+.drawtabs__tab[aria-selected="true"] {
+  background: var(--accent-strong);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.28), inset 0 1px 0 rgb(255 255 255 / 0.14);
+}
+
+/* Light themes need dark text on a bright accent. */
+body[data-theme-mode="light"] .drawtabs__tab[aria-selected="true"] { color: #0b0e13; }
+
+/* ---------- Panels ------------------------------------------------------ */
+
+.panel {
+  background: var(--card-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  padding: var(--s4);
+  margin-bottom: var(--s3);
+}
+
+.panel__title {
+  margin: 0 0 var(--s3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+/* Fijo: three digits; the leading one uses the accent, the rest recede. */
+.fijo {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 1px;
+  padding: var(--s1) 0 0;
+}
+
+.fijo__digit {
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.fijo__digit--lead { color: var(--primary); }
+.fijo__digit--rest { color: var(--text); }
+
+.fijo__meaning {
+  margin: var(--s3) 0 0;
+  text-align: center;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.004em;
+  line-height: 1.4;
+}
+
+/* Corridos: two two-digit numbers, accent on the first. */
+.pair {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--s5);
+  padding: var(--s1) 0;
+}
+
+.number2 {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.01em;
+}
+
+.number2--lead { color: var(--primary); }
+.number2--rest { color: var(--text); }
+
+/* Parlé: three columns, two numbers stacked. */
+.parles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s2);
+}
+
+.parle {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 5px;
+  padding: var(--s3) var(--s1);
+  border-radius: var(--radius-panel);
+  background: var(--card-bg-raised);
+  border: 1px solid var(--hairline);
+}
+
+.parle__num {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.008em;
+}
+
+.parle__num--top { color: var(--primary); }
+.parle__num--bottom { color: var(--text); }
+
+.parle__div {
+  width: 22px;
+  height: 1px;
+  background: var(--accent-hair);
+}
+
+/* Candado: XX.XX.XX */
+.candado {
+  margin: 0;
+  padding: var(--s1) 0;
+  text-align: center;
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: 0.01em;
+  color: var(--primary);
+}
+
+/* ---------- Lists ------------------------------------------------------- */
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--s3);
+  padding: 12px var(--s4);
+  background: var(--card-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-panel);
+  margin-bottom: var(--s2);
+  transition: background-color 140ms var(--ease), transform 140ms var(--ease);
+}
+
+.row:active { transform: scale(0.994); }
+
+.row__main { display: grid; gap: 2px; min-width: 0; }
+.row__line { display: flex; align-items: baseline; gap: var(--s2); min-width: 0; }
+
+.row__date {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.006em;
+  color: var(--text);
+}
+
+.row__type {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--primary);
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  line-height: 1.3;
+  flex: none;
+}
+
+.row__right {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+}
+
+.row__fijo {
+  font-size: 22px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+  color: var(--primary);
+}
+
+.row__candado {
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+}
+
+.more {
+  width: 100%;
+  appearance: none;
+  border: 1px solid var(--accent-hair);
+  background: var(--accent-soft);
+  color: var(--primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.004em;
+  padding: 13px;
+  border-radius: var(--radius-panel);
+  cursor: pointer;
+  margin-top: var(--s1);
+  transition: transform 140ms var(--ease), opacity 140ms var(--ease);
+}
+
+.more:active { transform: scale(0.99); }
+.more[disabled] { opacity: 0.5; }
+
+/* ---------- Bottom bar -------------------------------------------------- */
+
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  /* Extra 8px below the items so the bar breathes away from the screen edge. */
+  height: calc(var(--tabbar-h) + var(--s2) + env(safe-area-inset-bottom));
+  padding: 0 var(--s1) calc(var(--s2) + env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: color-mix(in srgb, var(--bg) 88%, var(--text));
+  border-top: 1px solid var(--hairline);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+
+.tabbar__item {
+  position: relative;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: -0.004em;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 3px;
+  padding: var(--s1) 2px;
+  cursor: pointer;
+  transition: color 180ms var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tabbar__item svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  transition: transform 220ms var(--ease);
+}
+
+.tabbar__item.is-active { color: var(--primary); }
+.tabbar__item.is-active svg { transform: translateY(-1px) scale(1.04); }
+
+/* Active indicator: a short primary bar on the tab's top edge, inset so it
+ * reads as an accent on the item rather than a full-width rule. */
+.tabbar__item.is-active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 2.5px;
+  border-radius: 0 0 3px 3px;
+  background: var(--primary);
+}
+.tabbar__item:active svg { transform: scale(0.94); }
+
+.tabbar__item span { line-height: 1; }
+
+
+/* ---------- Quick date options ------------------------------------------ */
+
+.quick {
+  display: flex;
+  gap: var(--s2);
+  margin-bottom: var(--s3);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;             /* hidden on purpose: chips are self-evident */
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch; /* momentum on iOS */
+  overscroll-behavior-x: contain;    /* never yank the page sideways */
+  scroll-snap-type: x proximity;
+  /* Bleed to the screen edges so a cut-off chip signals "swipe me". */
+  margin-inline: calc(var(--s4) * -1);
+  padding-inline: var(--s4);
+}
+.quick::-webkit-scrollbar { display: none; }
+.quick > * { scroll-snap-align: start; }
+
+.quick__chip {
+  appearance: none;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--hairline);
+  background: var(--card-bg);
+  color: var(--text-2);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.004em;
+  padding: 9px 14px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: color 160ms var(--ease), background-color 160ms var(--ease), border-color 160ms var(--ease);
+}
+
+.quick__chip:active {
+  background: var(--accent-soft);
+  border-color: var(--accent-hair);
+  color: var(--primary);
+}
+
+/* Selected chip: filled with the accent so the active date is unmistakable. */
+.quick__chip.is-active {
+  background: var(--accent-strong);
+  border-color: transparent;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.24), inset 0 1px 0 rgb(255 255 255 / 0.14);
+}
+
+body[data-theme-mode="light"] .quick__chip.is-active { color: #0b0e13; }
+
+.quick__chip.is-active svg { color: currentColor; }
+
+.quick__chip svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+}
+
+/* ---------- Historial: one row per day + accordion ---------------------- */
+
+.daylist { display: grid; gap: var(--s2); }
+
+.dayitem {
+  background: var(--card-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+  transition: border-color 180ms var(--ease), background-color 180ms var(--ease);
+}
+
+.dayitem.is-open {
+  border-color: var(--accent-hair);
+  background: var(--card-bg-raised);
+}
+
+.dayrow {
+  width: 100%;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: 13px var(--s4);
+  cursor: pointer;
+  text-align: left;
+}
+
+.dayrow__left {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.dayrow__date {
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.008em;
+  white-space: nowrap;
+}
+
+.dayrow__weekday {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  line-height: 1.3;
+}
+
+/* Two columns: MED and NOCHE */
+.dayrow__cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(64px, auto));
+  gap: var(--s2);
+  justify-items: end;
+}
+
+.dayrow__col {
+  display: grid;
+  justify-items: end;
+  gap: 1px;
+}
+
+.dayrow__label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  line-height: 1.4;
+}
+
+/* Three digits in two tones: leading digit in the accent, the rest plain. */
+.dayrow__num {
+  display: inline-flex;
+  align-items: baseline;
+  font-size: 18px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.012em;
+  line-height: 1.1;
+}
+
+.dayrow__num .digit-lead { color: var(--primary); }
+.dayrow__num .digit-rest { color: var(--text); }
+
+.dayrow__num.is-empty {
+  color: var(--text-3);
+  font-weight: 600;
+}
+
+/* Expanded detail: vertical split, midday left / evening right */
+.daydetail {
+  padding: 0 var(--s4) 14px;
+  animation: detail-in 200ms var(--ease);
+}
+
+@keyframes detail-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.daysplit {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: var(--s3);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--hairline);
+}
+
+.daysplit::after {
+  content: "";
+  grid-column: 2;
+  grid-row: 1;
+  background: var(--hairline);
+}
+
+.daysplit__area {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.daysplit__area:nth-child(2) { grid-column: 3; }
+
+.daysplit__title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 2px;
+}
+
+.daysplit__label {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+
+.daysplit__value {
+  font-size: 15px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.004em;
+  color: var(--text);
+}
+
+.daysplit__empty {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.histhead { margin-bottom: var(--s3); }
+
+/* ---------- Bottom sheet + calendar --------------------------------------
+ * The sheet follows the finger while dragging. `--drag-y` is written by
+ * calendar.js; `--drag-progress` (0..1 of the dismiss threshold) drives the
+ * handle's size and intensity so the gesture explains itself.
+ */
+
+.sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  user-select: none;
+  -webkit-user-select: none;
+  background: rgb(0 0 0 / 0);
+  display: flex;
+  align-items: flex-end;
+  transition: background-color 220ms var(--ease);
+  --drag-y: 0px;
+  --drag-progress: 0;
+}
+
+.sheet-overlay.is-open { background: rgb(0 0 0 / 0.55); }
+
+.sheet {
+  width: 100%;
+  /* A drag across the grid must never select text or day numbers. */
+  user-select: none;
+  -webkit-user-select: none;
+  background: color-mix(in srgb, var(--bg) 92%, var(--text));
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  border-top: 1px solid var(--hairline);
+  padding: var(--s2) var(--s4) calc(var(--s4) + env(safe-area-inset-bottom));
+  transform: translateY(calc(100% + var(--drag-y)));
+  transition: transform 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  max-height: 90vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* `none`, not `pan-y`: `pan-y` hands horizontal gestures to the browser,
+   * which swallows the month swipe before our pointer handler sees it. */
+  touch-action: none;
+  will-change: transform;
+}
+
+.sheet-overlay.is-open .sheet { transform: translateY(var(--drag-y)); }
+
+/* While the finger is down the sheet must track it with no easing at all. */
+.sheet-overlay.is-dragging .sheet { transition: none; }
+
+/* Grab handle: grows and saturates with drag progress. */
+.sheet__grab {
+  display: grid;
+  place-items: center;
+  padding: var(--s2) 0 var(--s3);
+  margin: calc(var(--s2) * -1) calc(var(--s4) * -1) 0;
+  cursor: grab;
+  touch-action: none;
+}
+
+.sheet__handle {
+  display: block;
+  width: calc(36px + var(--drag-progress) * 26px);
+  height: calc(4px + var(--drag-progress) * 2px);
+  border-radius: var(--radius-pill);
+  background: var(--text-3);
+  opacity: calc(0.55 + var(--drag-progress) * 0.45);
+  transition: width 160ms var(--ease), height 160ms var(--ease),
+              background-color 160ms var(--ease), opacity 160ms var(--ease);
+}
+
+.sheet-overlay.is-dragging .sheet__handle {
+  background: var(--primary);
+  transition: none;
+}
+
+.sheet__stage {
+  touch-action: none;
+}
+
+.sheet__head {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  margin-bottom: var(--s4);
+}
+
+.sheet__month {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: capitalize;
+}
+
+.sheet__nav {
+  appearance: none;
+  border: 1px solid var(--hairline);
+  background: var(--card-bg);
+  color: var(--primary);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding-bottom: 2px;
+  touch-action: manipulation;
+}
+
+.sheet__nav[disabled] { opacity: 0.3; cursor: default; }
+
+.cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+/* Month change slides in from the direction of travel. */
+@keyframes cal-in-left {
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes cal-in-right {
+  from { opacity: 0; transform: translateX(-18px); }
+  to { opacity: 1; transform: none; }
+}
+
+.cal.slide-in-left { animation: cal-in-left 220ms var(--ease); }
+.cal.slide-in-right { animation: cal-in-right 220ms var(--ease); }
+
+.cal__weekday {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  padding-bottom: 6px;
+}
+
+.cal__day {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background-color 140ms var(--ease), color 140ms var(--ease);
+}
+
+.cal__day:not(.is-disabled):active { background: var(--accent-soft); }
+
+.cal__day.is-selected {
+  background: var(--accent-strong);
+  color: #fff;
+  font-weight: 750;
+}
+
+body[data-theme-mode="light"] .cal__day.is-selected { color: #0b0e13; }
+
+.cal__day.is-disabled {
+  color: var(--text-3);
+  opacity: 0.35;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet, .sheet__handle, .sheet-overlay { transition-duration: 1ms; }
+  .cal.slide-in-left, .cal.slide-in-right { animation-duration: 1ms; }
+}
+
+/* ---------- Análisis ---------------------------------------------------- */
+
+.analyser {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--s4);
+  min-height: calc(100dvh - var(--tabbar-h) - 220px);
+}
+
+.analyser__hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+  letter-spacing: -0.004em;
+}
+
+/* ---------- The number that morphs ---------------------------------------
+ * A single element lives through both states. `is-compact` swaps it from the
+ * giant centred field to the small header. Font-size and colours transition, so
+ * the change reads as one continuous motion instead of two screens.
+ */
+
+.ananum {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  transition:
+    font-size 420ms var(--ease),
+    margin 420ms var(--ease),
+    opacity 200ms var(--ease);
+  font-size: 128px;
+}
+
+.ananum__input {
+  grid-area: 1 / 1;
+  width: 2.2ch;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-size: inherit;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums lining-nums;
+  padding: 0;
+  caret-color: var(--primary);
+  transition: opacity 160ms var(--ease);
+}
+
+.ananum__input::placeholder { color: var(--text-3); opacity: 0.3; }
+.ananum__input:focus { outline: none; }
+
+/* When compact, the input is hidden and the read-only value takes over. */
+.ananum__value {
+  grid-area: 1 / 1;
+  font-size: inherit;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums lining-nums;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms var(--ease) 120ms;
+}
+
+.ananum.is-compact {
+  font-size: 64px;
+  margin-bottom: var(--s1);
+}
+
+.ananum.is-compact .ananum__input { opacity: 0; pointer-events: none; }
+.ananum.is-compact .ananum__value { opacity: 1; }
+
+.ananum.is-tappable { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ananum.is-tappable:active .ananum__value { opacity: 0.7; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ananum, .ananum__value, .ananum__input { transition-duration: 1ms; }
+}
+
+/* Result container: skeleton first, then content */
+.anaresult { display: grid; gap: 0; }
+.anaresult.is-loading .anaskeleton { display: grid; }
+.anaskeleton { display: none; gap: var(--s3); margin-top: var(--s3); }
+
+/* Fixed action bar that sits above the bottom menu. */
+.actionbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--tabbar-h) + var(--s2) + env(safe-area-inset-bottom));
+  z-index: 15;
+  padding: var(--s3) var(--s4);
+  background: color-mix(in srgb, var(--bg) 88%, var(--text));
+  border-top: 1px solid var(--hairline);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+
+.actionbar__btn {
+  width: 100%;
+  appearance: none;
+  border: 0;
+  background: var(--accent-strong);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.006em;
+  padding: 14px;
+  border-radius: var(--radius-panel);
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.28), inset 0 1px 0 rgb(255 255 255 / 0.14);
+  transition: opacity 160ms var(--ease), transform 140ms var(--ease);
+}
+
+body[data-theme-mode="light"] .actionbar__btn { color: #0b0e13; }
+
+.actionbar__btn:active { transform: scale(0.99); }
+.actionbar__btn[disabled] { opacity: 0.4; cursor: default; }
+
+/* The action bar only exists on the analyser screen. */
+body:not(.is-analyser) .actionbar { display: none; }
+
+/* Compact result header */
+.anahead {
+  display: grid;
+  justify-items: center;
+  gap: var(--s1);
+  padding: var(--s2) 0 var(--s4);
+}
+
+.anahead__meaning {
+  font-size: 14px;
+  color: var(--text-2);
+  text-align: center;
+  letter-spacing: -0.004em;
+}
+
+/* Two stat tiles */
+.tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s2);
+  margin-bottom: var(--s3);
+}
+
+.tile {
+  display: grid;
+  gap: 3px;
+  padding: var(--s3) var(--s3) var(--s4);
+  background: var(--card-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+}
+
+.tile__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.tile__value {
+  font-size: 27px;
+  font-weight: 780;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.tile__sub {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.bigstat {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 780;
+  letter-spacing: -0.02em;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.bigstat__sub {
+  margin: var(--s1) 0 0;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* Horizontal bar rows for weekday / month breakdowns */
+.bar {
+  display: grid;
+  /* Wide enough for two-line labels ("Este número") without crowding the bar;
+   * the column gap is separate from the grid gap so the track keeps breathing. */
+  grid-template-columns: minmax(56px, 74px) 1fr 34px;
+  column-gap: var(--s3);
+  align-items: center;
+  padding: 5px 0;
+}
+
+.bar__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  line-height: 1.35;
+}
+
+.bar__track {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--card-bg-raised);
+  overflow: hidden;
+}
+
+.bar__fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--accent-strong);
+  transition: width 320ms var(--ease);
+}
+
+.bar__value {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  margin: var(--s2) 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+
+/* ---------- Icons (sun / moon) ------------------------------------------
+ * Vector, currentColor, 2px stroke on a 24 grid. Sized in em so they scale
+ * with the label they sit next to and stay optically aligned with it.
+ */
+
+.ico-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.ico {
+  width: 1.15em;
+  height: 1.15em;
+  display: block;
+  overflow: visible;
+}
+
+/* Optical alignment: stroke-based icons read low next to text. */
+.ico--sun { transform: translateY(-0.02em); }
+.ico--moon { transform: translateY(-0.01em); }
+
+/* Tabs with icon + label */
+.drawtabs__tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.drawtabs__tab .ico-wrap { opacity: 0.85; }
+.drawtabs__tab[aria-selected="true"] .ico-wrap { opacity: 1; }
+
+/* Historial collapsed column labels: icon above the tiny caption */
+.dayrow__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.dayrow__label .ico { width: 11px; height: 11px; }
+
+/* Historial expanded area titles */
+.daysplit__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.daysplit__title .ico { width: 12px; height: 12px; }
+
+
+/* ---------- Roll-up + border pulse -------------------------------------- */
+
+/* One breathing flash on the panel that just finished rolling.
+ *
+ * A single pass, driven by a shadow rather than a border ring: the surface
+ * expands with a wide, faint glow, then contracts with a tight, bright one so
+ * the last frame lands on the resting state.
+ */
+
+.panel.is-pulsing {
+  animation: panel-flash 620ms cubic-bezier(0.4, 0, 0.2, 1) 1;
+}
+
+@keyframes panel-flash {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 transparent;
+    border-color: var(--hairline);
+  }
+  /* Expand: shadow spreads and fades. */
+  35% {
+    transform: scale(1.012);
+    box-shadow:
+      0 6px 24px -6px color-mix(in srgb, var(--primary) 34%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--primary) 18%, transparent);
+    border-color: var(--accent-hair);
+  }
+  /* Contract: tighter and brighter, then settle. */
+  62% {
+    transform: scale(0.998);
+    box-shadow:
+      0 2px 10px -2px color-mix(in srgb, var(--primary) 62%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--primary) 42%, transparent);
+    border-color: var(--primary);
+  }
+}
+}
+
+
+/* ---------- Más: tool grid ---------------------------------------------- */
+
+.morehead { margin-bottom: var(--s3); }
+.morehead__who {
+  margin: var(--s1) 0 0;
+  font-size: 12.5px;
+  color: var(--text-3);
+  line-height: 1.45;
+}
+
+.toolgrid {
+  display: grid;
+  gap: var(--s2);
+}
+
+.toolcard {
+  display: grid;
+  grid-template-columns: 38px 1fr auto;
+  align-items: center;
+  gap: var(--s3);
+  width: 100%;
+  text-align: left;
+  appearance: none;
+  border: 1px solid var(--hairline);
+  background: var(--card-bg);
+  color: inherit;
+  font: inherit;
+  padding: var(--s3) var(--s4);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: border-color 160ms var(--ease), transform 140ms var(--ease);
+}
+
+.toolcard:active { transform: scale(0.995); border-color: var(--accent-hair); }
+
+.toolicon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--primary);
+  border: 1px solid var(--accent-hair);
+}
+
+.toolicon svg { width: 19px; height: 19px; }
+
+.toolcard__body { display: grid; gap: 2px; min-width: 0; }
+
+.toolcard__title {
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.008em;
+  color: var(--text);
+}
+
+.toolcard__blurb {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+
+.toolcard__tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  background: var(--card-bg-raised);
+  border: 1px solid var(--hairline);
+  padding: 3px 7px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+/* ---------- Message sheet ------------------------------------------------ */
+
+.sheet--msg { padding-top: var(--s2); }
+
+.sheetmsg__title {
+  margin: var(--s1) 0 var(--s2);
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+}
+
+.sheetmsg__body {
+  margin: 0 0 var(--s4);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.sheetmsg__actions { display: grid; gap: var(--s2); }
+
+.sheetmsg__cancel {
+  appearance: none;
+  border: 1px solid var(--hairline);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  padding: 13px;
+  border-radius: var(--radius-panel);
+  cursor: pointer;
+}
+
+
+/* ---------- Intro splash -------------------------------------------------
+ * A circle whose ring sweeps while the logo sits centred inside. The ring is a
+ * conic gradient masked to a stroke, so the arc has a soft leading edge instead
+ * of a hard cut. It removes itself once the app has painted, and is skipped
+ * entirely under `prefers-reduced-motion`.
+ */
+
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  transition: opacity 420ms var(--ease), visibility 420ms var(--ease);
+}
+
+.splash.is-done {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash__ring {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  /* The static track, always visible under the moving arc. */
+  background: color-mix(in srgb, var(--primary) 26%, transparent);
+}
+
+/* Masked ring: the ring is drawn as a border by masking the centre out. */
+.splash__ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 3px;
+  background: var(--card-bg);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* The sweeping arc. A conic gradient with a transparent tail. */
+.splash__arc {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  padding: 4px;
+  /* Brighter and wider than the track so the sweep is unmistakable. */
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 200deg,
+    color-mix(in srgb, var(--primary) 70%, transparent) 290deg,
+    var(--primary) 357deg,
+    transparent 358deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: splash-spin 1100ms linear infinite;
+}
+
+@keyframes splash-spin {
+  to { transform: rotate(360deg); }
+}
+
+.splash__logo {
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #2d2643;
+  box-shadow: 0 6px 22px -8px color-mix(in srgb, var(--primary) 60%, transparent);
+  animation: splash-breathe 2200ms ease-in-out infinite;
+}
+
+.splash__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* The artwork is 1254px with margin; zoom slightly so the balls fill the circle. */
+  transform: scale(1.28);
+}
+
+@keyframes splash-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.035); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash__arc { animation: none; }
+  .splash__logo { animation: none; }
+  .splash { transition-duration: 1ms; }
+}

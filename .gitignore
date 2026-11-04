@@ -1,0 +1,15 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# deps & build
+node_modules/
+dist/
+build/
+coverage/
+
+# local scratch
+*.log
+.DS_Store
+scratch/
