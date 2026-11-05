@@ -50,8 +50,8 @@ Todas las tareas se ejecutan ya sobre el repositorio real. El estado va debajo d
 | T20 | Integración del SDK por pantalla | S14, S15 | `src/sdk/qvapay.js`, `public/app.js` | — |
 | T21 | Verificación funcional en navegador y en el simulador | S14, S15 | `tests/`, Playwright | — |
 
-**Estado.** Completadas con evidencia ejecutada: T2, T3, T4, T5, T6, T7 y la parte
-de servidor de T8. En curso: T16, desglosada en T17–T21. Pendientes: T9–T15.
+**Estado.** Completadas con evidencia ejecutada: T2, T3, T4, T5, T6, T7, T16,
+T17, T18, T19, T20 y T21, más la parte de servidor de T8. Pendientes: T9–T15.
 
 **Corte de slices del trabajo acumulado.** El trabajo de las sesiones anteriores
 estaba sin commitear (793 líneas + archivos nuevos). Se entrega en la rama
@@ -61,8 +61,14 @@ estaba sin commitear (793 líneas + archivos nuevos). Se entrega en la rama
 |-------|-----------|--------|
 | 1 | Logo recortado y hoja con área segura | `5c93200` |
 | 2 | Perfil de QvaPay y sesión tolerante a cookies bloqueadas (S6) | `b7bafbd` |
-| 3 | Ingesta de Pick 4 y sorteos incompletos (S4) | — |
-| 4 | Tabla de 100 significados y lectura de cultura (base a refactorizar) | — |
+| 3 | Ingesta de Pick 4 y sorteos incompletos (S4) | `519fe67` |
+| 4 | Tabla de 100 significados y lectura de cultura (base refactorizada) | `d0b17b2` |
+| 5 | Artículos en Markdown con frontmatter y loader (S12, T17) | `193faa6` |
+| 6 | Renderer de Markdown propio y escapado (S12, T18) | `9a36fa1` |
+| 7 | Índice en tiles y lector tipográfico (S13, T19) | `1b61904` |
+| 8 | Helpers de chrome del SDK (S14, T20) | `43af64d` |
+| 9 | Encabezado, acciones y botón atrás nativos por pantalla (S14, S15, T20) | `8d95a24` |
+| 10 | Chrome inmediato al toque y entradilla legible (T21) | `3975b2c` |
 
 **Entrega de la fase de documentación:**
 
@@ -390,6 +396,18 @@ Reglas: migraciones versionadas en `migrations/`, sin `psql` como dependencia de
 - **L16.** T7 completada. SDK integrado y verificado en navegador real (Playwright): fuera de QvaPay y dentro de un iframe que implementa el protocolo del simulador. Dos defectos encontrados y corregidos (getTheme rechazado tumbaba la página; tema claro ilegible).
 - **L17.** «En historia y Cultura la presentacion es un desastre, me imagino que cada articulo lo tenfamos como un makdwon y que lo ue hagamso sea cargarlos y renderiar el markdown. eso es lo mas optimo me parece. y el indice arriba deberian de ser como presetnacion de articulos, luego le pondremos a cada uno su imagen pero por ahora unos tiles con cada articulo. Hagamos uso de el SDK de qvapay que tiene para usar los botones y encabezado dinamico , usar boton de atras, buscador y demas cosas. https://www.qvapay.com/docs/miniapps/sdk mira cuantas cosas hay para usar aqui. hay qeu usar el sdk hacer uso de todo lo que nos ofrece adaptado a nuestra miniapp». Specs S12–S15, tareas T17–T21.
 - **L18.** Decisiones de esta sesión: renderer de Markdown propio sin dependencias (no `marked`), y el trabajo pendiente se commitea en una rama nueva por unidad revisable antes de empezar. Estado del árbol al retomar: 793 líneas modificadas sin commitear, 171 tests en verde, base de datos al día con la migración `0004` aplicada.
+
+- **L19.** Rebanada de lectura de cultura entregada en `feat/cultura-sdk` en
+  diez commits: artículos Markdown con frontmatter (T17), renderer propio
+  escapado con 20 tests (T18), índice en tiles y lector tipográfico (T19),
+  helpers de chrome del SDK con 15 tests y su uso por pantalla con navegación
+  por historial (T20). Total del proyecto: 218 tests en verde.
+- **L20.** Verificación funcional (T21) contra el servidor real con Playwright y
+  un `window.QvaPay` inyectado: encabezado y botón principal por pantalla,
+  acción de búsqueda enfocando el campo, atrás nativo devolviendo del artículo al
+  índice, compartir, hápticos y colores; 0 errores de consola. Defectos
+  corregidos: el chrome se sincronizaba tras cargar los datos (barra con la
+  pantalla anterior) y la entradilla se leía como un párrafo más.
 
 ## Menú Más (T8 parcial)
 
