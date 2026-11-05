@@ -2132,26 +2132,15 @@ html.in-qvapay .actionbar { display: none; }
 /* La adivinanza: a reading panel with its date, and the days behind it. */
 .adiv__head .morehead__who { margin-top: 0; }
 .adiv { padding: var(--s4) var(--s4) var(--s3); }
-.adiv__meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s2);
-  margin-bottom: var(--s3);
-}
+/* The provenance number is never on screen (S10): the line carries the target
+ * date only, so this is a plain block, not a two-ended row. */
+.adiv__meta { margin-bottom: var(--s3); }
 .adiv__date {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--text-3);
-}
-.adiv__fijo {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--primary);
-  font-variant-numeric: tabular-nums;
 }
 .adiv__texto {
   margin: 0;
@@ -2193,7 +2182,6 @@ html.in-qvapay .actionbar { display: none; }
   text-transform: uppercase;
   color: var(--text-3);
 }
-.adiv__rowfijo { font-size: 11px; font-weight: 700; color: var(--primary); }
 .adiv__rowsnip { font-size: 13px; line-height: 1.5; color: var(--text-2); }
 
 /* The line under the heading needs air before the first tile. */

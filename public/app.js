@@ -1692,7 +1692,7 @@ function renderAdivinanza(data) {
   // The QvaPay header already says "La adivinanza"; repeating it inside the page
   // spends the first screenful on a title the user just read.
   if (!isHosted()) head.append(el('h2', 'panel__title', 'La adivinanza'));
-  head.append(el('p', 'morehead__who', 'Un dicharacho al día, armado con los significados del cargador.'));
+  head.append(el('p', 'morehead__who', 'Un dicharacho con doble sentido, publicado después de las 8 de la noche para el tiro siguiente.'));
   frag.append(head);
 
   if (!data.disponible) {
@@ -1709,8 +1709,9 @@ function renderAdivinanza(data) {
 
   const card = el('article', 'panel adiv');
   const meta = el('div', 'adiv__meta');
-  meta.append(el('span', 'adiv__date', `${formatDate(data.date)} · ${weekdayOf(data.date)}`));
-  if (data.fijo) meta.append(el('span', 'adiv__fijo', `Fijo ${String(data.fijo).padStart(3, '0')}`));
+  // The date is the day the riddle is FOR, so it is never the day of the draw it
+  // hints at (S11). The number it evokes is not on screen at all (S10).
+  meta.append(el('span', 'adiv__date', `Para el ${formatDate(data.date)} · ${weekdayOf(data.date)}`));
   card.append(meta);
   card.append(el('p', 'adiv__texto', data.texto));
   card.append(el('p', 'adiv__foot', 'Juego de palabras con los significados del día. No es un pronóstico.'));
@@ -1763,7 +1764,6 @@ async function fillAdivinanzaHistory(currentDate) {
 
     const line = el('span', 'adiv__rowhead');
     line.append(el('span', 'adiv__rowdate', formatDate(row.date)));
-    if (row.fijo) line.append(el('span', 'adiv__rowfijo', `Fijo ${String(row.fijo).padStart(3, '0')}`));
     btn.append(line);
     btn.append(el('span', 'adiv__rowsnip', snippet(row.texto)));
 
@@ -1775,7 +1775,9 @@ async function fillAdivinanzaHistory(currentDate) {
 /** The header's share button: the dicharacho on its screen, the app elsewhere. */
 async function shareCurrentScreen() {
   if (currentView === 'adivinanza' && adivinanzaShown?.texto) {
-    const text = `La adivinanza del ${formatDate(adivinanzaShown.date)}:\n\n`
+    // Shared text carries the day and the riddle, never the number it evokes
+    // (S10): the illusion only holds while the number stays hidden.
+    const text = `La adivinanza para el ${formatDate(adivinanzaShown.date)}:\n\n`
       + `${adivinanzaShown.texto}\n\nLa charada cubana, en QvaPay.`;
     try {
       await share(sdkRef, { text });

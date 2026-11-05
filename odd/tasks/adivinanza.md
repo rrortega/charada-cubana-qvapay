@@ -13,6 +13,9 @@ Un dicharacho del día generado por un LLM a partir del cargador, persistido par
 - **S7.** **Sin dependencias nuevas**: el transporte usa `fetch` de Node. Si no hay clave configurada, el endpoint lo dice con un estado explícito y la pantalla no inventa texto.
 - **S8.** Compartir usa el `share` del SDK ya existente; no se añade otro camino.
 - **S9.** El dicharacho es **más sutil y más críptico**: cada significado entra como **pista, nunca como palabra**. Se nombra un rasgo, un refrán o una costumbre que solo encaje con él. Textual: «en vez de hablar de un animal usamos una caracteristica del animal (…) en vez de decir que el elefante hizo algo podemos decir que el orejon que nunca se olvida de nada hizo tal cosa (…) y para decir el muerto se rie desde el patio, podriamos decir "el que ya no respira de sus maldades se acuerda"». Un texto que nombre alguno de los significados del día **se descarta y se reintenta**.
+- **S10.** La adivinanza **nunca revela el número** que evoca. El `fijo` es **procedencia, nunca salida**: se guarda en su columna, pero no sale en ninguno de los dos JSON (`/api/adivinanza`, `/api/adivinanzas`), ni en la tarjeta, ni en las filas del historial, ni en el texto de compartir. La pantalla no dice «Fijo» ni enseña sus dígitos. Textual: «la adivinanza no debe de revelar el numero, es solo una adivinanza para el dia siguiente. O sea es una ilusion que le damos al usario despues de las 8pm que ya hay un resultado publicamos la adivinanza para el siguiente dia. no reveamos el numero que estamos evocando en ella porque sino si no sale nadie confia en la adivinanza no la toman en cuenta.»
+- **S11.** Se publica **una por día objetivo**: el `date` de la fila es el día **para** el que sirve la adivinanza, no el día del tiro que la inspira. Su texto se siembra con el tiro del **día anterior** (`date - 1 day`), la noche primero y el mediodía como respaldo; si ese día anterior no tiene tiro no hay adivinanza y el estado es `sin_tiro`. El insert sigue siendo idempotente (`on conflict (date) do nothing`, y el que pierde la carrera lee la fila ganadora) y la clave del single-flight es la fecha objetivo. Textual: «es solo una adivinanza para el dia siguiente».
+- **S12.** `/api/adivinanza` **sin `fecha`** es «la adivinanza para el próximo tiro»: la fecha del tiro más reciente **más un día**, calculada en `src/http/routes.js`. Una `fecha` explícita sigue funcionando y es la fecha **objetivo**. Textual: «despues de las 8pm que ya hay un resultado publicamos la adivinanza para el siguiente dia».
 
 ## Tasks
 
@@ -26,6 +29,9 @@ Un dicharacho del día generado por un LLM a partir del cargador, persistido par
 | T5 | Pantalla, historial y compartir (`public/app.js`, `public/styles.css`) | S3, S4, S8 | — | |
 | T6 | Tests de transporte, generador, persistencia, rutas y UI | S1–S8 | — | |
 | T7 | Documentar las variables en `.env.example` y el README | S1, S7 | — | |
+| T8 | Nunca mostrar el número: fuera el `fijo` de los dos payloads, de la tarjeta, del historial y del compartir | S10 | `src/adivinanza/store.js`, `src/http/routes.js`, `public/app.js`, `public/styles.css` | |
+| T9 | Una por día objetivo, sembrada con el tiro del día anterior | S11 | `src/adivinanza/store.js` | |
+| T10 | Fecha por defecto: el tiro más reciente más un día | S12 | `src/http/routes.js` | |
 
 ## Log
 
@@ -35,3 +41,4 @@ Un dicharacho del día generado por un LLM a partir del cargador, persistido par
 - **L4.** «Abierta por ahora, gate después»
 - **L5.** «Endpoint compatible con OpenAI (recomendado)»
 - **L6.** «en la adivinanza hay que ser un poco mas sutiles y mas cripticos. por ejemplo en vez de hablar de un animal usamos una caracteristica del animal. ejemplo en vez de decir que el elefante hizo algo podemos decir que el orejon que nunca se olvida de nada hizo tal cosa. orejon y buena memoria es un elefante. y para decir el muerto se rie desde el patio, podriamos decir "el que ya no respira de sus maldades se acuerda" si no respia es que esta muerto y de sus maldades se acuerda es la erminacion de un refran que dice el que solo se rie de sus maldades se acuerda. o sea asi somos mas sutiles mas cripticos en la adivinanza o dichazacho.»
+- **L7.** «la adivinanza no debe de revelar el numero, es solo una adivinanza para el dia siguiente. O sea es una ilusion que le damos al usario despues de las 8pm que ya hay un resultado publicamos la adivinanza para el siguiente dia. no reveamos el numero que estamos evocando en ella porque sino si no sale nadie confia en la adivinanza no la toman en cuenta.»

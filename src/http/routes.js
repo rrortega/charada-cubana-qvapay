@@ -9,7 +9,7 @@ import { GLOSSARY } from '../content/glossary.js';
 import { listArticles, getArticle } from '../content/loader.js';
 import { renderMarkdown } from '../markdown/markdown.js';
 import { compactList, getFicha, totals } from '../content/charada.js';
-import { createAdivinanzaService } from '../adivinanza/store.js';
+import { createAdivinanzaService, addDays, toPublicView } from '../adivinanza/store.js';
 import { verifyInitData } from '../auth/verifyInitData.js';
 import {
   createSessionToken,
@@ -361,10 +361,10 @@ export async function handleApi(req, res, url, pool, deps = {}) {
           return true;
         }
         const out = await drawsForDate(pool, iso);
-        // Tiros is the screen everyone opens first. Warm the day's adivinanza
-        // here, unawaited, so the tap that asks for it is not the one that pays
-        // the model call. A stored row makes this a single cheap select.
-        (deps.adivinanza ?? getAdivinanza(pool)).ensure(iso).catch(() => {});
+        // Tiros is the screen everyone opens first. Warm the riddle that follows
+        // this draw, unawaited, so the tap that asks for it is not the one that
+        // pays the model call. A stored row makes this a single cheap select.
+        (deps.adivinanza ?? getAdivinanza(pool)).ensure(addDays(iso, 1)).catch(() => {});
         sendJson(res, 200, out, { 'cache-control': 'public, max-age=300' });
         return true;
       }
@@ -459,12 +459,22 @@ export async function handleApi(req, res, url, pool, deps = {}) {
         return true;
       }
 
-      // The dicharacho of the day (S12). One per date, persisted: a stored date
-      // always answers the same text, and the first visitor of a new day is the
-      // one who waits for the model.
+      // The dicharacho of the day (S12). One per target date, persisted: a
+      // stored date always answers the same text, and the first visitor of a new
+      // day is the one who waits for the model. The text hints at the draw of the
+      // day before and never names its number (S10, S11).
       case '/api/adivinanza': {
         const wanted = url.searchParams.get('fecha');
-        const date = await resolveDate(pool, wanted);
+        // No date means "the riddle for the next draw": the latest draw plus a
+        // day. The riddle is for the day after a result exists, not for the day
+        // that result belongs to (S12).
+        let date;
+        if (wanted) {
+          date = await resolveDate(pool, wanted);
+        } else {
+          const latest = await latestDate(pool);
+          date = latest ? addDays(latest, 1) : null;
+        }
         if (!date) {
           sendJson(res, 400, { error: 'fecha_invalida' });
           return true;
@@ -474,12 +484,9 @@ export async function handleApi(req, res, url, pool, deps = {}) {
         const result = await service.ensure(date);
 
         if (result.status === 'stored' || result.status === 'generated') {
-          sendRevalidatedJson(req, res, {
-            disponible: true,
-            date: result.adivinanza.date,
-            texto: result.adivinanza.texto,
-            fijo: result.adivinanza.fijo,
-          });
+          // The payload is built by the store's public view, so the provenance
+          // column cannot leak into it (S10).
+          sendRevalidatedJson(req, res, { disponible: true, ...toPublicView(result.adivinanza) });
           return true;
         }
 
@@ -493,12 +500,13 @@ export async function handleApi(req, res, url, pool, deps = {}) {
         return true;
       }
 
-      // The history: stored texts, newest first (S13).
+      // The history: stored texts, newest first (S13). Same reason as above for
+      // the shape: the rows are projected, so no number reaches the client.
       case '/api/adivinanzas': {
-        const items = await (deps.adivinanza ?? getAdivinanza(pool)).recent({
+        const rows = await (deps.adivinanza ?? getAdivinanza(pool)).recent({
           limit: url.searchParams.get('limite'),
         });
-        sendRevalidatedJson(req, res, { items });
+        sendRevalidatedJson(req, res, { items: rows.map(toPublicView) });
         return true;
       }
 

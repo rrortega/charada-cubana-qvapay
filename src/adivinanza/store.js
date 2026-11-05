@@ -1,8 +1,12 @@
-// The adivinanza of the day: one row per date, generated once and then read.
+// The adivinanza of the day: one row per target date, generated once and read.
 //
-// Two rules drive the shape of this module:
+// Three rules drive the shape of this module:
 //   * the text is persisted, so a date always answers the same thing and the
 //     history can be walked back (S2, S4);
+//   * a row's `date` is the day the riddle is FOR, and its text is seeded with
+//     the draw of the day before — the evening turn first, the midday as
+//     fallback. That is the illusion the screen sells: after eight there is
+//     already a result, so the riddle is for the next draw (S11);
 //   * generation is idempotent under concurrency. Two requests for a date that
 //     has no row must not spend two model calls, and two processes must not
 //     produce two different texts: the insert is `on conflict do nothing` and
@@ -20,15 +24,21 @@ import {
 import { drawsForDate } from '../http/draws.js';
 import { principalMeanings } from '../content/charada.js';
 
+// `fijo` is selected because it is provenance worth keeping in the row, but it
+// is never part of the view (S10).
 const COLUMNS = 'date, texto, fijo, generated_at';
 
-/** Rows carry JS Dates; the client only ever needs a calendar date. */
-function toView(row) {
+/**
+ * The wire shape of one adivinanza. The `fijo` column is provenance, never
+ * output: the riddle must not reveal the number it evokes (S10), so no view
+ * built here — and therefore no payload — can carry it.
+ */
+export function toPublicView(row) {
+  const stamp = row.generatedAt ?? row.generated_at ?? null;
   return {
     date: typeof row.date === 'string' ? row.date.slice(0, 10) : isoDate(row.date),
     texto: row.texto,
-    fijo: row.fijo ?? null,
-    generatedAt: row.generated_at instanceof Date ? row.generated_at.toISOString() : row.generated_at ?? null,
+    generatedAt: stamp instanceof Date ? stamp.toISOString() : stamp,
   };
 }
 
@@ -39,10 +49,22 @@ function isoDate(value) {
   return `${y}-${m}-${d}`;
 }
 
+/**
+ * Shift a calendar date by whole days: `addDays('2026-11-05', -1)`.
+ *
+ * UTC on purpose. A calendar date has no time zone, and adding a day in local
+ * time lands on the wrong one on the two DST Sundays of the year.
+ */
+export function addDays(iso, days) {
+  const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d + days));
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`;
+}
+
 /** The stored text for one date, or null. */
 export async function findForDate(pool, date) {
   const { rows } = await pool.query(`select ${COLUMNS} from adivinanzas where date = $1`, [date]);
-  return rows[0] ? toView(rows[0]) : null;
+  return rows[0] ? toPublicView(rows[0]) : null;
 }
 
 /** The most recent texts, newest first, for the history list (S4). */
@@ -52,7 +74,7 @@ export async function listRecent(pool, { limit = 30 } = {}) {
     `select ${COLUMNS} from adivinanzas order by date desc limit $1`,
     [capped],
   );
-  return rows.map(toView);
+  return rows.map(toPublicView);
 }
 
 /**
@@ -123,8 +145,15 @@ export function createAdivinanzaService({
     throw lastError;
   }
 
+  /**
+   * Build and store the riddle for one target date.
+   *
+   * The source draw is the previous day's (S11): a date with no draw before it
+   * has nothing to hint at, so it is `sin_tiro` — a real state, not an error.
+   */
   async function generate(date) {
-    const out = await loadDraws(date);
+    const sourceDate = addDays(date, -1);
+    const out = await loadDraws(sourceDate);
     const cargador = pickCargador(out);
     if (!cargador) return { status: 'sin_tiro' };
 
@@ -139,28 +168,30 @@ export function createAdivinanzaService({
     for (const n of numbers) meanings.set(n, await meaningOf(n));
 
     const texto = await askModel(buildPrompt({
-      date,
+      // The prompt describes the draw being hinted at, which is the source day.
+      date: sourceDate,
       cargador,
       meaningFor: (n) => meanings.get(n) ?? null,
     }), date, [...meanings.values()].filter(Boolean));
 
-    // The cargador row is the provenance: which draw produced this text.
+    // The cargador row is the provenance: which draw produced this text. The
+    // row itself is dated by its target day, not by the draw (S11).
     const { rows } = await pool.query(
       `insert into adivinanzas (date, texto, fijo, source_cargador_id)
-       values ($1, $2, $3, (select id from cargadores where date = $1 order by computed_at desc limit 1))
+       values ($1, $2, $3, (select id from cargadores where date = $4 order by computed_at desc limit 1))
        on conflict (date) do nothing
        returning ${COLUMNS}`,
-      [date, texto, cargador.fijo?.value ?? null],
+      [date, texto, cargador.fijo?.value ?? null, sourceDate],
     );
 
     // Another process stored a text for this date first: theirs is the truth.
-    if (rows[0]) return { status: 'generated', adivinanza: toView(rows[0]) };
+    if (rows[0]) return { status: 'generated', adivinanza: toPublicView(rows[0]) };
     const stored = await findForDate(pool, date);
     return stored ? { status: 'stored', adivinanza: stored } : { status: 'sin_tiro' };
   }
 
   /**
-   * Answer for a date, generating it when it is not stored yet.
+   * Answer for a target date, generating it when it is not stored yet.
    *
    * Never throws for a provider problem: a screen that cannot be filled must be
    * able to say why (S7). Database errors do propagate — those are ours.
