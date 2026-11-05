@@ -2004,7 +2004,7 @@ html.in-qvapay .actionbar { display: none; }
 
 /* Inside the coloured card the digits are light, and the leading one takes a warm
  * accent: white on violet separated by opacity alone read as one number. */
-.flipcard .fijo__digit--lead { color: #ff8c42; }
+.flipcard .fijo__digit--lead { color: #9da7e9; }
 .flipcard .fijo__digit--rest { color: #ffffff; }
 .flipcard .fijo__meaning { color: rgb(255 255 255 / 0.82); }
 .flipcard .flipcard__caption { color: rgb(255 255 255 / 0.82); }
