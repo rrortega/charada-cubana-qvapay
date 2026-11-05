@@ -141,8 +141,7 @@ export async function configureHeader(sdk, { subtitle = null, actions = null } =
  */
 export async function setMainButton(sdk, { text, visible = true, enabled = true, loading = false }) {
   if (!capabilities(sdk).mainButton) return false;
-  const state = { text, visible, enabled, loading };
-  Object.keys(state).forEach((k) => state[k] === undefined && delete state[k]);
+  const state = { text: String(text ?? '').slice(0, LIMITS.mainButton), visible, enabled, loading };
   await sdk.ui.mainButton.set(state);
   return true;
 }
@@ -173,4 +172,129 @@ export function describeSdkError(error) {
     default:
       return { code, message, silent: false, retryable: true };
   }
+}
+
+// --- Per-screen chrome ------------------------------------------------------
+//
+// Header, main button, colours and notices are per screen, so they get a small
+// layer on top of the raw calls: capability-guarded (absent SDK or absent
+// method is a silent no-op), input-normalised so the host never has to reject,
+// and honest about which calls actually happened.
+
+/** Limits the host enforces; clamped here so it never has to reject. */
+export const LIMITS = Object.freeze({ subtitle: 48, mainButton: 32, toast: 120, share: 200 });
+
+/** The closed icon catalogue `ui.header.set` accepts. */
+export const HEADER_ICONS = Object.freeze([
+  'cart', 'search', 'filter', 'sort', 'share', 'heart', 'star', 'bookmark',
+  'bell', 'user', 'settings', 'help', 'plus', 'edit', 'chat', 'calendar',
+  'wallet', 'ticket', 'home', 'location', 'refresh',
+]);
+
+const ACTION_ID = /^[A-Za-z0-9_-]{1,32}$/;
+
+const clamp = (text, max) => String(text ?? '').slice(0, max);
+
+/**
+ * Keep only the header actions the host will accept, and at most two.
+ *
+ * Dropping an invalid action is better than letting `set` reject and leave the
+ * whole header unchanged: the screen keeps the actions that do work.
+ *
+ * @param {Array<{id: string, icon: string, label: string, badge?: number}>} actions
+ * @param {number} [limit]
+ */
+export function normaliseActions(actions, limit = 2) {
+  if (!Array.isArray(actions)) return [];
+  const seen = new Set();
+  const out = [];
+  for (const action of actions) {
+    if (!action || typeof action.id !== 'string' || !ACTION_ID.test(action.id)) continue;
+    if (!HEADER_ICONS.includes(action.icon)) continue;
+    if (typeof action.label !== 'string' || action.label.trim() === '') continue;
+    if (seen.has(action.id)) continue;
+    seen.add(action.id);
+    /** @type {{id: string, icon: string, label: string, badge?: number}} */
+    const kept = { id: action.id, icon: action.icon, label: action.label };
+    if (typeof action.badge === 'number' && action.badge > 0) {
+      kept.badge = Math.min(Math.floor(action.badge), 99);
+    }
+    out.push(kept);
+    if (out.length === limit) break;
+  }
+  return out;
+}
+
+/**
+ * Set the header subtitle and/or actions for the current screen.
+ *
+ * `subtitle: null` leaves it alone, `''` clears it; `actions: []` clears them.
+ */
+export async function setHeader(sdk, { subtitle = null, actions = null } = {}) {
+  if (!capabilities(sdk).header) return false;
+  /** @type {{subtitle?: string|null, actions?: object[]}} */
+  const state = {};
+  if (subtitle !== null) state.subtitle = subtitle === '' ? null : clamp(subtitle, LIMITS.subtitle);
+  if (actions !== null) state.actions = normaliseActions(actions);
+  if (Object.keys(state).length === 0) return false;
+  await sdk.ui.header.set(state);
+  return true;
+}
+
+const HEX = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
+/** Paint the host surfaces. Opaque hex only; anything else is refused locally. */
+export async function setColors(sdk, { header = null, background = null } = {}) {
+  if (!capabilities(sdk).colors) return false;
+  /** @type {{header?: string, background?: string}} */
+  const state = {};
+  if (header !== null) {
+    if (!HEX.test(header)) return false;
+    state.header = header;
+  }
+  if (background !== null) {
+    if (!HEX.test(background)) return false;
+    state.background = background;
+  }
+  if (Object.keys(state).length === 0) return false;
+  await sdk.ui.colors.set(state);
+  return true;
+}
+
+/** Short vibration. Defaults to the lightest tap, which is the common case. */
+export async function haptic(sdk, type = 'light') {
+  if (!capabilities(sdk).haptic) return false;
+  await sdk.ui.haptic(type);
+  return true;
+}
+
+/** Native notice, already truncated to what the host accepts. */
+export async function toast(sdk, message, { type = 'info' } = {}) {
+  if (!capabilities(sdk).toast) return false;
+  const text = clamp(message, LIMITS.toast);
+  if (text === '') return false;
+  await sdk.ui.toast(text, { type });
+  return true;
+}
+
+/**
+ * Open the native share sheet. Rejections propagate: `USER_CANCELLED` is a
+ * dismissal, not an error, and the caller decides what to show.
+ */
+export async function share(sdk, { text } = {}) {
+  if (!capabilities(sdk).share) return false;
+  /** @type {{text?: string}} */
+  const params = {};
+  if (text !== undefined) params.text = clamp(text, LIMITS.share);
+  await sdk.share(params);
+  return true;
+}
+
+/** Leave the mini-app through the system browser. https only, as the host demands. */
+export async function openLink(sdk, url) {
+  if (!capabilities(sdk).openLink) return false;
+  const target = String(url ?? '');
+  if (!/^https:\/\/[^\s]+$/i.test(target) || target.length > 2048) return false;
+  await sdk.openLink(target);
+  return true;
 }

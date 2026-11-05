@@ -15,6 +15,13 @@ import {
   configureHeader,
   setMainButton,
   describeSdkError,
+  normaliseActions,
+  setHeader,
+  setColors,
+  haptic,
+  toast,
+  share,
+  openLink,
 } from '../src/sdk/qvapay.js';
 
 /** Minimal SDK double mirroring the surface documented for QvaPay 3.7.1. */
@@ -289,4 +296,120 @@ test('an unknown code falls back safely rather than throwing', () => {
   assert.equal(d.silent, false);
   const none = describeSdkError(undefined);
   assert.equal(none.code, 'UNKNOWN');
+});
+
+// --- Per-screen chrome ------------------------------------------------------
+//
+// One screen sends one header, one main-button state. The adapter's job is to
+// keep that payload inside the host contract, and to stay silent when the host
+// (or that part of it) is not there.
+
+test('normaliseActions keeps the valid ones and drops the rest', () => {
+  const kept = normaliseActions([
+    { id: 'calendar', icon: 'calendar', label: 'Elegir fecha' },
+    { id: 'con espacio', icon: 'search', label: 'Buscar' },
+    { id: 'unknown-icon', icon: 'sparkles', label: 'Nada' },
+    { id: 'no-label', icon: 'search', label: '' },
+    { id: 'share', icon: 'share', label: 'Compartir' },
+  ]);
+  assert.deepEqual(kept.map((a) => a.id), ['calendar', 'share']);
+});
+
+test('normaliseActions caps at two actions and dedupes ids', () => {
+  const kept = normaliseActions([
+    { id: 'a', icon: 'search', label: 'A' },
+    { id: 'a', icon: 'share', label: 'A otra vez' },
+    { id: 'b', icon: 'calendar', label: 'B' },
+    { id: 'c', icon: 'user', label: 'C' },
+  ]);
+  assert.deepEqual(kept.map((a) => a.id), ['a', 'b']);
+});
+
+test('normaliseActions clamps the badge into the host range', () => {
+  const [kept] = normaliseActions([{ id: 'x', icon: 'bell', label: 'Avisos', badge: 140 }]);
+  assert.equal(kept.badge, 99);
+});
+
+test('setHeader is a no-op without an SDK', async () => {
+  assert.equal(await setHeader(null, { subtitle: 'Hola' }), false);
+});
+
+test('setHeader is a no-op when the host has no header', async () => {
+  const { sdk, calls } = fakeSdk();
+  delete sdk.ui.header;
+  assert.equal(await setHeader(sdk, { subtitle: 'Hola' }), false);
+  assert.equal(calls.headerSet.length, 0);
+});
+
+test('setHeader truncates the subtitle to 48 characters', async () => {
+  const { sdk, calls } = fakeSdk();
+  await setHeader(sdk, { subtitle: 'x'.repeat(80) });
+  assert.equal(calls.headerSet[0].subtitle.length, 48);
+});
+
+test('setHeader clears the subtitle with an empty string', async () => {
+  const { sdk, calls } = fakeSdk();
+  await setHeader(sdk, { subtitle: '' });
+  assert.equal(calls.headerSet[0].subtitle, null);
+});
+
+test('setHeader leaves the subtitle alone when it is not sent', async () => {
+  const { sdk, calls } = fakeSdk();
+  await setHeader(sdk, { actions: [{ id: 'search', icon: 'search', label: 'Buscar' }] });
+  assert.equal('subtitle' in calls.headerSet[0], false);
+  assert.equal(calls.headerSet[0].actions.length, 1);
+});
+
+test('setColors refuses anything that is not an opaque hex', async () => {
+  const { sdk, calls } = fakeSdk();
+  assert.equal(await setColors(sdk, { header: 'rgb(0, 0, 0)' }), false);
+  assert.equal(await setColors(sdk, { background: '#12345' }), false);
+  assert.equal(calls.colorsSet.length, 0);
+});
+
+test('setColors paints both surfaces when the values are valid', async () => {
+  const { sdk, calls } = fakeSdk();
+  assert.equal(await setColors(sdk, { header: '#0e1116', background: '#0E1116' }), true);
+  assert.deepEqual(calls.colorsSet[0], { header: '#0e1116', background: '#0E1116' });
+});
+
+test('toast truncates to 120 characters and refuses an empty message', async () => {
+  const { sdk, calls } = fakeSdk();
+  await toast(sdk, 'y'.repeat(200), { type: 'error' });
+  assert.equal(calls.toasts[0].m.length, 120);
+  assert.equal(calls.toasts[0].o.type, 'error');
+  assert.equal(await toast(sdk, ''), false);
+});
+
+test('share truncates to 200 characters', async () => {
+  const { sdk } = fakeSdk();
+  const seen = [];
+  sdk.share = async (params) => { seen.push(params); return null; };
+  await share(sdk, { text: 'z'.repeat(260) });
+  assert.equal(seen[0].text.length, 200);
+});
+
+test('openLink accepts https only', async () => {
+  const { sdk } = fakeSdk();
+  const seen = [];
+  sdk.openLink = async (url) => { seen.push(url); return null; };
+  assert.equal(await openLink(sdk, 'http://floridalottery.com'), false);
+  assert.equal(await openLink(sdk, 'javascript:alert(1)'), false);
+  assert.equal(await openLink(sdk, 'https://floridalottery.com/'), true);
+  assert.deepEqual(seen, ['https://floridalottery.com/']);
+});
+
+test('haptic defaults to the lightest tap', async () => {
+  const { sdk, calls } = fakeSdk();
+  await haptic(sdk);
+  assert.deepEqual(calls.haptics, ['light']);
+});
+
+test('setMainButton always sends text and visible together', async () => {
+  const { sdk, calls } = fakeSdk();
+  await setMainButton(sdk, { text: 'Analizar', loading: true });
+  assert.equal(calls.mainButtonSet[0].text, 'Analizar');
+  assert.equal(calls.mainButtonSet[0].visible, true);
+  await setMainButton(sdk, { text: 'w'.repeat(50) });
+  assert.equal(calls.mainButtonSet[1].text.length, 32);
 });
