@@ -21,6 +21,7 @@ Entregable de esta fase: **documentación y plan técnico** (sin código de prod
 - **S13.** El índice de «Historia y cultura» es una presentación de artículos en tiles, uno por artículo, preparada para recibir después una imagen por artículo. Textual: «el indice arriba deberian de ser como presetnacion de articulos, luego le pondremos a cada uno su imagen pero por ahora unos tiles con cada articulo».
 - **S14.** La mini-app usa el SDK de QvaPay adaptado a cada pantalla: encabezado con subtítulo y acciones, botón atrás, botón principal, colores, hápticos, avisos, compartir y apertura de enlaces externos. Textual: «Hagamos uso de el SDK de qvapay que tiene para usar los botones y encabezado dinamico , usar boton de atras, buscador y demas cosas» y «hay qeu usar el sdk hacer uso de todo lo que nos ofrece adaptado a nuestra miniapp».
 - **S15.** La navegación interna pasa por el historial del navegador, de modo que el botón atrás nativo de QvaPay retroceda de verdad; el botón atrás propio se mantiene solo fuera del SDK.
+- **S16.** El arte de los significados es **por significado, no por número**: un número puede llevar varios, así que el mapeo semántico se deriva de la propia tabla (`Bruja, Gallina Prieta y Hormiga` son tres) y cada uno tiene su archivo `NNN-M.png`. Si falta el archivo, la lista se lee sin hueco reservado. Textual: «algunos numeros tienen hasta 4 significados por lo cual deberiamos de tener un png por significado y quiza sun mismo numero tenga mas de 1 png. hay que crear ese mapeo semantico con la imagen».
 
 ## Tasks
 
@@ -375,6 +376,7 @@ Reglas: migraciones versionadas en `migrations/`, sin `psql` como dependencia de
 | Credencial sin TLS por internet público | Interceptación | Habilitar TLS y rotar la contraseña (9) |
 | Proyecciones presentadas como predicción | Engaño al usuario y revisión | Lenguaje descriptivo (6) |
 | Histórico incompleto al lanzar | Estadísticas sin base | Ingesta histórica antes del lanzamiento (T2) |
+| Iconos de los 100 significados desalineados y con significado equivocado | La lista miente | Rehacer las hojas en el orden de la tabla o retirar los iconos (L21) |
 
 ## Log
 
@@ -408,6 +410,10 @@ Reglas: migraciones versionadas en `migrations/`, sin `psql` como dependencia de
   índice, compartir, hápticos y colores; 0 errores de consola. Defectos
   corregidos: el chrome se sincronizaba tras cargar los datos (barra con la
   pantalla anterior) y la entradilla se leía como un párrafo más.
+
+- **L21.** Hallazgo de la verificación visual (fuera del alcance de esta rebanada): las hojas de sprites de los 100 significados no encajan con la tabla. Medido: cada PNG es 887×1774 con una rejilla de 10 columnas × 20 filas de celdas de ~88.7 px, mientras el código asume 10 × 5 de 177 px y escala la hoja a 460×230. Además, la fila 0 sí coincide con las entradas 1–10 (caballo, mariposa, niño, gato, monja, jicotea, caracol, muerto, elefante, pescado), pero desde la 11 los iconos no corresponden al significado de la tabla: el 11 es Gallo y el icono es un sol. Queda como decisión abierta rehacer las hojas en el orden documentado o dejar la lista sin iconos.
+- **L22.** Decisión del usuario: el arte va **por significado**, no por número, y se llena solo con lo que se pueda verificar; el resto se lee sin icono. El mapeo se deriva de la tabla sembrada (`splitMeanings`), no se duplica el texto: 100 números dan **151 significados** (39 con dos, 6 con tres). Contrato de archivo `NNN-M.png`; `/api/significados` devuelve una ranura por significado y anuncia el icono solo si el archivo existe. 13 tests nuevos.
+- **L23.** Defecto reportado por el usuario: «en la lista de significados sale un error entry.meanings is not iterable». Causa raíz: los endpoints de contenido se servían con `cache-control: public, max-age=3600`, así que el navegador seguía entregando el payload anterior (con `meaning`, `sheet`, `col`, `row`) durante una hora; el cliente nuevo no podía iterar `meanings`. Arreglo en la raíz, no en el cliente: `sendRevalidatedJson` con ETag débil y `cache-control: no-cache`, de modo que el navegador revalida siempre (304 sin cuerpo cuando no cambió) y un cambio de contrato nunca queda escondido. Aplicado a `/api/significados` y `/api/cultura`. 5 tests; verificado con curl: 200 + `no-cache` + ETag, y 304 con 0 bytes en la petición condicional.
 
 ## Menú Más (T8 parcial)
 
