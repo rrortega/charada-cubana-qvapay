@@ -1,15 +1,16 @@
 // The dream analyser: prompt, validation of the model's answer and retries.
 //
-// The user writes a dream (S1) and never sees it stored (S2). What comes back
-// has to be machine-usable, so the model is asked for strict JSON: a list of
-// concrete signals, each with a weight and the numbers of the charada its
-// symbols point at. Nothing here predicts a result — the numbers are a reading
-// of symbols (S5), and a dream is not a forecast (S6).
+// The user writes a dream (S1) and it is stored under their own account (S9).
+// What comes back has to be machine-usable, so the model is asked for strict
+// JSON: a list of concrete signals, each with a weight and the numbers of the
+// charada its symbols point at. Nothing here predicts a result — the numbers
+// are a reading of symbols (S5), and a dream is not a forecast (S6).
 //
 // The vocabulary is the delivered charada table, numbered, because a meaning is
 // what points at a number: "caballo" alone does not say 1.
 
 import { principalMeanings } from '../content/charada.js';
+import { canonicoDe, jergaPara } from '../content/jerga-cubana.js';
 
 /** Bumped whenever the wording changes, so a stored analysis can be explained. */
 export const PROMPT_VERSION = 1;
@@ -41,6 +42,9 @@ Reglas:
   acción concreta del sueño, no una interpretación: "agua", "caballo", "cuchillo",
   "caminar descalzo". Nada de frases largas ni de estados de ánimo abstractos.
 - El nombre va en minúsculas, sin tildes, de 2 a 40 caracteres.
+- El sueño está escrito en parlé cubano. Léelo en cubano: si dice "jeva", es la
+  pareja; si dice "yuma", es el extranjero o emigrar; si dice "jama", es la
+  comida. La señal que extraigas va en español llano, no en la jerga.
 - El peso va de 0,05 a 1: cuánto pesa esa señal en el sueño.
 - Los números salen del vocabulario de abajo, del 1 al 100. Nunca inventes un
   número mayor que 100 ni uno que no esté en la lista. Como máximo cuatro por
@@ -72,9 +76,16 @@ export async function buildPrompt({ sueno }) {
   const table = await meanings();
   const material = [...table.entries()].map(([n, name]) => `${n}: ${name}`).join(', ');
 
+  const jerga = jergaPara(sueno);
+  const glosario = jerga.length
+    ? `\n\nPalabras del sueño, en cubano:\n${jerga
+      .map((entry) => `- ${entry.termino}: ${entry.significado} (${entry.contexto})`)
+      .join('\n')}`
+    : '';
+
   return {
     system: systemPrompt(material),
-    user: `Sueño: ${String(sueno ?? '').trim()}
+    user: `Sueño: ${String(sueno ?? '').trim()}${glosario}
 
 Devuelve el JSON con el resumen y sus señales.`,
   };
@@ -183,7 +194,13 @@ export function parseAnalysis(raw) {
       existing.peso = Math.max(existing.peso, peso);
       continue;
     }
-    byName.set(nombre, { nombre, peso, numeros: filterNumbers(item?.numeros) });
+    byName.set(nombre, {
+      nombre,
+      // The shared concept, so "jeva" and "novia" meet in the same counter (S13).
+      canonico: canonicoDe(nombre),
+      peso,
+      numeros: filterNumbers(item?.numeros),
+    });
   }
 
   // The cap keeps the signals that weigh most; ties keep the model's order.
