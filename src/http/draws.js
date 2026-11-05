@@ -4,6 +4,11 @@
 //   * "Tiros"     — one date, chosen with quick options or a calendar.
 //   * "Historial" — a 365-day list in the shape of the same card.
 //
+// The charada meanings come from the delivered table in public/significados, not
+// from Postgres: one source for the cargador and for the Significados section.
+
+import { principalMeanings } from '../content/charada.js';
+//
 // A draw view carries everything a card needs:
 //   fijo       three digits, the leading one shown in the accent colour
 //   corridos   the two halves of Pick 4
@@ -95,9 +100,11 @@ export function toDrawView(row, meanings) {
   };
 }
 
-async function loadMeanings(pool) {
-  const { rows } = await pool.query('SELECT entry_number, significados FROM charada_significados');
-  return new Map(rows.map((r) => [r.entry_number, r.significados]));
+async function loadMeanings() {
+  // The meanings come from the delivered charada table, not from Postgres: the
+  // same source the Significados section reads, so one number cannot say one
+  // thing here and another in its ficha.
+  return principalMeanings();
 }
 
 const DRAW_SELECT = `
@@ -123,7 +130,7 @@ export async function latestDate(pool) {
  * Returns nulls per turn when that turn is missing, never a partial card.
  */
 export async function drawsForDate(pool, isoDate, meanings = null) {
-  const table = meanings ?? (await loadMeanings(pool));
+  const table = meanings ?? (await loadMeanings());
   const { rows } = await pool.query(
     `${DRAW_SELECT} WHERE c.date = $1::date ORDER BY c.draw_type`,
     [isoDate],
@@ -142,7 +149,7 @@ export async function drawsForDate(pool, isoDate, meanings = null) {
  * newest first. Each entry groups both turns of that day.
  */
 export async function dayList(pool, { endDate = null, limit = 365 } = {}) {
-  const meanings = await loadMeanings(pool);
+  const meanings = await loadMeanings();
   const end = endDate ?? (await latestDate(pool));
   if (!end) return { endDate: null, days: [] };
 
@@ -184,13 +191,10 @@ export async function historyForAnalysis(pool) {
   return rows.map((r) => ({ date: r.date, drawType: r.drawType, lookup: Number(r.lookup) }));
 }
 
-/** Charada meaning for one number, or null when the table has no row. */
-export async function meaningOf(pool, number) {
-  const { rows } = await pool.query(
-    'SELECT significados FROM charada_significados WHERE entry_number = $1',
-    [number],
-  );
-  return rows[0]?.significados ?? null;
+/** Charada meaning for one number, or null when the table has no entry. */
+export async function meaningOf(number) {
+  const meanings = await principalMeanings();
+  return meanings.get(Number(number)) ?? null;
 }
 
 /**

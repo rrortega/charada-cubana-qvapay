@@ -41,9 +41,10 @@ const parseIso = (iso) => {
  * @param {string} [opts.min]  earliest selectable ISO date
  * @param {string} [opts.max]  latest selectable ISO date
  * @param {(iso:string)=>void} opts.onSelect
+ * @param {() => void} [opts.onClose] called once, however the sheet is dismissed
  * @returns {() => void} close
  */
-export function openCalendar({ value, min, max, onSelect, doc = globalThis.document, win = globalThis }) {
+export function openCalendar({ value, min, max, onSelect, onClose, doc = globalThis.document, win = globalThis }) {
   const start = parseIso(value || max || toIso(new Date().getFullYear(), new Date().getMonth(), 1));
   let cursorY = start.y;
   let cursorM = start.m;
@@ -110,6 +111,7 @@ export function openCalendar({ value, min, max, onSelect, doc = globalThis.docum
   function close() {
     if (closed) return;
     closed = true;
+    onClose?.();
     doc.removeEventListener('keydown', onKey);
     detachDrag();
     if (overlay.classList.contains('is-dragging')) {

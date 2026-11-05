@@ -56,7 +56,9 @@ const SECURITY_HEADERS = {
   // The simulator embeds the page; allow qvapay.com and localhost for dev.
   'content-security-policy':
     "default-src 'self'; script-src 'self' https://www.qvapay.com; " +
-    "style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
+    // Avatars come from QvaPay's media host; nothing else external is allowed.
+    "style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data: https://media.qvapay.com; " +
     "connect-src 'self'; frame-ancestors 'self' https://www.qvapay.com https://qvapay.com " +
     'http://localhost:* http://127.0.0.1:*',
   'x-content-type-options': 'nosniff',

@@ -5,6 +5,10 @@
 
 import crypto from 'node:crypto';
 import { analyseNumber } from '../domain/analysis.js';
+import { GLOSSARY } from '../content/glossary.js';
+import { listArticles, getArticle } from '../content/loader.js';
+import { renderMarkdown } from '../markdown/markdown.js';
+import { compactList, getFicha, totals } from '../content/charada.js';
 import { verifyInitData } from '../auth/verifyInitData.js';
 import {
   createSessionToken,
@@ -30,6 +34,30 @@ const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' };
 function sendJson(res, status, body, extra = {}) {
   res.writeHead(status, { ...JSON_HEADERS, ...extra });
   res.end(JSON.stringify(body));
+}
+
+/**
+ * JSON the browser may store but must revalidate before reusing.
+ *
+ * Content endpoints change shape with the code, and a long `max-age` hides that
+ * from a client that already cached the previous shape: the failure shows up as
+ * a crash in the new client, not as a stale label. Conditional revalidation
+ * keeps repeat visits cheap (304, no body) without ever serving yesterday's
+ * contract.
+ */
+export function sendRevalidatedJson(req, res, body) {
+  const payload = JSON.stringify(body);
+  const etag = `W/"${crypto.createHash('sha1').update(payload).digest('base64url').slice(0, 16)}"`;
+  const headers = { ...JSON_HEADERS, 'cache-control': 'no-cache', etag };
+
+  if (req.headers['if-none-match'] === etag) {
+    res.writeHead(304, headers);
+    res.end();
+    return;
+  }
+
+  res.writeHead(200, { ...headers, 'content-length': Buffer.byteLength(payload) });
+  res.end(payload);
 }
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -75,24 +103,41 @@ async function resolveDate(pool, raw) {
   }
 }
 
-/** Read the caller's session, or null when not linked. */
+/**
+ * Read the caller's session, or null when not linked.
+ *
+ * Accepts the signed token from either the cookie or an `Authorization: Bearer`
+ * header. The header exists because third-party cookie policies can drop the
+ * cookie inside the QvaPay WebView; the token is signed identically either way.
+ */
 export function currentSession(req) {
-  const cookies = parseCookies(req.headers.cookie);
   const secret = process.env.SESSION_SECRET;
   if (!secret) return null;
+
+  const auth = String(req.headers.authorization ?? '');
+  if (auth.startsWith('Bearer ')) {
+    const fromHeader = readSessionToken(auth.slice(7).trim(), secret);
+    if (fromHeader) return fromHeader;
+  }
+
+  const cookies = parseCookies(req.headers.cookie);
   return readSessionToken(cookies[COOKIE_NAME], secret);
 }
 
 /** Upsert the user row and return its id. */
-async function upsertUser(pool, { uuid, username }) {
+async function upsertUser(pool, user) {
+  const { uuid, username, name, lastname, avatar } = user;
   const { rows } = await pool.query(
-    `INSERT INTO users (qvapay_uuid, username)
-     VALUES ($1, $2)
+    `INSERT INTO users (qvapay_uuid, username, display_name, lastname, avatar)
+     VALUES ($1, $2, $3, $4, $5)
      ON CONFLICT (qvapay_uuid)
-     DO UPDATE SET username = COALESCE(EXCLUDED.username, users.username),
+     DO UPDATE SET username     = COALESCE(EXCLUDED.username, users.username),
+                   display_name = COALESCE(EXCLUDED.display_name, users.display_name),
+                   lastname     = COALESCE(EXCLUDED.lastname, users.lastname),
+                   avatar       = COALESCE(EXCLUDED.avatar, users.avatar),
                    last_seen_at = now()
      RETURNING id`,
-    [uuid, username ?? null],
+    [uuid, username ?? null, name ?? null, lastname ?? null, avatar ?? null],
   );
   return rows[0].id;
 }
@@ -105,9 +150,24 @@ async function handleAuth(req, res, url, pool) {
   if (url.pathname === '/api/sesion') {
     if (req.method !== 'GET') return false;
     const s = currentSession(req);
-    sendJson(res, 200, s
-      ? { linked: true, uuid: s.uuid, username: s.username }
-      : { linked: false, uuid: null, username: null }, { 'cache-control': 'no-store' });
+    if (!s) {
+      sendJson(res, 200, { linked: false, uuid: null, username: null }, { 'cache-control': 'no-store' });
+      return true;
+    }
+    // The cookie carries only id and username; the profile lives in the database.
+    const { rows } = await pool.query(
+      'SELECT display_name, lastname, avatar FROM users WHERE qvapay_uuid = $1',
+      [s.uuid],
+    );
+    const p = rows[0] ?? {};
+    sendJson(res, 200, {
+      linked: true,
+      uuid: s.uuid,
+      username: s.username,
+      name: p.display_name ?? null,
+      lastname: p.lastname ?? null,
+      avatar: p.avatar ?? null,
+    }, { 'cache-control': 'no-store' });
     return true;
   }
 
@@ -141,6 +201,11 @@ async function handleAuth(req, res, url, pool) {
         linked: true,
         uuid: verified.user.uuid,
         username: verified.user.username ?? null,
+        name: verified.user.name ?? null,
+        lastname: verified.user.lastname ?? null,
+        avatar: verified.user.avatar ?? null,
+        // The client persists this as a fallback when cookies are blocked.
+        token,
       }));
     } catch (err) {
       // Do not leak which check failed beyond the machine code.
@@ -309,19 +374,62 @@ export async function handleApi(req, res, url, pool) {
       // Historical analysis of one lookup number (0..99).
       case '/api/analisis': {
         const raw = url.searchParams.get('numero');
-        if (raw === null || !/^\d{1,2}$/.test(raw)) {
+        if (raw === null || !/^\d{1,3}$/.test(raw)) {
           sendJson(res, 400, { error: 'numero_invalido' });
           return true;
         }
         const numero = Number(raw);
-        if (numero > 99) {
+        if (numero < 1 || numero > 100) {
           sendJson(res, 400, { error: 'numero_invalido' });
           return true;
         }
+        // The table runs from 1 to 100, but a draw is matched by its last two
+        // digits: entry 100 is the "00" of a fijo like 900.
+        const target = numero % 100;
         const draws = await historyForAnalysis(pool);
-        const analysis = analyseNumber(draws, numero);
-        const significado = await meaningOf(pool, numero);
-        sendJson(res, 200, { ...analysis, significado }, { 'cache-control': 'public, max-age=600' });
+        const analysis = analyseNumber(draws, target);
+        const significado = await meaningOf(numero);
+        sendJson(res, 200, { ...analysis, target: numero, significado },
+          { 'cache-control': 'public, max-age=600' });
+        return true;
+      }
+
+      // The charada table: 100 fichas with their meanings, artwork and the
+      // traditional relations between numbers (S16). The list carries only what
+      // the rows need — plus the meaning names, so the search filters locally —
+      // and the ficha is fetched when it is opened.
+      case '/api/significados': {
+        const numero = url.searchParams.get('numero');
+        if (numero !== null) {
+          const value = Number(numero);
+          if (!Number.isInteger(value) || value < 1 || value > 100) {
+            sendJson(res, 400, { error: 'numero_out_of_range' });
+            return true;
+          }
+          const ficha = await getFicha(value);
+          if (!ficha) { sendJson(res, 404, { error: 'not_found' }); return true; }
+          sendRevalidatedJson(req, res, ficha);
+          return true;
+        }
+        sendRevalidatedJson(req, res, { total: await totals(), numbers: await compactList() });
+        return true;
+      }
+
+      // Culture articles and glossary. Static content: the browser may store it,
+      // but it revalidates, so a shape or wording change reaches the client.
+      case '/api/cultura': {
+        const id = url.searchParams.get('id');
+        if (id) {
+          const article = await getArticle(id);
+          if (!article) { sendJson(res, 404, { error: 'not_found' }); return true; }
+          const { body, ...meta } = article;
+          sendRevalidatedJson(req, res, { ...meta, html: renderMarkdown(body) });
+          return true;
+        }
+        sendRevalidatedJson(req, res, {
+          articles: await listArticles(),
+          glossary: GLOSSARY,
+        });
         return true;
       }
 

@@ -15,7 +15,14 @@
   --bg: #0e1116;
   --text: #f2f5fa;
   --surface: #171b22;
-  --primary: #4c8dff;
+  /* Purple by default: outside QvaPay no theme is injected, and the artwork is
+   * violet, so the interface agrees with the drawings. Inside the app,
+   * applyTheme() overwrites this with the host colour. */
+  --primary: #8b5cf6;
+
+  /* Discs behind the drawings: white on the dark palette, light grey when the
+   * host switches to its light theme. */
+  --disc-bg: #ffffff;
 
   --radius-card: 18px;
   --radius-panel: 14px;
@@ -321,6 +328,8 @@ html.in-qvapay .own-header { display: none; }
 }
 
 /* Light themes need dark text on a bright accent. */
+body[data-theme-mode="light"] { --disc-bg: #e6e9ef; }
+
 body[data-theme-mode="light"] .drawtabs__tab[aria-selected="true"] { color: #0b0e13; }
 
 /* ---------- Panels ------------------------------------------------------ */
@@ -352,7 +361,7 @@ body[data-theme-mode="light"] .drawtabs__tab[aria-selected="true"] { color: #0b0
 }
 
 .fijo__digit {
-  font-size: 64px;
+  font-size: 76px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.035em;
@@ -393,14 +402,16 @@ body[data-theme-mode="light"] .drawtabs__tab[aria-selected="true"] { color: #0b0
 .number2--lead { color: var(--primary); }
 .number2--rest { color: var(--text); }
 
-/* Parlé: three columns, two numbers stacked. */
+/* Parlé: three columns, two numbers stacked. Flex, not a 4-column grid: with a
+ * fixed column count the cards stopped at three quarters of the width. */
 .parles {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   gap: var(--s2);
 }
 
 .parle {
+  flex: 1 1 0;
+  min-width: 0;
   display: grid;
   justify-items: center;
   align-content: center;
@@ -1035,7 +1046,8 @@ body[data-theme-mode="light"] .cal__day.is-selected { color: #0b0e13; }
 
 .ananum__input {
   grid-area: 1 / 1;
-  width: 2.2ch;
+  /* Three characters have to fit: the table runs up to 100. */
+  width: 3.2ch;
   appearance: none;
   border: 0;
   background: transparent;
@@ -1094,8 +1106,10 @@ body[data-theme-mode="light"] .cal__day.is-selected { color: #0b0e13; }
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(var(--tabbar-h) + var(--s2) + env(safe-area-inset-bottom));
-  z-index: 15;
+  /* Above the tab bar: the real height when it has been measured, the constant
+   * before that. z-index keeps it painted over the bar. */
+  bottom: calc(var(--tabbar-real, var(--tabbar-h)) + var(--s3));
+  z-index: 21;
   padding: var(--s3) var(--s4);
   background: color-mix(in srgb, var(--bg) 88%, var(--text));
   border-top: 1px solid var(--hairline);
@@ -1127,6 +1141,10 @@ body[data-theme-mode="light"] .actionbar__btn { color: #0b0e13; }
 
 /* The action bar only exists on the analyser screen. */
 body:not(.is-analyser) .actionbar { display: none; }
+
+/* Inside QvaPay the primary action belongs to the native main button; two
+ * stacked bars would be exactly the duplication the SDK docs warn about. */
+html.in-qvapay .actionbar { display: none; }
 
 /* Compact result header */
 .anahead {
@@ -1228,7 +1246,8 @@ body:not(.is-analyser) .actionbar { display: none; }
   height: 100%;
   border-radius: var(--radius-pill);
   background: var(--accent-strong);
-  transition: width 320ms var(--ease);
+  /* The row starts at zero and grows once it is on screen. */
+  transition: width 620ms var(--ease);
 }
 
 .bar__value {
@@ -1375,6 +1394,38 @@ body:not(.is-analyser) .actionbar { display: none; }
 
 .toolcard:active { transform: scale(0.995); border-color: var(--accent-hair); }
 
+/* Tools that are not ready yet: the icon loses its colour so the card reads as
+ * unavailable at a glance, without a tag repeating itself five times. */
+.toolcard--soon .toolicon {
+  opacity: 0.38;
+  filter: grayscale(1);
+}
+
+.toolcard--soon .toolcard__title { color: var(--text-2); }
+
+/* Divider between what works and what is coming. */
+.toolgrid__divider {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  margin: var(--s4) 0 var(--s2);
+}
+
+.toolgrid__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--hairline);
+}
+
+.toolgrid__label {
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
 .toolicon {
   display: grid;
   place-items: center;
@@ -1418,7 +1469,12 @@ body:not(.is-analyser) .actionbar { display: none; }
 
 /* ---------- Message sheet ------------------------------------------------ */
 
-.sheet--msg { padding-top: var(--s2); }
+.sheet--msg {
+  padding-top: var(--s2);
+  /* The last button sits close to the bottom edge on real devices: the sheet
+   * padding alone is not enough once the gesture bar is present. */
+  padding-bottom: calc(var(--s6) + env(safe-area-inset-bottom));
+}
 
 .sheetmsg__title {
   margin: var(--s1) 0 var(--s2);
@@ -1434,7 +1490,12 @@ body:not(.is-analyser) .actionbar { display: none; }
   color: var(--text-2);
 }
 
-.sheetmsg__actions { display: grid; gap: var(--s2); }
+.sheetmsg__actions {
+  display: grid;
+  gap: var(--s2);
+  /* A little breathing room under the last action. */
+  padding-bottom: var(--s2);
+}
 
 .sheetmsg__cancel {
   appearance: none;
@@ -1540,7 +1601,9 @@ body:not(.is-analyser) .actionbar { display: none; }
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: #2d2643;
+  /* The logo has a transparent background now, so the circle shows the theme
+   * through it instead of a hard-coded navy plate. */
+  background: color-mix(in srgb, var(--primary) 10%, var(--bg));
   box-shadow: 0 6px 22px -8px color-mix(in srgb, var(--primary) 60%, transparent);
   animation: splash-breathe 2200ms ease-in-out infinite;
 }
@@ -1550,8 +1613,8 @@ body:not(.is-analyser) .actionbar { display: none; }
   height: 100%;
   object-fit: cover;
   display: block;
-  /* The artwork is 1254px with margin; zoom slightly so the balls fill the circle. */
-  transform: scale(1.28);
+  /* The artwork is already cropped tight, so no extra zoom is needed. */
+  transform: scale(1);
 }
 
 @keyframes splash-breathe {
@@ -1564,3 +1627,778 @@ body:not(.is-analyser) .actionbar { display: none; }
   .splash__logo { animation: none; }
   .splash { transition-duration: 1ms; }
 }
+
+
+/* ---------- Profile header (linked account) ------------------------------ */
+
+.profile {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  margin-bottom: var(--s4);
+  background: var(--card-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+}
+
+.profile__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-hair);
+}
+
+.profile__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile__initial {
+  font-size: 20px;
+  font-weight: 750;
+  color: var(--primary);
+}
+
+.profile__who { display: grid; gap: 1px; min-width: 0; }
+
+.profile__name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile__handle {
+  font-size: 12.5px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* ---------- Significados: lista de fichas --------------------------------- */
+
+.signlist { display: grid; gap: 1px; }
+
+/* One tappable row per number: chip, artwork, name and what is inside. */
+.signrow {
+  display: grid;
+  grid-template-columns: 40px 44px 1fr auto;
+  align-items: center;
+  gap: var(--s3);
+  width: 100%;
+  padding: 10px var(--s1);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.signrow:last-child { border-bottom: 0; }
+.signrow:active { background: var(--card-bg); }
+
+/* The number reads as a chip, not as a column of text. */
+.signrow__num {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  min-height: 40px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--accent-soft);
+  font-size: 14px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+}
+
+.signrow__thumb { display: block; width: 44px; height: 44px; object-fit: contain; }
+
+/* No artwork for the principal symbol: the slot stays, the box does not. A
+ * dashed rectangle reads as a broken image, and there is nothing broken. */
+.signrow__thumb--empty { }
+
+.signrow__text { display: grid; gap: 3px; min-width: 0; }
+
+.signrow__title {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  color: var(--text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signrow__meta { font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+
+.signrow__chev { font-size: 18px; color: var(--text-3); }
+
+/* ---------- Significados: ficha ------------------------------------------- */
+
+/* Hero of a ficha: a purple band, the drawing on a white disc, the number on a
+ * badge that hangs off the disc, and the symbol's name underneath. */
+.fichahero {
+  display: grid;
+  justify-items: center;
+  gap: var(--s3);
+  margin-bottom: var(--s4);
+  padding: var(--s5) var(--s4) var(--s4);
+  border-radius: var(--radius-card);
+  background: linear-gradient(160deg, #6d28d9, #4c1d95);
+  text-align: center;
+}
+
+.fichahero__disc {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background: var(--disc-bg);
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.6);
+}
+
+.fichahero__icon { display: block; width: 96px; height: 96px; object-fit: contain; }
+
+.fichahero__initial {
+  font-size: 46px;
+  font-weight: 800;
+  line-height: 1;
+  color: #6d28d9;
+}
+
+/* The number hangs off the disc: it belongs to the entry, not to the drawing. */
+.fichahero__badge {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  display: grid;
+  place-items: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: #ffffff;
+  border: 2px solid #4c1d95;
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #4c1d95;
+}
+
+.fichahero__name {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 780;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  text-wrap: balance;
+}
+
+.fichameta { margin: 0 0 var(--s3); font-size: 12px; color: var(--text-3); }
+
+.ficha__contexto {
+  margin: 0 0 var(--s4);
+  padding-left: var(--s3);
+  border-left: 2px solid var(--accent-hair);
+  font-size: 14px;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.fichalinks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2);
+  margin-bottom: var(--s4);
+}
+
+.fichalinks__label {
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-pill);
+  background: var(--card-bg);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--text-2);
+}
+
+.chip--link { color: var(--primary); border-color: var(--accent-hair); cursor: pointer; }
+
+.fichalist { display: grid; gap: var(--s2); margin-bottom: var(--s4); }
+
+.fichaitem {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  align-items: start;
+  gap: var(--s3);
+  padding: var(--s3);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-panel);
+  background: var(--card-bg);
+}
+
+.fichaitem__icon { display: block; width: 48px; height: 48px; object-fit: contain; }
+
+/* Same in the ficha: the column keeps the text aligned, nothing else. */
+.fichaitem__icon--empty { }
+
+.fichaitem__body { display: grid; gap: 3px; min-width: 0; }
+
+.fichaitem__title {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  color: var(--text);
+}
+
+.fichaitem__badge {
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.fichaitem__desc { font-size: 13px; line-height: 1.45; color: var(--text-3); }
+
+/* ---------- Search field (glossary + significados) ----------------------- */
+
+.glossary__search {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--hairline);
+  background: var(--card-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  padding: 11px var(--s3);
+  border-radius: var(--radius-panel);
+  margin-bottom: var(--s3);
+}
+
+.glossary__search::placeholder { color: var(--text-3); }
+.glossary__search:focus {
+  outline: none;
+  border-color: var(--accent-hair);
+  background: var(--card-bg-raised);
+}
+
+
+/* On the significados list the field stays hidden until the header action asks
+ * for it, so a hidden attribute must win over the flex layout. */
+.glossary__search[hidden] { display: none; }
+
+/* Round action under the number: it appears with the first digit. */
+.analysecircle {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-top: var(--s5);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #ffffff;
+  cursor: pointer;
+  transition: transform 140ms var(--ease), opacity 160ms var(--ease);
+  box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--primary) 85%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.18);
+}
+
+.analysecircle svg { width: 25px; height: 25px; }
+.analysecircle:active { transform: scale(0.95); }
+.analysecircle[disabled] { opacity: 0.42; cursor: default; }
+
+/* The author display rule would otherwise beat the hidden attribute. */
+.analysecircle[hidden] { display: none; }
+
+/* Symbol of the number being typed, above the action. */
+.analyser__symbol {
+  display: block;
+  width: 132px;
+  height: 132px;
+  margin: var(--s4) auto 0;
+  object-fit: contain;
+}
+
+.analyser__symbol[hidden] { display: none; }
+
+/* ---------- Flip card of the cargador ------------------------------------- */
+/* The whole card turns over: the number on one face, the artwork on the other. */
+.flipcard {
+  perspective: 1200px;
+  margin-bottom: var(--s3);
+}
+
+.flipcard__inner {
+  position: relative;
+  display: grid;
+  min-height: 218px;
+  transition: transform 560ms var(--ease);
+  transform-style: preserve-3d;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.flipcard.is-open .flipcard__inner { transform: rotateY(180deg); }
+
+.flipcard__face {
+  grid-area: 1 / 1;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--s2);
+  padding: var(--s4);
+  /* The cargador card is the one coloured surface: primary background, and text
+   * pinned to white so it stays legible whatever theme the host injects. */
+  background: var(--primary);
+  border: 1px solid color-mix(in srgb, var(--primary) 70%, #000);
+  border-radius: var(--radius-card);
+  color: #ffffff;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flipcard .panel__title { color: rgb(255 255 255 / 0.72); }
+
+/* Inside the coloured card the digits are light, and the leading one takes a warm
+ * accent: white on violet separated by opacity alone read as one number. */
+.flipcard .fijo__digit--lead { color: #9da7e9; }
+.flipcard .fijo__digit--rest { color: #ffffff; }
+.flipcard .fijo__meaning { color: rgb(255 255 255 / 0.82); }
+.flipcard .flipcard__caption { color: rgb(255 255 255 / 0.82); }
+.flipcard .symbolstrip__name { color: rgb(255 255 255 / 0.78); }
+.flipcard .state { color: rgb(255 255 255 / 0.82); }
+
+.flipcard__face--back {
+  transform: rotateY(180deg);
+  justify-items: stretch;
+  align-content: start;
+  gap: var(--s3);
+}
+
+/* Stretch, not centre: the strip must be bounded by the card so it scrolls
+ * inside instead of growing past the edge. */
+/* Clipped here, not on the face: the strip scrolls inside and never spills out
+ * of the card, while the 3D rotation keeps its own context. */
+.flipcard__art {
+  display: grid;
+  justify-items: stretch;
+  gap: var(--s2);
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* The principal drawing on a white disc. */
+.flipcard__disc {
+  display: grid;
+  place-items: center;
+  width: 132px;
+  height: 132px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: var(--disc-bg);
+  box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.65);
+}
+
+.flipcard__hero { display: block; width: 96px; height: 96px; object-fit: contain; }
+
+.flipcard__caption { font-size: 12px; color: var(--text-3); text-align: center; }
+
+/* Inside the card the strip keeps its own scroll but not the full-bleed margins. */
+/* Inside the card the strip must stay within the padding and never snap: the
+ * base .symbolstrip declares full-bleed margins and snapping for the analysis
+ * screen, and a single class was not enough to override them by source order. */
+.symbolstrip.symbolstrip--inline {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  scroll-snap-type: none;
+  /* No manual dragging here: the marquee drives it, and the finger keeps moving
+   * the page vertically. */
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+/* ---------- Analysis: the number's meanings as a swipeable strip ----------- */
+/* No visible scrollbar: it moves with the finger and nothing else shows it. */
+.symbolstrip {
+  display: flex;
+  gap: var(--s2);
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0 var(--s4) var(--s2);
+  margin: 0 calc(-1 * var(--s4)) var(--s3);
+}
+
+.symbolstrip::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+.symbolstrip__item {
+  flex: 0 0 auto;
+  width: 86px;
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  scroll-snap-align: center;
+}
+
+/* Every drawing sits on a disc, same rule as the principal one. */
+.symbolstrip__disc,
+.symbolstrip__initial {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--disc-bg);
+}
+
+.symbolstrip__icon { display: block; width: 46px; height: 46px; object-fit: contain; }
+
+.symbolstrip__initial { color: var(--primary); font-size: 24px; font-weight: 800; }
+
+.symbolstrip__name {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 10.5px;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--text-3);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* A panel whose numbers depend on a draw that has not been published yet. */
+.panel__pending {
+  margin: 0;
+  padding: var(--s4) 0 var(--s2);
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-3);
+  letter-spacing: -0.004em;
+}
+
+/* ---------- Cultura: índice de tiles -------------------------------------- */
+
+/* The line under the heading needs air before the first tile. */
+.culturehead { margin-bottom: var(--s5); }
+
+.culturegrid {
+  display: grid;
+  /* One column: the tiles carry a title and a teaser, and two per row on a phone
+   * squeezed both of them. */
+  grid-template-columns: 1fr;
+  gap: var(--s3);
+  margin-bottom: var(--s5);
+}
+
+.culturetile {
+  display: grid;
+  /* The column is bounded: with an `auto` column the image sized the track and
+   * the tile grew past its container, clipping the text away. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--card-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tap surfaces are not text to copy: a long press must not start a selection or
+ * the iOS callout. Boundaries first, text later. */
+.culturetile,
+.toolcard,
+.flipcard__inner,
+.chip,
+.tabbar,
+.dayrow {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.culturetile:active { border-color: var(--accent-hair); }
+
+/* Artwork slot. Until each article has its image, the order number holds it. */
+.culturetile__art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  /* Without clipping the image's own height wins over the aspect ratio and the
+   * band grows back to a square. */
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  border-bottom: 1px solid var(--hairline);
+  background:
+    radial-gradient(120% 100% at 20% 0%,
+      color-mix(in srgb, var(--primary) 20%, transparent), transparent 62%),
+    linear-gradient(150deg,
+      color-mix(in srgb, var(--primary) 7%, var(--bg)), var(--bg));
+}
+
+/* Positioned, not laid out: as a grid item the image took its own height and
+ * either grew the band or got clipped. */
+.culturetile__img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* A tile with artwork gets a taller band: a square drawing inside 16/10 left
+ * too much empty room at the sides. */
+.culturetile:has(.culturetile__img) .culturetile__art { aspect-ratio: 4 / 3; }
+
+.culturetile__mark {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--primary) 55%, var(--text-3));
+}
+
+.culturetile__body { display: grid; gap: 4px; padding: var(--s3); align-content: start; }
+
+.culturetile__kicker {
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.culturetile__title {
+  font-size: 14px;
+  font-weight: 720;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
+  color: var(--text);
+}
+
+.culturetile__pull {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.42;
+  color: var(--text-3);
+}
+
+.culturetile__meta {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+
+/* ---------- Cultura: lector ----------------------------------------------- */
+
+.backlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--s4);
+  padding: 6px 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--primary);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+/* Article illustration: the drawings are square, so they are bounded by height
+ * and centred instead of cropped. */
+.readerart {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  margin: 0 auto var(--s4);
+  object-fit: contain;
+}
+
+.readerhead { display: grid; gap: var(--s2); margin-bottom: var(--s5); }
+
+.readerhead__title {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 780;
+  line-height: 1.14;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  text-wrap: balance;
+}
+
+.readerhead__meta { font-size: 12px; color: var(--text-3); }
+
+.readerhead__pull {
+  margin: var(--s3) 0 0;
+  padding-left: var(--s3);
+  border-left: 2px solid var(--accent-hair);
+  font-size: 14.5px;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--text-2);
+  text-wrap: pretty;
+}
+
+/* Body prose. The renderer emits plain tags only, so the reading rhythm is set
+ * here and nowhere else. */
+.prose {
+  font-size: 16px;
+  line-height: 1.68;
+  letter-spacing: -0.003em;
+  color: var(--text);
+  text-wrap: pretty;
+}
+
+.prose > * { margin: 0; }
+.prose > * + * { margin-top: var(--s4); }
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  font-weight: 760;
+  line-height: 1.2;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.prose h1 { font-size: 23px; }
+.prose h2 { font-size: 19px; margin-top: var(--s6); }
+.prose h3 { font-size: 16px; margin-top: var(--s5); }
+.prose h4 { font-size: 15px; }
+.prose h2 + *, .prose h3 + *, .prose h4 + * { margin-top: var(--s2); }
+.prose strong { font-weight: 720; }
+.prose ul, .prose ol { padding-left: 1.1em; display: grid; gap: 6px; }
+.prose li { padding-left: 2px; }
+.prose blockquote {
+  padding: var(--s3) var(--s4);
+  border-left: 3px solid var(--accent-hair);
+  border-radius: 0 var(--radius-panel) var(--radius-panel) 0;
+  background: var(--card-bg);
+  font-style: italic;
+  color: color-mix(in srgb, var(--text) 80%, var(--bg));
+}
+.prose blockquote p { margin: 0; }
+.prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
+.prose code {
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+}
+.prose pre {
+  padding: var(--s3);
+  overflow-x: auto;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-panel);
+  background: var(--card-bg-raised);
+}
+.prose pre code { padding: 0; background: none; }
+.prose hr { border: 0; border-top: 1px solid var(--hairline); }
+.prose img, .prose figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-panel);
+}
+.prose figure { margin: 0; }
+
+.readernote {
+  margin: var(--s6) 0 0;
+  padding-top: var(--s4);
+  border-top: 1px solid var(--hairline);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+/* ---------- Glosario ------------------------------------------------------ */
+
+.glossary { margin-top: var(--s5); }
+
+.glossary__title {
+  margin-bottom: var(--s3);
+  font-size: 15px;
+  font-weight: 720;
+  letter-spacing: -0.012em;
+  color: var(--text);
+}
+
+.glossary__list { display: grid; }
+
+.glassrow {
+  display: grid;
+  gap: 2px;
+  padding: 10px var(--s1);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.glassrow:last-child { border-bottom: 0; }
+
+.glassrow__term {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.008em;
+  color: var(--text);
+}
+
+.glassrow__def { font-size: 13px; line-height: 1.45; color: var(--text-3); }

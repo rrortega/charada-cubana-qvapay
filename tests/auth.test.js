@@ -14,6 +14,7 @@ import {
   readSessionToken,
   parseCookies,
   sessionCookie,
+  clearSessionCookie,
   COOKIE_NAME,
 } from '../src/auth/session.js';
 
@@ -140,13 +141,33 @@ test('garbage never throws', () => {
   assert.equal(readSessionToken(null, SECRET), null);
 });
 
-test('the cookie is HttpOnly, SameSite and optionally Secure', () => {
+test('the cookie is HttpOnly, SameSite and Secure', () => {
   const c = sessionCookie('tok', { secure: true });
   assert.match(c, new RegExp(`^${COOKIE_NAME}=tok`));
   assert.match(c, /HttpOnly/);
-  assert.match(c, /SameSite=Lax/);
   assert.match(c, /Secure/);
   assert.match(c, /Path=\//);
+});
+
+test('a secure cookie uses SameSite=None so the QvaPay iframe keeps it', () => {
+  // The WebView is a cross-site iframe: SameSite=Lax is dropped there, which made
+  // the login look successful and be forgotten on the next view.
+  const c = sessionCookie('tok', { secure: true });
+  assert.match(c, /SameSite=None/);
+  assert.match(c, /Partitioned/, 'CHIPS keeps it scoped to the embedding site');
+});
+
+test('a local (non-secure) cookie falls back to Lax, which is valid over http', () => {
+  const c = sessionCookie('tok', { secure: false });
+  assert.match(c, /SameSite=Lax/);
+  assert.doesNotMatch(c, /Secure/);
+  assert.doesNotMatch(c, /Partitioned/);
+});
+
+test('clearing the cookie mirrors the same attributes', () => {
+  const c = clearSessionCookie({ secure: true });
+  assert.match(c, /SameSite=None/);
+  assert.match(c, /Max-Age=0/);
 });
 
 test('parseCookies reads a real header', () => {

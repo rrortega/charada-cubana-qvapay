@@ -212,3 +212,12 @@ test('a complete draw is flagged complete', () => {
   assert.equal(v.complete, true);
   assert.equal(v.corridos.length, 2);
 });
+
+test('a partial draw exposes empty derived fields so the UI can say "pending"', () => {
+  const v = toDrawView({ date: new Date(2026, 10, 4), drawType: 'MIDDAY', base3: [7, 2, 5], base4: null }, meanings);
+  // These are exactly the values the panels check to render a pending note.
+  assert.equal(v.complete, false);
+  assert.equal(v.corridos.length, 0);
+  assert.equal(v.parles.length, 0);
+  assert.equal(v.candado.formatted, '');
+});

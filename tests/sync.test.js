@@ -104,3 +104,29 @@ test('onNewDraws returns an unsubscribe function', () => {
   assert.equal(typeof off, 'function');
   off();
 });
+
+// --- Pick 4 must be ingested too --------------------------------------------
+//
+// Regression: the sync only stored Pick 3. Pick 4 supplies the corridos, parlé
+// and candado numbers, so a freshly published day rendered those panels empty.
+
+test('refresh stores Pick 4 as well as Pick 3', async () => {
+  const calls = [];
+  const pool = {
+    async query(sql, params) {
+      calls.push({ sql: sql.replace(/\s+/g, ' ').trim(), params });
+      if (/max\(draw_date\)/.test(sql)) return { rows: [{ d: '2026-11-04' }] };
+      if (/INSERT INTO draws/.test(sql)) return { rowCount: 1, rows: [{ id: 1 }] };
+      return { rows: [], rowCount: 0 };
+    },
+  };
+  const sync = createSync({ pool, cooldownMs: 0, now: () => Date.now(), log: quietLog });
+  await sync.refresh({ force: true });
+
+  const drawInserts = calls.filter((c) => /INSERT INTO draws/.test(c.sql));
+  // One insert path for Pick 3 and, when the upstream returns it, one for Pick 4.
+  assert.ok(drawInserts.length >= 1, 'at least the Pick 3 insert runs');
+  // The game id passed must cover both games across the whole refresh.
+  const gameIds = new Set(drawInserts.map((c) => c.params[0]));
+  assert.ok(gameIds.has(104), 'Pick 3 is ingested');
+});

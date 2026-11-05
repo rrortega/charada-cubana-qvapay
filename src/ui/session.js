@@ -1,64 +1,163 @@
 // Session state for the mini-app.
 //
 // The QvaPay WebView never shares its session: identity arrives as a signed
-// `init_data` blob that our server must verify with the app-secret. This module
-// only handles the browser side: ask the host for a login, hand the blob to our
-// server, and remember whether we are linked.
+// `init_data` blob that our server must verify with the app-secret.
 //
-// Nothing here trusts the client. The server sets an http-only cookie and is the
-// only authority on whether the user is authenticated.
+// Persistence has two layers, on purpose:
+//   1. an http-only cookie set by the server (the normal path), and
+//   2. a signed token kept in localStorage, sent as `Authorization: Bearer`.
+//
+// The second exists because the WebView is a cross-site iframe: browsers may
+// drop third-party cookies, which made the login look successful and then be
+// forgotten on the next view. The token is signed by the same secret, so it is
+// no less trustworthy than the cookie — and it is still verified server-side.
+//
+// Nothing in this module is trusted by the server: it only stores and presents
+// what the server issued.
 
 const SESSION_ENDPOINT = '/api/sesion';
 const LOGIN_ENDPOINT = '/api/login';
+const STORAGE_KEY = 'charada.sesion';
 
 /**
  * @typedef {object} Session
- * @property {boolean} linked   true when our server confirmed the init_data
- * @property {string|null} uuid the stable QvaPay user id, when linked
+ * @property {boolean} linked
+ * @property {string|null} uuid
  * @property {string|null} username
+ * @property {string|null} name
+ * @property {string|null} avatar
  */
 
-/** @type {Session} */
-let session = { linked: false, uuid: null, username: null };
+/** @type {Session & {token: string|null}} */
+let session = { linked: false, uuid: null, username: null, name: null, lastname: null, avatar: null, token: null };
+
+/** Storage helpers that never throw (private mode, disabled storage). */
+function readStorage(storage) {
+  try {
+    const raw = storage?.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed.token === 'string' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStorage(storage, value) {
+  try {
+    if (value) storage?.setItem(STORAGE_KEY, JSON.stringify(value));
+    else storage?.removeItem(STORAGE_KEY);
+  } catch {
+    /* storage unavailable: the cookie path still works */
+  }
+}
 
 /** Current cached session. Never proof of anything; the server re-checks. */
 export function getSession() {
-  return { ...session };
+  const { token, ...rest } = session;
+  return { ...rest };
+}
+
+/** True when we believe we are linked (cookie or stored token). */
+export function isLinked() {
+  return session.linked;
+}
+
+/** Auth headers for API calls, adding the bearer token when we have one. */
+export function authHeaders(extra = {}) {
+  const headers = { ...extra };
+  if (session.token) headers.authorization = `Bearer ${session.token}`;
+  return headers;
 }
 
 /**
- * Ask the server whether this browser already has a valid session.
- * Safe to call on boot: a failure means "not linked", never an error page.
+ * Restore any persisted token into memory. Call once at boot.
  */
-export async function loadSession({ fetchImpl = globalThis.fetch } = {}) {
+export function restoreSession({ storage = globalThis.localStorage } = {}) {
+  const stored = readStorage(storage);
+  if (stored) {
+    session = {
+      linked: true,
+      uuid: stored.uuid ?? null,
+      username: stored.username ?? null,
+      name: stored.name ?? null,
+      lastname: stored.lastname ?? null,
+      avatar: stored.avatar ?? null,
+      token: stored.token,
+    };
+  }
+  return getSession();
+}
+
+/**
+ * Ask the server whether this browser has a valid session.
+ *
+ * Sends the bearer token when present so it works with or without cookies.
+ * A failure means "not linked", never an error page.
+ */
+export async function loadSession({ fetchImpl = globalThis.fetch, storage = globalThis.localStorage } = {}) {
   try {
-    const res = await fetchImpl(SESSION_ENDPOINT, { headers: { accept: 'application/json' } });
+    const res = await fetchImpl(SESSION_ENDPOINT, {
+      headers: authHeaders({ accept: 'application/json' }),
+      credentials: 'include',
+    });
     if (!res.ok) {
-      session = { linked: false, uuid: null, username: null };
+      clearSession({ storage });
       return getSession();
     }
     const data = await res.json();
+    if (!data.linked) {
+      clearSession({ storage });
+      return getSession();
+    }
     session = {
-      linked: Boolean(data.linked),
+      linked: true,
       uuid: data.uuid ?? null,
       username: data.username ?? null,
+      name: data.name ?? session.name ?? null,
+      lastname: data.lastname ?? session.lastname ?? null,
+      avatar: data.avatar ?? session.avatar ?? null,
+      token: session.token,
     };
+    persist(storage);
   } catch {
-    session = { linked: false, uuid: null, username: null };
+    // Offline or blocked: keep whatever we restored from storage.
   }
   return getSession();
+}
+
+function persist(storage) {
+  if (!session.token) return;
+  writeStorage(storage, {
+    token: session.token,
+    uuid: session.uuid,
+    username: session.username,
+    name: session.name,
+    lastname: session.lastname,
+    avatar: session.avatar,
+  });
+}
+
+/** Drop the session locally and on the server. */
+export async function clearSession({ fetchImpl = globalThis.fetch, storage = globalThis.localStorage } = {}) {
+  session = { linked: false, uuid: null, username: null, name: null, lastname: null, avatar: null, token: null };
+  writeStorage(storage, null);
+  try {
+    await fetchImpl('/api/logout', { method: 'POST', credentials: 'include' });
+  } catch {
+    /* best effort */
+  }
 }
 
 /**
  * Run the login handshake.
  *
  * `requestLogin` shows the consent sheet; the host returns a signed `init_data`
- * string that is sent to our server verbatim (it must not be modified, or the
- * signature breaks).
+ * that is sent to our server verbatim (modifying it breaks the signature).
  *
  * @returns {Promise<{ok: boolean, code?: string, message?: string, session?: Session}>}
  */
-export async function linkAccount(sdk, { scopes = ['profile'], fetchImpl = globalThis.fetch } = {}) {
+export async function linkAccount(sdk, { scopes = ['profile'], fetchImpl = globalThis.fetch, storage = globalThis.localStorage } = {}) {
   if (!sdk?.auth?.requestLogin) {
     return { ok: false, code: 'NO_SDK', message: 'Abre la app de QvaPay para vincular tu cuenta.' };
   }
@@ -68,27 +167,33 @@ export async function linkAccount(sdk, { scopes = ['profile'], fetchImpl = globa
     const result = await sdk.auth.requestLogin({ scopes });
     initData = result?.init_data;
   } catch (err) {
-    // USER_CANCELLED is not an error; the sheet was dismissed.
     return { ok: false, code: err?.code ?? 'FAILED', message: err?.message ?? '' };
   }
 
-  if (!initData) {
-    return { ok: false, code: 'FAILED', message: 'No se recibió la identidad.' };
-  }
+  if (!initData) return { ok: false, code: 'FAILED', message: 'No se recibió la identidad.' };
 
   try {
     const res = await fetchImpl(LOGIN_ENDPOINT, {
       method: 'POST',
       headers: { 'content-type': 'text/plain', accept: 'application/json' },
       body: initData,
-      credentials: 'same-origin',
+      credentials: 'include',
     });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       return { ok: false, code: body.error ?? 'LOGIN_REJECTED', message: '' };
     }
     const data = await res.json();
-    session = { linked: true, uuid: data.uuid ?? null, username: data.username ?? null };
+    session = {
+      linked: true,
+      uuid: data.uuid ?? null,
+      username: data.username ?? null,
+      name: data.name ?? null,
+      lastname: data.lastname ?? null,
+      avatar: data.avatar ?? null,
+      token: data.token ?? null,
+    };
+    persist(storage);
     return { ok: true, session: getSession() };
   } catch {
     return { ok: false, code: 'NETWORK', message: '' };
@@ -96,6 +201,7 @@ export async function linkAccount(sdk, { scopes = ['profile'], fetchImpl = globa
 }
 
 /** Test helper: reset the cached session. */
-export function __setSessionForTests(next) {
-  session = { linked: false, uuid: null, username: null, ...next };
+export function __setSessionForTests(next, { storage = globalThis.localStorage } = {}) {
+  session = { linked: false, uuid: null, username: null, name: null, lastname: null, avatar: null, token: null, ...next };
+  writeStorage(storage, null);
 }

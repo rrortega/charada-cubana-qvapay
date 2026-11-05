@@ -56,6 +56,25 @@ export function createSync({ pool, cooldownMs = DEFAULT_COOLDOWN_MS, now = () =>
     return newest;
   }
 
+  /**
+   * Persist a normalised Pick 4 draw.
+   *
+   * Pick 4 carries no cargador of its own: it supplies the corridos, parlé and
+   * candado numbers that the read path joins in by (date, draw_type). Without
+   * it those panels have nothing to show, which is why a fresh day used to
+   * render empty.
+   */
+  async function storePick4(draw) {
+    const res = await pool.query(
+      `INSERT INTO draws (game_id, draw_date, draw_type, base_digits, fireball, total_winners, total_payouts, raw_payload)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       ON CONFLICT (game_id, draw_date, draw_type) DO NOTHING`,
+      [GAME_IDS.pick4, draw.drawDate, draw.drawType, draw.baseDigits, draw.fireball,
+        draw.totalWinners, draw.totalPayouts, JSON.stringify(draw.rawPayload)],
+    );
+    return res.rowCount > 0;
+  }
+
   /** Persist a normalised draw and its cargador. Returns true when inserted. */
   async function store(draw) {
     const ins = await pool.query(
@@ -104,12 +123,19 @@ export function createSync({ pool, cooldownMs = DEFAULT_COOLDOWN_MS, now = () =>
     inFlight = (async () => {
       try {
         const raw = await fetchLatestDraws();
-        const batch = normaliseBatch(raw, { expectedGameId: GAME_IDS.pick3, winningDigits: 3 });
+        const pick3 = normaliseBatch(raw, { expectedGameId: GAME_IDS.pick3, winningDigits: 3 });
+        const pick4 = normaliseBatch(raw, { expectedGameId: GAME_IDS.pick4, winningDigits: 4 });
 
         const fresh = [];
-        for (const draw of batch) {
+        for (const draw of pick3) {
           // eslint-disable-next-line no-await-in-loop
           if (await store(draw)) fresh.push(draw);
+        }
+        // Pick 4 completes the cargador: ingest it too, or corridos/parlé/candado
+        // stay empty for every newly published draw.
+        for (const draw of pick4) {
+          // eslint-disable-next-line no-await-in-loop
+          if (await storePick4(draw)) fresh.push(draw);
         }
 
         lastRunAt = now();
@@ -141,13 +167,19 @@ export function createSync({ pool, cooldownMs = DEFAULT_COOLDOWN_MS, now = () =>
     const end = new Date();
     const start = new Date(end.getTime() - days * 86_400_000);
     const raw = await fetchDrawHistory(GAME_IDS.pick3, start, end);
-    const batch = normaliseBatch(raw, { expectedGameId: GAME_IDS.pick3, winningDigits: 3 });
+    const p3 = normaliseBatch(raw, { expectedGameId: GAME_IDS.pick3, winningDigits: 3 });
+    const p4 = normaliseBatch(raw, { expectedGameId: GAME_IDS.pick4, winningDigits: 4 });
+
     let inserted = 0;
-    for (const draw of batch) {
+    for (const draw of p3) {
       // eslint-disable-next-line no-await-in-loop
       if (await store(draw)) inserted += 1;
     }
-    return { total: batch.length, inserted };
+    for (const draw of p4) {
+      // eslint-disable-next-line no-await-in-loop
+      if (await storePick4(draw)) inserted += 1;
+    }
+    return { total: p3.length + p4.length, inserted };
   }
 
   return { refresh, onNewDraws, newestStoredDate, backfill };

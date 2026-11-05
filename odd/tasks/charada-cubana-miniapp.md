@@ -17,18 +17,61 @@ Entregable de esta fase: **documentación y plan técnico** (sin código de prod
 - **S10.** La **adivinanza** es un dicharacho casi sin sentido, generado one-to-one con el cargador del día, que tiene alta probabilidad de generar combinaciones usando los significados de cada número. Se genera **una por día** y solo los usuarios de pago tienen acceso.
 - **S11.** Los datos se almacenan en **PostgreSQL**. Las credenciales del servidor de pruebas se configuran en un archivo `.env` (no versionado).
 
+- **S12.** Los artículos de «Historia y cultura» se guardan un Markdown por artículo y la app los carga y renderiza; el contenido deja de modelarse como datos estructurados en JS. Textual: «me imagino que cada articulo lo tenfamos como un makdwon y que lo ue hagamso sea cargarlos y renderiar el markdown. eso es lo mas optimo me parece».
+- **S13.** El índice de «Historia y cultura» es una presentación de artículos en tiles, uno por artículo, preparada para recibir después una imagen por artículo. Textual: «el indice arriba deberian de ser como presetnacion de articulos, luego le pondremos a cada uno su imagen pero por ahora unos tiles con cada articulo».
+- **S14.** La mini-app usa el SDK de QvaPay adaptado a cada pantalla: encabezado con subtítulo y acciones, botón atrás, botón principal, colores, hápticos, avisos, compartir y apertura de enlaces externos. Textual: «Hagamos uso de el SDK de qvapay que tiene para usar los botones y encabezado dinamico , usar boton de atras, buscador y demas cosas» y «hay qeu usar el sdk hacer uso de todo lo que nos ofrece adaptado a nuestra miniapp».
+- **S15.** La navegación interna pasa por el historial del navegador, de modo que el botón atrás nativo de QvaPay retroceda de verdad; el botón atrás propio se mantiene solo fuera del SDK.
+- **S16.** El arte de los significados es **por significado, no por número**: un número puede llevar varios, así que el mapeo semántico se deriva de la propia tabla (`Bruja, Gallina Prieta y Hormiga` son tres) y cada uno tiene su archivo `NNN-M.png`. Si falta el archivo, la lista se lee sin hueco reservado. Textual: «algunos numeros tienen hasta 4 significados por lo cual deberiamos de tener un png por significado y quiza sun mismo numero tenga mas de 1 png. hay que crear ese mapeo semantico con la imagen».
+
 ## Tasks
 
-Todas las tareas están **pendientes y sin empezar**. Esta entrega cierra en documentación: no se escribe código de producto.
+Todas las tareas se ejecutan ya sobre el repositorio real. El estado va debajo de la tabla.
 
 | ID | Tarea | Spec | Ruta | Commit |
 |----|-------|------|------|--------|
 | T1 | Cerrar alcance de producto y postura de cumplimiento | S2 | — | — |
-| T2 | Elegir y validar la fuente de datos oficial (ingesta) | S2, S4 | — | — |
+| T2 | Elegir y validar la fuente de datos oficial (ingesta) | S2, S4 | `src/ingest/floridaLottery.js` | — |
+| T3 | Diseñar el modelo de datos en PostgreSQL e histórico | S4, S11 | `migrations/0001_init.sql` | — |
+| T4 | Definir el contrato de cálculo del cargador | S1 | `docs/cargador-contract.md` | — |
+| T5 | Motor de estadísticas (descriptivo) | S5 | `src/domain/stats.js` | — |
+| T6 | Definir arquitectura de despliegue y secretos | S3, S8 | `docs/deploy.md` | — |
+| T7 | Integración con el SDK de QvaPay | S3, S6 | `src/sdk/qvapay.js` | — |
+| T8 | Login QvaPay, sesión y gate del menú Más | S6, S9 | `src/auth/`, `src/ui/session.js` | — |
+| T9 | Redactar la lista de publicación de QvaPay | S2 | — | — |
+| T10 | Diseñar el generador de la adivinanza diaria | S10 | — | — |
+| T11 | Diseñar la entrega por Telegram | S9 | — | — |
+| T12 | Viabilidad de push dentro de QvaPay | S9 | — | — |
+| T13 | Cuéntame tu sueño (audio/texto + interpretación) | S9 | — | — |
+| T14 | La adivinanza diaria | S10 | — | — |
+| T15 | Tengo una corazonada (feed + aciertos) | S9 | — | — |
+| T16 | Origen y cultura: lectura de los artículos | S2, S12, S13 | `src/content/` | — |
+| T17 | Artículos en Markdown con frontmatter, cargados desde disco | S12 | `src/content/cultura/*.md` | — |
+| T18 | Renderer de Markdown propio, escapado y con tests | S12 | `src/markdown/markdown.js` | — |
+| T19 | Índice de tiles y lector de artículos con tipografía propia | S13 | `public/app.js`, `public/styles.css` | — |
+| T20 | Integración del SDK por pantalla | S14, S15 | `src/sdk/qvapay.js`, `public/app.js` | — |
+| T21 | Verificación funcional en navegador y en el simulador | S14, S15 | `tests/`, Playwright | — |
 
-**Estado:** T2, T3 y T4 completadas con evidencia ejecutada. Fuente validada con datos reales (sección 2); esquema aplicado (sección 9); contrato fijado y cubierto por 37 tests en verde.
+**Estado.** Completadas con evidencia ejecutada: T2, T3, T4, T5, T6, T7, T16,
+T17, T18, T19, T20 y T21, más la parte de servidor de T8. Pendientes: T9–T15.
 
-**Archivos de la entrega:**
+**Corte de slices del trabajo acumulado.** El trabajo de las sesiones anteriores
+estaba sin commitear (793 líneas + archivos nuevos). Se entrega en la rama
+`feat/cultura-sdk` en unidades revisables:
+
+| Slice | Contenido | Commit |
+|-------|-----------|--------|
+| 1 | Logo recortado y hoja con área segura | `5c93200` |
+| 2 | Perfil de QvaPay y sesión tolerante a cookies bloqueadas (S6) | `b7bafbd` |
+| 3 | Ingesta de Pick 4 y sorteos incompletos (S4) | `519fe67` |
+| 4 | Tabla de 100 significados y lectura de cultura (base refactorizada) | `d0b17b2` |
+| 5 | Artículos en Markdown con frontmatter y loader (S12, T17) | `193faa6` |
+| 6 | Renderer de Markdown propio y escapado (S12, T18) | `9a36fa1` |
+| 7 | Índice en tiles y lector tipográfico (S13, T19) | `1b61904` |
+| 8 | Helpers de chrome del SDK (S14, T20) | `43af64d` |
+| 9 | Encabezado, acciones y botón atrás nativos por pantalla (S14, S15, T20) | `8d95a24` |
+| 10 | Chrome inmediato al toque y entradilla legible (T21) | `3975b2c` |
+
+**Entrega de la fase de documentación:**
 
 ```
 migrations/0001_init.sql        esquema (9 tablas)
@@ -38,22 +81,6 @@ docs/cargador-contract.md       contrato normativo del cargador
 tests/cargador.test.js          17 tests del contrato
 tests/ingest.test.js            20 tests de la ingesta
 ```
-
-No se hizo commit: el usuario no lo pidió.
-| T3 | Diseñar el modelo de datos en PostgreSQL e histórico | S4, S11 | `migrations/0001_init.sql` | — |
-| T4 | Definir el contrato de cálculo del cargador | S1 | `docs/cargador-contract.md` | — |
-| T5 | Motor de estadísticas (descriptivo) | S5 | `src/domain/stats.js` | — |
-| T6 | Definir arquitectura de despliegue y secretos | S3, S8 | — | — |
-| T7 | Integración con el SDK de QvaPay | S3, S6 | `src/sdk/qvapay.js` | — |
-| T8 | Login QvaPay, sesión y gate del menú Más | S6, S9 | `src/auth/`, `src/ui/session.js` | — |
-| T9 | Redactar la lista de publicación de QvaPay | S2 | — | — |
-| T13 | Cuéntame tu sueño (audio/texto + interpretación) | S9 | — | — |
-| T14 | La adivinanza diaria | S10 | — | — |
-| T15 | Tengo una corazonada (feed + aciertos) | S9 | — | — |
-| T16 | Origen y cultura (contenido) | S2 | — | — |
-| T10 | Diseñar el generador de la adivinanza diaria | S10 | — | — |
-| T11 | Diseñar la entrega por Telegram | S9 | — | — |
-| T12 | Viabilidad de push dentro de QvaPay | S9 | — | — |
 
 ## Plan técnico
 
@@ -349,6 +376,7 @@ Reglas: migraciones versionadas en `migrations/`, sin `psql` como dependencia de
 | Credencial sin TLS por internet público | Interceptación | Habilitar TLS y rotar la contraseña (9) |
 | Proyecciones presentadas como predicción | Engaño al usuario y revisión | Lenguaje descriptivo (6) |
 | Histórico incompleto al lanzar | Estadísticas sin base | Ingesta histórica antes del lanzamiento (T2) |
+| Iconos de los 100 significados desalineados y con significado equivocado | La lista miente | Rehacer las hojas en el orden de la tabla o retirar los iconos (L21) |
 
 ## Log
 
@@ -368,6 +396,26 @@ Reglas: migraciones versionadas en `migrations/`, sin `psql` como dependencia de
 - **L14.** "En Cuba, cuando se habla del cargador del día se dice el número de tres cifras tal cual (por ejemplo, 570) o se menciona por su nombre según la charada tradicional, pero sin desglosarlo cifra por cifra... se toman principalmente los dos últimos dígitos... (570) los dos últimos números son el 70 (Coco). Se diría 'el 5 con el Coco' o 'el 570'."
 - **L15.** T5 completada. Motor descriptivo en `src/domain/stats.js` con 21 tests. Histórico ampliado a 3.536 sorteos (2022-2026). Las tres posiciones resultan uniformes; patrones coinciden con la teoría; la repetición entre sorteos es inferior a la esperada por azar.
 - **L16.** T7 completada. SDK integrado y verificado en navegador real (Playwright): fuera de QvaPay y dentro de un iframe que implementa el protocolo del simulador. Dos defectos encontrados y corregidos (getTheme rechazado tumbaba la página; tema claro ilegible).
+- **L17.** «En historia y Cultura la presentacion es un desastre, me imagino que cada articulo lo tenfamos como un makdwon y que lo ue hagamso sea cargarlos y renderiar el markdown. eso es lo mas optimo me parece. y el indice arriba deberian de ser como presetnacion de articulos, luego le pondremos a cada uno su imagen pero por ahora unos tiles con cada articulo. Hagamos uso de el SDK de qvapay que tiene para usar los botones y encabezado dinamico , usar boton de atras, buscador y demas cosas. https://www.qvapay.com/docs/miniapps/sdk mira cuantas cosas hay para usar aqui. hay qeu usar el sdk hacer uso de todo lo que nos ofrece adaptado a nuestra miniapp». Specs S12–S15, tareas T17–T21.
+- **L18.** Decisiones de esta sesión: renderer de Markdown propio sin dependencias (no `marked`), y el trabajo pendiente se commitea en una rama nueva por unidad revisable antes de empezar. Estado del árbol al retomar: 793 líneas modificadas sin commitear, 171 tests en verde, base de datos al día con la migración `0004` aplicada.
+
+- **L19.** Rebanada de lectura de cultura entregada en `feat/cultura-sdk` en
+  diez commits: artículos Markdown con frontmatter (T17), renderer propio
+  escapado con 20 tests (T18), índice en tiles y lector tipográfico (T19),
+  helpers de chrome del SDK con 15 tests y su uso por pantalla con navegación
+  por historial (T20). Total del proyecto: 218 tests en verde.
+- **L20.** Verificación funcional (T21) contra el servidor real con Playwright y
+  un `window.QvaPay` inyectado: encabezado y botón principal por pantalla,
+  acción de búsqueda enfocando el campo, atrás nativo devolviendo del artículo al
+  índice, compartir, hápticos y colores; 0 errores de consola. Defectos
+  corregidos: el chrome se sincronizaba tras cargar los datos (barra con la
+  pantalla anterior) y la entradilla se leía como un párrafo más.
+
+- **L21.** Hallazgo de la verificación visual (fuera del alcance de esta rebanada): las hojas de sprites de los 100 significados no encajan con la tabla. Medido: cada PNG es 887×1774 con una rejilla de 10 columnas × 20 filas de celdas de ~88.7 px, mientras el código asume 10 × 5 de 177 px y escala la hoja a 460×230. Además, la fila 0 sí coincide con las entradas 1–10 (caballo, mariposa, niño, gato, monja, jicotea, caracol, muerto, elefante, pescado), pero desde la 11 los iconos no corresponden al significado de la tabla: el 11 es Gallo y el icono es un sol. Queda como decisión abierta rehacer las hojas en el orden documentado o dejar la lista sin iconos.
+- **L22.** Decisión del usuario: el arte va **por significado**, no por número, y se llena solo con lo que se pueda verificar; el resto se lee sin icono. El mapeo se deriva de la tabla sembrada (`splitMeanings`), no se duplica el texto: 100 números dan **151 significados** (39 con dos, 6 con tres). Contrato de archivo `NNN-M.png`; `/api/significados` devuelve una ranura por significado y anuncia el icono solo si el archivo existe. 13 tests nuevos.
+- **L23.** Defecto reportado por el usuario: «en la lista de significados sale un error entry.meanings is not iterable». Causa raíz: los endpoints de contenido se servían con `cache-control: public, max-age=3600`, así que el navegador seguía entregando el payload anterior (con `meaning`, `sheet`, `col`, `row`) durante una hora; el cliente nuevo no podía iterar `meanings`. Arreglo en la raíz, no en el cliente: `sendRevalidatedJson` con ETag débil y `cache-control: no-cache`, de modo que el navegador revalida siempre (304 sin cuerpo cuando no cambió) y un cambio de contrato nunca queda escondido. Aplicado a `/api/significados` y `/api/cultura`. 5 tests; verificado con curl: 200 + `no-cache` + ETag, y 304 con 0 bytes en la petición condicional.
+- **L24.** Revisión nativa del tramo de código (`e857c18..1a18884`, lineage `review-d05bd31e07e0296a`). El candidato completo no cabía: `lens_context_budget_exceeded` con 15 commits y 379 archivos, empujado por el commit de datos. Se revisó el rango de código en la rama temporal `review-code-slice`: tier high, tres lentes, 2.513 líneas. `risk` y `readability` sin hallazgos; `reliability` devolvió **R3-1 (crítico)**: `getJson` en `public/app.js` no enviaba `authHeaders`, así que el token de respaldo solo viajaba en `/api/sesion` y el trabajo de cookies particionadas era inefectivo en su propio escenario. Verificado en el código y corregido en `d8ec44f`, con test estructural del cableado (los tests de servidor no podían verlo). El cierre nativo quedó en `escalated` / `unknown_causality` (la ubicación era a nivel de archivo), con `native_stop_required`: por eso la corrección se hizo aquí y no por la ruta de corrección del proveedor.
+- **L25.** Decisión explícita: el código de significados vive en `848eca0`, el mismo commit que los datos (12.400 de sus 13.392 líneas son el JSON y los 369 PNG), y **no tiene revisión nativa**. Su evidencia es la suite (246 tests), la auditoría del arte y la verificación visual de lista y fichas. Revisarlo exigiría separar datos y código en commits distintos.
 
 ## Menú Más (T8 parcial)
 

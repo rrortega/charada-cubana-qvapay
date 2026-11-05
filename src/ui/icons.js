@@ -19,13 +19,21 @@ export const MOON_SVG = `<svg ${SVG_ATTRS} class="ico ico--moon">
   <path d="M20.5 14.36A8.6 8.6 0 0 1 9.64 3.5a8.6 8.6 0 1 0 10.86 10.86Z"/>
 </svg>`;
 
+/** Sparkle: the four-point star that marks the analysis action. */
+export const SPARKLE_SVG = `<svg ${SVG_ATTRS} class="ico ico--sparkle">
+  <path d="M11 3.2l1.8 4.9 4.9 1.8-4.9 1.8L11 16.6 9.2 11.7 4.3 9.9l4.9-1.8Z"/>
+  <path d="M17.8 15.4l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7Z"/>
+</svg>`;
+
+const ICONS = { sun: SUN_SVG, moon: MOON_SVG, sparkle: SPARKLE_SVG };
+
 /**
  * Build an icon element from one of the strings above.
- * @param {'sun'|'moon'} kind
+ * @param {'sun'|'moon'|'sparkle'} kind
  */
 export function iconElement(kind, doc = globalThis.document) {
   const span = doc.createElement('span');
   span.className = 'ico-wrap';
-  span.innerHTML = kind === 'sun' ? SUN_SVG : MOON_SVG;
+  span.innerHTML = ICONS[kind] ?? MOON_SVG;
   return span;
 }
