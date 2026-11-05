@@ -382,9 +382,18 @@ async function viewTiros() {
 }
 
 async function openDatePicker() {
+  // Two taps on the header action used to stack two sheets and throw. While one
+  // is open the action is hidden, and this guard covers the gap before the
+  // header is repainted.
+  if (calendarOpen) return;
+
   const range = await getJson('/api/rango').catch(() => null);
   if (!range?.to) return;
   const initial = /^\d{4}-\d{2}-\d{2}$/.test(currentDate ?? '') ? currentDate : range.to;
+
+  calendarOpen = true;
+  syncChrome('tiros');
+
   openCalendar({
     value: initial,
     min: range.from,
@@ -392,6 +401,10 @@ async function openDatePicker() {
     onSelect: (iso) => {
       currentDate = iso;
       navigate('tiros');
+    },
+    onClose: () => {
+      calendarOpen = false;
+      syncChrome('tiros');
     },
   });
 }
@@ -505,6 +518,9 @@ async function viewHistorial() {
 let analysisNumber = null;
 let analysisData = null;
 
+/** The table goes from 1 to 100: 0 is not an entry, 100 is the last one. */
+const inAnalysisRange = (n) => n !== null && n >= 1 && n <= 100;
+
 /** The element that animates between "input" and "result" states. */
 function buildNumberNode() {
   const wrap = el('div', 'ananum');
@@ -513,18 +529,18 @@ function buildNumberNode() {
   input.type = 'text';
   input.inputMode = 'numeric';
   input.autocomplete = 'off';
-  input.maxLength = 2;
-  input.placeholder = '00';
+  input.maxLength = 3;
+  input.placeholder = '0';
   input.setAttribute('aria-label', 'Número a analizar');
   if (analysisNumber !== null) input.value = String(analysisNumber);
 
   // Digits only: strip anything else as it is typed or pasted.
   input.addEventListener('input', () => {
-    const clean = input.value.replace(/\D/g, '').slice(0, 2);
+    const clean = input.value.replace(/\D/g, '').slice(0, 3);
     if (clean !== input.value) input.value = clean;
     analysisNumber = clean === '' ? null : Number(clean);
     const btn = document.getElementById('analyser-btn');
-    if (btn) btn.disabled = analysisNumber === null;
+    if (btn) btn.disabled = !inAnalysisRange(analysisNumber);
     // The native main button mirrors the same enablement.
     if (currentView === 'analisis') syncChrome('analisis');
   });
@@ -547,12 +563,12 @@ function renderAnalysisInput({ focus = true } = {}) {
   numberEls = numberEls ?? buildNumberNode();
   const { wrap, input, label } = numberEls;
 
-  label.textContent = analysisNumber === null ? '00' : String(analysisNumber).padStart(2, '0');
+  label.textContent = analysisNumber === null ? '0' : String(analysisNumber).padStart(2, '0');
   input.value = analysisNumber === null ? '' : String(analysisNumber);
 
   const frag = document.createDocumentFragment();
 
-  const hint = el('p', 'analyser__hint', 'Escribe un número del 0 al 99');
+  const hint = el('p', 'analyser__hint', 'Escribe un número del 1 al 100');
   const stage = el('div', 'analyser');
   stage.append(hint, wrap);
   frag.append(stage);
@@ -561,7 +577,7 @@ function renderAnalysisInput({ focus = true } = {}) {
   const bar = el('div', 'actionbar');
   const btn = el('button', 'actionbar__btn ripple ripple--on-accent', 'Analizar');
   btn.id = 'analyser-btn';
-  btn.disabled = analysisNumber === null;
+  btn.disabled = !inAnalysisRange(analysisNumber);
   btn.addEventListener('click', runAnalysis);
   bar.append(btn);
   frag.append(bar);
@@ -577,7 +593,7 @@ function doc_body_class_toggle(name, on) {
 }
 
 async function runAnalysis() {
-  if (analysisNumber === null) return;
+  if (!inAnalysisRange(analysisNumber)) return;
 
   // Phase 1: shrink the number into place and show a skeleton for the rest.
   // The number node is moved, not recreated, so the transition is continuous.
@@ -843,24 +859,40 @@ async function viewMas() {
     frag.append(head);
   }
 
+  const ready = MORE_TOOLS.filter((tool) => tool.status === 'ready');
+  const soon = MORE_TOOLS.filter((tool) => tool.status !== 'ready');
+
   const grid = el('div', 'toolgrid');
-  for (const tool of MORE_TOOLS) {
-    const card = el('button', 'toolcard ripple');
-    card.type = 'button';
-    card.append(toolIcon(tool.icon));
-
-    const body = el('span', 'toolcard__body');
-    body.append(el('span', 'toolcard__title', tool.title));
-    body.append(el('span', 'toolcard__blurb', tool.blurb));
-    card.append(body);
-
-    if (tool.status === 'soon') card.append(el('span', 'toolcard__tag', 'Próximamente'));
-
-    card.addEventListener('click', () => openTool(tool));
-    grid.append(card);
-  }
+  for (const tool of ready) grid.append(toolCard(tool));
   frag.append(grid);
+
+  if (soon.length > 0) {
+    // One divider carries the word; repeating the tag inside every card said the
+    // same thing three times and stole room from the title.
+    const divider = el('div', 'toolgrid__divider');
+    divider.append(el('span', 'toolgrid__label', 'Próximamente'));
+    frag.append(divider);
+
+    const pending = el('div', 'toolgrid');
+    for (const tool of soon) pending.append(toolCard(tool));
+    frag.append(pending);
+  }
   view.replaceChildren(frag);
+}
+
+/** One tool card. A tool that is not ready keeps its content and loses colour. */
+function toolCard(tool) {
+  const card = el('button', `toolcard ripple${tool.status === 'ready' ? '' : ' toolcard--soon'}`);
+  card.type = 'button';
+  card.append(toolIcon(tool.icon));
+
+  const body = el('span', 'toolcard__body');
+  body.append(el('span', 'toolcard__title', tool.title));
+  body.append(el('span', 'toolcard__blurb', tool.blurb));
+  card.append(body);
+
+  card.addEventListener('click', () => openTool(tool));
+  return card;
 }
 
 /**
@@ -1150,6 +1182,8 @@ function renderCharadaList(data) {
   search.id = 'significados-search';
   search.placeholder = 'Buscar número o símbolo…';
   search.setAttribute('aria-label', 'Buscar en los significados');
+  // Hidden until the native header's search action asks for it.
+  search.setAttribute('hidden', '');
   head.append(search);
   frag.append(head);
 
@@ -1219,22 +1253,25 @@ async function openFicha(number, { push = true } = {}) {
 function renderFicha(ficha) {
   const frag = document.createDocumentFragment();
 
-  const back = el('button', 'backlink ripple', '‹ Significados');
-  back.type = 'button';
-  back.addEventListener('click', closeFicha);
-  frag.append(back);
+  // Hero: the symbol on a white disc over a purple band, the number on a badge
+  // that hangs off the disc, and the name underneath. Nothing here goes back:
+  // the QvaPay header already carries the native back button.
+  const head = el('header', 'fichahero');
 
-  const head = el('header', 'fichahead');
+  const disc = el('div', 'fichahero__disc');
   if (ficha.icon) {
-    const img = el('img', 'fichahead__icon');
+    const img = el('img', 'fichahero__icon');
     img.src = ficha.icon;
     img.alt = '';
-    head.append(img);
+    disc.append(img);
+  } else {
+    // No drawing for the symbol: its initial, never a borrowed image.
+    disc.append(el('span', 'fichahero__initial', (ficha.principal || '?').charAt(0).toUpperCase()));
   }
-  const titles = el('div', 'fichahead__titles');
-  titles.append(el('span', 'fichahead__num', String(ficha.number)));
-  titles.append(el('h2', 'fichahead__title', ficha.principal));
-  head.append(titles);
+  disc.append(el('span', 'fichahero__badge', String(ficha.number)));
+
+  head.append(disc);
+  head.append(el('h2', 'fichahero__name', ficha.principal));
   frag.append(head);
 
   const conArte = ficha.significados.filter((s) => s.icon).length;
@@ -1302,17 +1339,8 @@ function renderFicha(ficha) {
   view.scrollTop = 0;
 }
 
-function closeFicha() {
-  // The ficha is its own history entry, so this link and the native back button
-  // do exactly the same thing.
-  if (history.state?.numero) {
-    history.back();
-    return;
-  }
-  if (charadaIndex) renderCharadaList(charadaIndex);
-  else viewSignificados();
-  syncChrome('significados');
-}
+// No back control here: the QvaPay header carries the native one, and a browser
+// has its own. Navigation already pushes history, so both return to the list.
 
 // ---------- Router ----------
 
@@ -1344,6 +1372,7 @@ function initialView() {
 let sdkRef = null;
 let currentView = 'tiros';
 let chromeSent = null;
+let calendarOpen = false;
 
 /** Brand colours for the host surfaces, matching :root in the stylesheet. */
 const BRAND = { header: '#0e1116', background: '#0e1116' };
@@ -1358,13 +1387,18 @@ const ACTION = {
 function chromeFor(name, context = {}) {
   switch (name) {
     case 'tiros':
-      return { subtitle: 'El cargador de hoy', actions: [ACTION.calendar, ACTION.share] };
+      return {
+        subtitle: 'El cargador de hoy',
+        // The calendar action disappears while its sheet is open: a second tap
+        // would open a second sheet on top of the first.
+        actions: calendarOpen ? [ACTION.share] : [ACTION.calendar, ACTION.share],
+      };
     case 'historial':
       return { subtitle: 'Historial', actions: [ACTION.calendar] };
     case 'analisis':
       return {
         subtitle: 'Análisis',
-        main: analysisData ? null : { text: 'Analizar', enabled: analysisNumber !== null },
+        main: analysisData ? null : { text: 'Analizar', enabled: inAnalysisRange(analysisNumber) },
       };
     case 'mas':
       return isLinked()
@@ -1412,6 +1446,9 @@ const HEADER_ACTIONS = {
 function focusSearch() {
   const input = view.querySelector('.glossary__search');
   if (!input) return;
+  // On the significados list the field is hidden until it is asked for: the
+  // header button is the only way in, which keeps the list clean.
+  if (input.hasAttribute('hidden')) input.removeAttribute('hidden');
   input.scrollIntoView({ block: 'center', behavior: 'smooth' });
   input.focus({ preventScroll: true });
 }
@@ -1460,6 +1497,28 @@ function wireHostEvents(sdk) {
   sdk.on('mainButton', () => {
     if (currentView === 'analisis' && !analysisData) runAnalysis();
   });
+}
+
+/**
+ * Keep --tabbar-real equal to the bar that is actually on screen.
+ *
+ * The analyser's action bar sits above the tab bar using a CSS constant. On a
+ * device whose bar is taller than that constant — safe-area insets, larger text —
+ * the button ended up tucked behind the bar. Measuring removes the guess; the
+ * stylesheet falls back to the constant until the first measurement lands.
+ */
+function watchTabbarHeight() {
+  const bar = document.querySelector('.tabbar');
+  if (!bar) return;
+
+  const measure = () => {
+    const height = Math.round(bar.getBoundingClientRect().height);
+    if (height > 0) document.documentElement.style.setProperty('--tabbar-real', `${height}px`);
+  };
+
+  measure();
+  window.addEventListener('resize', measure, { passive: true });
+  window.addEventListener('orientationchange', measure, { passive: true });
 }
 
 // ---------- History ----------
@@ -1566,6 +1625,7 @@ async function start(sdk) {
   wireTabbar();
   wireHistory();
   wireExternalLinks();
+  watchTabbarHeight();
   const boot = initialView();
   history.replaceState({ view: boot }, '', location.href);
   await navigate(boot, { push: false });
@@ -1579,6 +1639,7 @@ function bootWithoutSdk() {
   wireTabbar();
   wireHistory();
   wireExternalLinks();
+  watchTabbarHeight();
   // Hide as soon as the view has content, and fail open if it never does.
   splashTimer = setTimeout(hideSplash, SPLASH_MAX_MS);
   const boot = initialView();

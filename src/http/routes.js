@@ -374,19 +374,23 @@ export async function handleApi(req, res, url, pool) {
       // Historical analysis of one lookup number (0..99).
       case '/api/analisis': {
         const raw = url.searchParams.get('numero');
-        if (raw === null || !/^\d{1,2}$/.test(raw)) {
+        if (raw === null || !/^\d{1,3}$/.test(raw)) {
           sendJson(res, 400, { error: 'numero_invalido' });
           return true;
         }
         const numero = Number(raw);
-        if (numero > 99) {
+        if (numero < 1 || numero > 100) {
           sendJson(res, 400, { error: 'numero_invalido' });
           return true;
         }
+        // The table runs from 1 to 100, but a draw is matched by its last two
+        // digits: entry 100 is the "00" of a fijo like 900.
+        const target = numero % 100;
         const draws = await historyForAnalysis(pool);
-        const analysis = analyseNumber(draws, numero);
+        const analysis = analyseNumber(draws, target);
         const significado = await meaningOf(numero);
-        sendJson(res, 200, { ...analysis, significado }, { 'cache-control': 'public, max-age=600' });
+        sendJson(res, 200, { ...analysis, target: numero, significado },
+          { 'cache-control': 'public, max-age=600' });
         return true;
       }
 

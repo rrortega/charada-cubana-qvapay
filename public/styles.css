@@ -393,14 +393,16 @@ body[data-theme-mode="light"] .drawtabs__tab[aria-selected="true"] { color: #0b0
 .number2--lead { color: var(--primary); }
 .number2--rest { color: var(--text); }
 
-/* Parlé: three columns, two numbers stacked. */
+/* Parlé: three columns, two numbers stacked. Flex, not a 4-column grid: with a
+ * fixed column count the cards stopped at three quarters of the width. */
 .parles {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   gap: var(--s2);
 }
 
 .parle {
+  flex: 1 1 0;
+  min-width: 0;
   display: grid;
   justify-items: center;
   align-content: center;
@@ -1094,8 +1096,10 @@ body[data-theme-mode="light"] .cal__day.is-selected { color: #0b0e13; }
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(var(--tabbar-h) + var(--s2) + env(safe-area-inset-bottom));
-  z-index: 15;
+  /* Above the tab bar: the real height when it has been measured, the constant
+   * before that. z-index keeps it painted over the bar. */
+  bottom: calc(var(--tabbar-real, var(--tabbar-h)) + var(--s3));
+  z-index: 21;
   padding: var(--s3) var(--s4);
   background: color-mix(in srgb, var(--bg) 88%, var(--text));
   border-top: 1px solid var(--hairline);
@@ -1378,6 +1382,38 @@ html.in-qvapay .actionbar { display: none; }
 }
 
 .toolcard:active { transform: scale(0.995); border-color: var(--accent-hair); }
+
+/* Tools that are not ready yet: the icon loses its colour so the card reads as
+ * unavailable at a glance, without a tag repeating itself five times. */
+.toolcard--soon .toolicon {
+  opacity: 0.38;
+  filter: grayscale(1);
+}
+
+.toolcard--soon .toolcard__title { color: var(--text-2); }
+
+/* Divider between what works and what is coming. */
+.toolgrid__divider {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  margin: var(--s4) 0 var(--s2);
+}
+
+.toolgrid__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--hairline);
+}
+
+.toolgrid__label {
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
 
 .toolicon {
   display: grid;
@@ -1705,27 +1741,65 @@ html.in-qvapay .actionbar { display: none; }
 
 /* ---------- Significados: ficha ------------------------------------------- */
 
-.fichahead { display: flex; align-items: center; gap: var(--s4); margin-bottom: var(--s3); }
-
-.fichahead__icon { display: block; width: 92px; height: 92px; object-fit: contain; flex: none; }
-
-.fichahead__titles { display: grid; gap: 2px; min-width: 0; }
-
-.fichahead__num {
-  font-size: 12px;
-  font-weight: 750;
-  letter-spacing: 0.1em;
-  font-variant-numeric: tabular-nums;
-  color: var(--primary);
+/* Hero of a ficha: a purple band, the drawing on a white disc, the number on a
+ * badge that hangs off the disc, and the symbol's name underneath. */
+.fichahero {
+  display: grid;
+  justify-items: center;
+  gap: var(--s3);
+  margin-bottom: var(--s4);
+  padding: var(--s5) var(--s4) var(--s4);
+  border-radius: var(--radius-card);
+  background: linear-gradient(160deg, #6d28d9, #4c1d95);
+  text-align: center;
 }
 
-.fichahead__title {
+.fichahero__disc {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.6);
+}
+
+.fichahero__icon { display: block; width: 96px; height: 96px; object-fit: contain; }
+
+.fichahero__initial {
+  font-size: 46px;
+  font-weight: 800;
+  line-height: 1;
+  color: #6d28d9;
+}
+
+/* The number hangs off the disc: it belongs to the entry, not to the drawing. */
+.fichahero__badge {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  display: grid;
+  place-items: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: #ffffff;
+  border: 2px solid #4c1d95;
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #4c1d95;
+}
+
+.fichahero__name {
   margin: 0;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 780;
-  line-height: 1.1;
+  line-height: 1.15;
   letter-spacing: -0.03em;
-  color: var(--text);
+  color: #ffffff;
   text-wrap: balance;
 }
 
@@ -1839,6 +1913,10 @@ html.in-qvapay .actionbar { display: none; }
   background: var(--card-bg-raised);
 }
 
+
+/* On the significados list the field stays hidden until the header action asks
+ * for it, so a hidden attribute must win over the flex layout. */
+.glossary__search[hidden] { display: none; }
 
 /* A panel whose numbers depend on a draw that has not been published yet. */
 .panel__pending {

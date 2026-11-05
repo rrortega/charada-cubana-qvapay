@@ -107,12 +107,12 @@ test('the totals count the artwork that exists, not the one the file declared', 
   assert.equal(counts.png + counts.pendientes, counts.significados);
 });
 
-test('the symbol of a number is the one the file declares, not the drawing', async () => {
-  // 98 declares guayaba, but the folder only holds gallo.png: the declaration
-  // wins, and the symbol simply has no drawing.
+test('the symbol of a number is the one the file declares, not a neighbour', async () => {
+  // 98 declares guayaba; the rooster is one of its alternatives and must not
+  // take the header just because a drawing exists for it.
   const ficha = await getFicha(98);
   assert.equal(ficha.principal, 'Guayaba');
-  assert.equal(ficha.icon, null);
+  assert.equal(ficha.icon, '/significados/98/guayaba.png');
   const marked = ficha.significados.filter((s) => s.rol === 'principal');
   assert.equal(marked.length, 1);
   assert.equal(marked[0].nombre, 'Guayaba');
