@@ -122,9 +122,19 @@ function panelFijo(draw) {
   return panel;
 }
 
+/** Note shown when the partner draw (Pick 4) has not been published yet. */
+function pendingNote(text) {
+  const p = el('p', 'panel__pending', text);
+  return p;
+}
+
 function panelCorridos(draw) {
   const panel = el('section', 'panel');
   panel.append(el('h2', 'panel__title', 'Corridos'));
+  if (draw.complete === false) {
+    panel.append(pendingNote('Pendiente del segundo sorteo'));
+    return panel;
+  }
   const pair = el('div', 'pair');
   const digits = [];
   draw.corridos.forEach((c, i) => {
@@ -140,6 +150,10 @@ function panelCorridos(draw) {
 function panelParles(draw) {
   const panel = el('section', 'panel');
   panel.append(el('h2', 'panel__title', 'Parlé'));
+  if (draw.complete === false) {
+    panel.append(pendingNote('Pendiente del segundo sorteo'));
+    return panel;
+  }
   const grid = el('div', 'parles');
   const digits = [];
   for (const parle of draw.parles) {
@@ -159,6 +173,10 @@ function panelParles(draw) {
 function panelCandado(draw) {
   const panel = el('section', 'panel');
   panel.append(el('h2', 'panel__title', 'Candado'));
+  if (draw.complete === false) {
+    panel.append(pendingNote('Pendiente del segundo sorteo'));
+    return panel;
+  }
   // The candado is "64.67.34": roll each two-digit group, keep the dots.
   const line = el('p', 'candado', '');
   const digits = [];
