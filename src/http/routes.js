@@ -5,7 +5,8 @@
 
 import crypto from 'node:crypto';
 import { analyseNumber } from '../domain/analysis.js';
-import { ARTICLES, GLOSSARY } from '../content/culture.js';
+import { GLOSSARY } from '../content/glossary.js';
+import { listArticles, getArticle } from '../content/loader.js';
 import { verifyInitData } from '../auth/verifyInitData.js';
 import {
   createSessionToken,
@@ -389,16 +390,19 @@ export async function handleApi(req, res, url, pool) {
       }
 
       // Culture articles and glossary. Static content, cacheable for a long time.
+      // Articles are Markdown files: the index carries metadata only, and the
+      // single-article response carries the Markdown body for the client to
+      // render (S12).
       case '/api/cultura': {
         const id = url.searchParams.get('id');
         if (id) {
-          const article = ARTICLES.find((a) => a.id === id);
+          const article = await getArticle(id);
           if (!article) { sendJson(res, 404, { error: 'not_found' }); return true; }
           sendJson(res, 200, article, { 'cache-control': 'public, max-age=3600' });
           return true;
         }
         sendJson(res, 200, {
-          articles: ARTICLES.map(({ id: aid, title, kicker, readMinutes, pull }) => ({ id: aid, title, kicker, readMinutes, pull })),
+          articles: await listArticles(),
           glossary: GLOSSARY,
         }, { 'cache-control': 'public, max-age=3600' });
         return true;
