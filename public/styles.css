@@ -2002,10 +2002,10 @@ html.in-qvapay .actionbar { display: none; }
 
 .flipcard .panel__title { color: rgb(255 255 255 / 0.72); }
 
-/* Inside the coloured card the digits and captions are white; the leading digit
- * keeps its emphasis by staying fully opaque. */
-.flipcard .fijo__digit--lead { color: #ffffff; }
-.flipcard .fijo__digit--rest { color: rgb(255 255 255 / 0.7); }
+/* Inside the coloured card the digits are light, and the leading one takes a warm
+ * accent: white on violet separated by opacity alone read as one number. */
+.flipcard .fijo__digit--lead { color: #ffd166; }
+.flipcard .fijo__digit--rest { color: #ffffff; }
 .flipcard .fijo__meaning { color: rgb(255 255 255 / 0.82); }
 .flipcard .flipcard__caption { color: rgb(255 255 255 / 0.82); }
 .flipcard .symbolstrip__name { color: rgb(255 255 255 / 0.78); }
