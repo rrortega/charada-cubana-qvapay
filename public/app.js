@@ -134,11 +134,71 @@ async function getContent(path, isValid, message) {
   return data;
 }
 
+// ---------- Charada artwork shared by the screens ----------
+//
+// One compact table (100 rows with their artwork) feeds the significados list,
+// the flip card of the cargador and the symbol that appears while typing a number
+// to analyse. It is fetched once and cached.
+
+let charadaIndex = null;
+
+async function ensureCharadaIndex() {
+  if (!charadaIndex) {
+    charadaIndex = await getContent('/api/significados',
+      (data) => Array.isArray(data?.numbers),
+      'La tabla de significados no llegó completa. Reinicia el servidor y recarga.');
+  }
+  return charadaIndex;
+}
+
+/** A fijo's charada number: "00" is the entry 100. */
+const toEntry = (twoDigits) => (twoDigits === 0 ? 100 : twoDigits);
+
+/** Artwork of one charada entry, or null. */
+function symbolIconFor(entryNumber) {
+  const entry = charadaIndex?.numbers.find((n) => n.number === entryNumber);
+  return entry?.icon ?? null;
+}
+
+/**
+ * Card that shows a drawing and turns over to show the number when tapped.
+ * The back face receives the caller's node so the digit roll keeps its targets.
+ */
+function flipCard({ icon, back, label, numberText }) {
+  const wrap = el('button', 'flip');
+  wrap.type = 'button';
+  wrap.setAttribute('aria-label', `${label}: ${numberText}. Toca para ver el dibujo o el número.`);
+
+  const inner = el('span', 'flip__inner');
+
+  const front = el('span', 'flip__face flip__face--front');
+  if (icon) {
+    const img = el('img', 'flip__icon');
+    img.src = icon;
+    img.alt = '';
+    img.loading = 'lazy';
+    front.append(img);
+  } else {
+    // No drawing for this entry: the number is the honest front face.
+    front.append(el('span', 'flip__number', numberText));
+    wrap.dataset.noArt = 'true';
+  }
+
+  const backFace = el('span', 'flip__face flip__face--back');
+  backFace.append(back ?? el('span', 'flip__number', numberText));
+
+  inner.append(front, backFace);
+  wrap.append(inner);
+  wrap.addEventListener('click', () => wrap.classList.toggle('is-open'));
+  return wrap;
+}
+
 // ---------- Card pieces (shared by both screens) ----------
 
 function panelFijo(draw) {
   const panel = el('section', 'panel');
   panel.append(el('h2', 'panel__title', 'Fijo'));
+
   const row = el('div', 'fijo');
   // Each digit starts at 0 and rolls up; the targets are the real digits.
   const digits = [];
@@ -147,7 +207,15 @@ function panelFijo(draw) {
     digits.push({ element: node, text: String(digit) });
     row.append(node);
   });
-  panel.append(row);
+
+  // The drawing takes the front; the number waits on the other side of a turn.
+  panel.append(flipCard({
+    icon: symbolIconFor(toEntry(draw.charada?.value ?? 0)),
+    back: row,
+    label: 'Fijo',
+    numberText: draw.fijo.formatted,
+  }));
+
   if (draw.fijo.significado) panel.append(el('p', 'fijo__meaning', draw.fijo.significado));
   panel._digits = digits;
   return panel;
@@ -301,6 +369,9 @@ async function viewTiros() {
     setState(`Sin sorteos para el ${formatDate(data.date)}.`);
     return;
   }
+
+  // The fijo shows its drawing; the table must be in memory before painting.
+  await ensureCharadaIndex().catch(() => null);
 
   const frag = document.createDocumentFragment();
 
@@ -517,6 +588,22 @@ async function viewHistorial() {
 
 let analysisNumber = null;
 let analysisData = null;
+/** The <img> under the input, updated as digits arrive. */
+let analysisSymbolEl = null;
+
+/** Show the symbol of the typed number, or hide it when it is not a valid entry. */
+async function updateAnalysisSymbol() {
+  const img = analysisSymbolEl;
+  if (!img) return;
+  if (!inAnalysisRange(analysisNumber)) { img.hidden = true; return; }
+
+  const index = await ensureCharadaIndex().catch(() => null);
+  const entry = index?.numbers.find((n) => n.number === analysisNumber);
+  if (!entry?.icon) { img.hidden = true; return; }
+
+  if (img.getAttribute('src') !== entry.icon) img.src = entry.icon;
+  img.hidden = false;
+}
 
 /** The table goes from 1 to 100: 0 is not an entry, 100 is the last one. */
 const inAnalysisRange = (n) => n !== null && n >= 1 && n <= 100;
@@ -539,10 +626,15 @@ function buildNumberNode() {
     const clean = input.value.replace(/\D/g, '').slice(0, 3);
     if (clean !== input.value) input.value = clean;
     analysisNumber = clean === '' ? null : Number(clean);
-    const btn = document.getElementById('analyser-btn');
-    if (btn) btn.disabled = !inAnalysisRange(analysisNumber);
+    // The round action appears with the first digit and only enables in range.
+    const go = document.getElementById('analyser-go');
+    if (go) {
+      go.hidden = analysisNumber === null;
+      go.disabled = !inAnalysisRange(analysisNumber);
+    }
     // The native main button mirrors the same enablement.
     if (currentView === 'analisis') syncChrome('analisis');
+    updateAnalysisSymbol();
   });
 
   input.addEventListener('keydown', (evt) => {
@@ -571,21 +663,32 @@ function renderAnalysisInput({ focus = true } = {}) {
   const hint = el('p', 'analyser__hint', 'Escribe un número del 1 al 100');
   const stage = el('div', 'analyser');
   stage.append(hint, wrap);
-  frag.append(stage);
 
-  // Fixed action bar, sitting just above the bottom menu.
-  const bar = el('div', 'actionbar');
-  const btn = el('button', 'actionbar__btn ripple ripple--on-accent', 'Analizar');
-  btn.id = 'analyser-btn';
-  btn.disabled = !inAnalysisRange(analysisNumber);
-  btn.addEventListener('click', runAnalysis);
-  bar.append(btn);
-  frag.append(bar);
+  // The symbol of what is being typed, above the action.
+  const symbol = el('img', 'analyser__symbol');
+  symbol.alt = '';
+  symbol.hidden = true;
+  analysisSymbolEl = symbol;
+  stage.append(symbol);
+
+  // The action lives under the number: no bar at the bottom, and it only shows
+  // once there is a digit to analyse.
+  const go = el('button', 'analysecircle ripple');
+  go.type = 'button';
+  go.id = 'analyser-go';
+  go.setAttribute('aria-label', 'Analizar este número');
+  go.append(iconElement('sparkle'));
+  go.hidden = analysisNumber === null;
+  go.disabled = !inAnalysisRange(analysisNumber);
+  go.addEventListener('click', runAnalysis);
+  stage.append(go);
+  frag.append(stage);
 
   view.replaceChildren(frag);
   doc_body_class_toggle('is-analyser', true);
   document.body.classList.remove('is-analysing');
   if (focus) requestAnimationFrame(() => input.focus?.());
+  updateAnalysisSymbol();
 }
 
 function doc_body_class_toggle(name, on) {
@@ -618,8 +721,9 @@ async function runAnalysis() {
 
   try {
     const data = await getJson(`/api/analisis?numero=${analysisNumber}`);
+    const ficha = await getJson(`/api/significados?numero=${analysisNumber}`).catch(() => null);
     analysisData = data;
-    renderAnalysisResult(data);
+    renderAnalysisResult(data, ficha);
     syncChrome('analisis');
   } catch (err) {
     setState(err.message, true);
@@ -656,8 +760,37 @@ function tile(label, value, sub) {
   return box;
 }
 
-function renderAnalysisResult(a) {
+/** Horizontal art strip: every meaning of the number, swipeable, no scrollbar. */
+function symbolStrip(ficha) {
+  const strip = el('div', 'symbolstrip');
+  strip.setAttribute('role', 'list');
+
+  for (const meaning of ficha.significados) {
+    const item = el('div', 'symbolstrip__item');
+    item.setAttribute('role', 'listitem');
+
+    if (meaning.icon) {
+      const img = el('img', 'symbolstrip__icon');
+      img.src = meaning.icon;
+      img.alt = '';
+      img.loading = 'lazy';
+      item.append(img);
+    } else {
+      item.append(el('span', 'symbolstrip__initial', (meaning.nombre || '?').charAt(0)));
+    }
+
+    item.append(el('span', 'symbolstrip__name', meaning.nombre));
+    strip.append(item);
+  }
+
+  return strip;
+}
+
+function renderAnalysisResult(a, ficha = null) {
   const frag = document.createDocumentFragment();
+
+  // Every meaning of the number, as art you swipe through above the number.
+  if (ficha && ficha.significados?.length) frag.append(symbolStrip(ficha));
 
   // Header: the same number node, now compact and tappable to reset.
   const head = el('div', 'anahead');
@@ -1156,15 +1289,9 @@ function closeArticle() {
 // separate requests. Navigation goes through history: the native back button
 // returns from a ficha to the list.
 
-let charadaIndex = null;
-
 async function viewSignificados() {
   renderSkeleton(6);
-  if (!charadaIndex) {
-    charadaIndex = await getContent('/api/significados',
-      (data) => Array.isArray(data?.numbers),
-      'La tabla de significados no llegó completa. Reinicia el servidor y recarga.');
-  }
+  await ensureCharadaIndex();
   renderCharadaList(charadaIndex);
 }
 
@@ -1396,10 +1523,9 @@ function chromeFor(name, context = {}) {
     case 'historial':
       return { subtitle: 'Historial', actions: [ACTION.calendar] };
     case 'analisis':
-      return {
-        subtitle: 'Análisis',
-        main: analysisData ? null : { text: 'Analizar', enabled: inAnalysisRange(analysisNumber) },
-      };
+      // The screen owns its action (the round button under the number), so the
+      // native main button stays hidden instead of offering a second one.
+      return { subtitle: 'Análisis', main: null };
     case 'mas':
       return isLinked()
         ? { subtitle: `@${getSession().username ?? 'usuario'}` }

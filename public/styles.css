@@ -1037,7 +1037,8 @@ body[data-theme-mode="light"] .cal__day.is-selected { color: #0b0e13; }
 
 .ananum__input {
   grid-area: 1 / 1;
-  width: 2.2ch;
+  /* Three characters have to fit: the table runs up to 100. */
+  width: 3.2ch;
   appearance: none;
   border: 0;
   background: transparent;
@@ -1917,6 +1918,140 @@ html.in-qvapay .actionbar { display: none; }
 /* On the significados list the field stays hidden until the header action asks
  * for it, so a hidden attribute must win over the flex layout. */
 .glossary__search[hidden] { display: none; }
+
+/* Round action under the number: it appears with the first digit. */
+.analysecircle {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-top: var(--s5);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #ffffff;
+  cursor: pointer;
+  transition: transform 140ms var(--ease), opacity 160ms var(--ease);
+  box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--primary) 85%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.18);
+}
+
+.analysecircle svg { width: 25px; height: 25px; }
+.analysecircle:active { transform: scale(0.95); }
+.analysecircle[disabled] { opacity: 0.42; cursor: default; }
+
+/* The author display rule would otherwise beat the hidden attribute. */
+.analysecircle[hidden] { display: none; }
+
+/* Symbol of the number being typed, above the action. */
+.analyser__symbol {
+  display: block;
+  width: 132px;
+  height: 132px;
+  margin: var(--s4) auto 0;
+  object-fit: contain;
+}
+
+.analyser__symbol[hidden] { display: none; }
+
+/* ---------- Flip card of the cargador ------------------------------------- */
+/* The drawing on one face, the number on the other; a tap turns it over. */
+.flip {
+  display: block;
+  width: 100%;
+  padding: var(--s2) 0 var(--s1);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  perspective: 900px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.flip__inner {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 150px;
+  transition: transform 520ms var(--ease);
+  transform-style: preserve-3d;
+}
+
+.flip.is-open .flip__inner { transform: rotateY(180deg); }
+
+.flip__face {
+  grid-area: 1 / 1;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flip__face--back { transform: rotateY(180deg); }
+
+.flip__icon { display: block; width: 150px; height: 150px; object-fit: contain; }
+
+.flip__number {
+  font-size: 84px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+}
+
+/* ---------- Analysis: the number's meanings as a swipeable strip ----------- */
+/* No visible scrollbar: it moves with the finger and nothing else shows it. */
+.symbolstrip {
+  display: flex;
+  gap: var(--s2);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0 var(--s4) var(--s2);
+  margin: 0 calc(-1 * var(--s4)) var(--s3);
+}
+
+.symbolstrip::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+.symbolstrip__item {
+  flex: 0 0 auto;
+  width: 86px;
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  scroll-snap-align: center;
+}
+
+.symbolstrip__icon { display: block; width: 62px; height: 62px; object-fit: contain; }
+
+.symbolstrip__initial {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: var(--card-bg);
+  color: var(--primary);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.symbolstrip__name {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 10.5px;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--text-3);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
 
 /* A panel whose numbers depend on a draw that has not been published yet. */
 .panel__pending {
