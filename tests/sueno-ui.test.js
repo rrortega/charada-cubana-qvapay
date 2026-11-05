@@ -76,7 +76,7 @@ test('the dream is typed in a bounded textarea the app owns', () => {
   const block = suenoBlock();
   assert.ok(block.includes("el('textarea', 'sueno__input'"), 'the entry is a textarea (S1)');
   assert.ok(block.includes("setAttribute('maxlength', '2000')"), 'the server cap is the field cap');
-  assert.ok(block.includes("setAttribute('rows', '5')"));
+  assert.ok(block.includes("setAttribute('rows', '6')"), 'room for a paragraph');
   assert.ok(block.includes('Anoche soñé que…'), 'the placeholder invites the dream');
   assert.ok(block.includes("'sueno__go"), 'the round button is the only submit');
   assert.ok(block.includes('Interpretar'));
@@ -88,8 +88,8 @@ test('the heading steps aside inside the WebView', () => {
   const block = suenoBlock();
   assert.ok(block.includes('isHosted()'), 'the host bar already names the screen');
   assert.ok(block.includes('Cuéntame tu sueño'));
-  assert.ok(block.includes('Escribe lo que soñaste. No guardamos tu sueño: solo las señales que saca el análisis.'),
-    'the promise of S2 is on screen');
+  assert.ok(block.includes('Queda guardado en tu cuenta, para que puedas volver a leerlo; nadie más lo ve.'),
+    'the promise of S9 is on screen: the dream is stored for its author');
 });
 
 test('every error code of the route has a sentence', () => {
@@ -104,12 +104,46 @@ test('every error code of the route has a sentence', () => {
 
 test('the result reads only what the route sends', () => {
   const block = suenoBlock();
-  for (const key of ['elementos', 'senales', 'coincidencias', 'parecidos', 'muestra', 'compartidas']) {
+  for (const key of ['elementos', 'resumen', 'senales', 'coincidencias', 'parecidos', 'muestra', 'compartidas']) {
     assert.ok(block.includes(key), `the result must read ${key}`);
   }
-  // S4: another dream is a count, never an id, a name or a fragment of its text.
-  assert.ok(!block.includes('suenoId'), 'never render another dream id');
-  assert.ok(!/username|\.texto\b/.test(block), 'never render another user or their text');
+  // S4: of another person the screen shows their public profile and a count.
+  for (const key of ['match.nombre', 'match.avatar', 'match.compartidas']) {
+    assert.ok(block.includes(key), `the row must read ${key}`);
+  }
+  // Never their dream: not its text, not its signals, not its id.
+  for (const forbidden of ['match.texto', 'match.senales', 'suenoId']) {
+    assert.ok(!block.includes(forbidden), `must never render ${forbidden}`);
+  }
+});
+
+test('the tabs are always there and the reading starts locked', () => {
+  const block = suenoBlock();
+  for (const label of ["'Mi sueño'", "'La interpretación'"]) {
+    assert.ok(block.includes(label), `${label} is one of the two tabs`);
+  }
+  assert.ok(block.includes('is-locked'), 'the reading tab shows a locked state');
+  assert.ok(block.includes('const locked = !suenoResult && !suenoLoading'),
+    'it is locked until there is a reading or one on the way');
+  assert.ok(block.includes("suenoTab = 'lectura'"), 'submitting opens the reading tab');
+  assert.ok(block.includes('suenoSkeleton()'), 'the reading tab shows the skeleton while it waits');
+  assert.ok(block.includes('typeResumen'), 'the reading is written out character by character');
+});
+
+test('the stored dreams are the author\'s own', () => {
+  const block = suenoBlock();
+  assert.ok(block.includes("getJson('/api/suenos')"), 'the history is read from its own route');
+  assert.ok(block.includes("getJson(`/api/sueno/lectura?id="), 'a row opens one stored dream');
+  assert.ok(block.includes('Tus sueños anteriores'));
+});
+
+test('the week is offered as play, not as a forecast', () => {
+  const block = suenoBlock();
+  for (const key of ['combinaciones', 'fijos', 'corridos', 'parles']) {
+    assert.ok(block.includes(key), `the play panel must read ${key}`);
+  }
+  assert.ok(block.includes('Para jugar esta semana'));
+  assert.ok(block.includes('no un pronóstico'));
 });
 
 test('the new block stays inside the sueno routes', () => {
