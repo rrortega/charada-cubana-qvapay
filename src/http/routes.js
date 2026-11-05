@@ -385,7 +385,7 @@ export async function handleApi(req, res, url, pool) {
         }
         const draws = await historyForAnalysis(pool);
         const analysis = analyseNumber(draws, numero);
-        const significado = await meaningOf(pool, numero);
+        const significado = await meaningOf(numero);
         sendJson(res, 200, { ...analysis, significado }, { 'cache-control': 'public, max-age=600' });
         return true;
       }

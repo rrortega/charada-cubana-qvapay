@@ -32,6 +32,8 @@ const normalise = (value) => String(value ?? '')
 let cached = null;
 /** @type {Map<number, Map<string, string>>|null} */
 let artwork = null;
+/** @type {Map<number, string>|null} */
+let principals = null;
 
 /** Load and cache the whole table. */
 export async function loadCharada() {
@@ -116,6 +118,24 @@ function iconsOf(art, ficha) {
   });
 }
 
+/**
+ * Index of the meaning that represents the number: the one the file declares as
+ * principal.
+ *
+ * The artwork does NOT decide this. The delivered drawings are partly
+ * misassigned (98 holds gallo.png while its principal is guayaba), so letting
+ * the file with a drawing elect the symbol made the header say "Gallo" while its
+ * own description said "Símbolo principal del 98: guayaba". The declared symbol
+ * is the editorial truth; the drawing is optional and may be missing.
+ *
+ * @param {any} ficha
+ * @returns {number} index into ficha.significados
+ */
+function declaredPrincipal(ficha) {
+  const at = ficha.significados.findIndex((s) => s.rol === 'principal');
+  return at === -1 ? 0 : at;
+}
+
 /** Files that no meaning of their number claims, so nothing hides silently. */
 function orphansOf(art, fichas, idsByNumber) {
   const out = [];
@@ -143,14 +163,13 @@ export async function compactList() {
 
   return sortedFichas(data).map((ficha) => {
     const icons = iconsOf(art, ficha);
-    const principalAt = ficha.significados.findIndex((s) => s.rol === 'principal');
+    const principalAt = declaredPrincipal(ficha);
+    const symbol = ficha.significados[principalAt];
 
     return {
       number: ficha.numero,
-      principal: ficha.principal,
-      // Deliberately no fallback to another meaning's art: showing an
-      // alternative symbol as the number's symbol would be a wrong claim.
-      icon: principalAt === -1 ? null : icons[principalAt],
+      principal: displayName(symbol.nombre),
+      icon: icons[principalAt],
       significados: ficha.significados.length,
       conArte: icons.filter(Boolean).length,
       nombres: ficha.significados.map((s) => displayName(s.nombre)),
@@ -181,12 +200,13 @@ export async function getFicha(number) {
 
   const art = await scanArtwork();
   const icons = iconsOf(art, ficha);
-  const principalAt = ficha.significados.findIndex((s) => s.rol === 'principal');
+  const principalAt = declaredPrincipal(ficha);
+  const symbol = ficha.significados[principalAt];
 
   return {
     number: ficha.numero,
-    principal: ficha.principal,
-    icon: principalAt === -1 ? null : icons[principalAt],
+    principal: displayName(symbol.nombre),
+    icon: icons[principalAt],
     descripcion: ficha.descripcion ?? '',
     contexto: ficha.contexto ?? '',
     fuente: ficha.fuente ?? '',
@@ -229,8 +249,30 @@ export async function totals() {
   };
 }
 
-/** Test seam: forget both caches so the files are read again. */
+/**
+ * Principal meaning of every number, for the cargador and the analysis.
+ *
+ * The same source as the Significados section: the delivered table, not the
+ * seeded `charada_significados` copy, which could drift from it (99 was
+ * "Serrucho, Gallo, Carbonero" there and "Tierra" here).
+ *
+ * @returns {Promise<Map<number, string>>}
+ */
+export async function principalMeanings() {
+  if (principals) return principals;
+  const data = await loadCharada();
+
+  principals = new Map(sortedFichas(data).map((ficha) => {
+    const symbol = ficha.significados[declaredPrincipal(ficha)];
+    return [ficha.numero, displayName(symbol.nombre)];
+  }));
+
+  return principals;
+}
+
+/** Test seam: forget every cache so the files are read again. */
 export function __resetCharadaForTests() {
   cached = null;
   artwork = null;
+  principals = null;
 }
