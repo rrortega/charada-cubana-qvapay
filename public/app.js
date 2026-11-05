@@ -12,7 +12,7 @@ import { attachRipples } from '/src/ui/ripple.js';
 import { openCalendar } from '/src/ui/calendar.js';
 import { iconElement } from '/src/ui/icons.js';
 import { rollDigits, pulseBorder } from '/src/ui/motion.js';
-import { loadSession, getSession, linkAccount } from '/src/ui/session.js';
+import { loadSession, getSession, linkAccount, restoreSession, isLinked } from '/src/ui/session.js';
 
 const view = document.getElementById('view');
 const tabbar = document.querySelector('.tabbar');
@@ -752,14 +752,34 @@ async function viewMas() {
 
   const frag = document.createDocumentFragment();
 
-  const head = el('div', 'morehead');
-  head.append(el('h2', 'panel__title', 'Más'));
+  // When linked, the header becomes the profile: avatar, name, @username.
   if (session.linked) {
-    head.append(el('p', 'morehead__who', `Vinculado como @${session.username ?? 'usuario'}`));
+    const profile = el('div', 'profile');
+    const avatar = el('div', 'profile__avatar');
+    if (session.avatar) {
+      const img = el('img', 'profile__img');
+      img.src = session.avatar;
+      img.alt = '';
+      img.loading = 'lazy';
+      img.addEventListener('error', () => { avatar.replaceChildren(el('span', 'profile__initial', (session.name ?? session.username ?? '?')[0].toUpperCase())); });
+      avatar.append(img);
+    } else {
+      avatar.append(el('span', 'profile__initial', (session.name ?? session.username ?? '?')[0].toUpperCase()));
+    }
+
+    const who = el('div', 'profile__who');
+    const full = [session.name, session.lastname].filter(Boolean).join(' ').trim();
+    if (full) who.append(el('span', 'profile__name', full));
+    who.append(el('span', 'profile__handle', `@${session.username ?? 'usuario'}`));
+
+    profile.append(avatar, who);
+    frag.append(profile);
   } else {
+    const head = el('div', 'morehead');
+    head.append(el('h2', 'panel__title', 'Más'));
     head.append(el('p', 'morehead__who', 'Vincula tu cuenta de QvaPay para usar las herramientas.'));
+    frag.append(head);
   }
-  frag.append(head);
 
   const grid = el('div', 'toolgrid');
   for (const tool of MORE_TOOLS) {
@@ -789,7 +809,7 @@ async function viewMas() {
  * the tap.
  */
 async function openTool(tool) {
-  if (tool.needsAccount && !getSession().linked) {
+  if (tool.needsAccount && !isLinked()) {
     sheetMessage({
       title: 'Necesitas tu cuenta',
       body: `Para usar «${tool.title}» vincula tu cuenta de QvaPay. Así guardamos tus datos y no pierdes nada al volver.`,
@@ -922,12 +942,14 @@ async function start(sdk) {
   }
   if (caps.present) await sdk.ready().catch(() => {});
 
+  restoreSession();
   wireTabbar();
   await navigate(initialView());
   hideSplash();
 }
 
 function bootWithoutSdk() {
+  restoreSession();
   wireTabbar();
   // Hide as soon as the view has content, and fail open if it never does.
   splashTimer = setTimeout(hideSplash, SPLASH_MAX_MS);

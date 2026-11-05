@@ -54,23 +54,46 @@ export function readSessionToken(token, secret, { now = Math.floor(Date.now() / 
   return { uuid: data.uuid, username: data.username ?? null };
 }
 
-/** Build the Set-Cookie header value. */
+/**
+ * Build the Set-Cookie header value.
+ *
+ * `SameSite` matters here: the QvaPay WebView renders our page in an iframe
+ * hosted on qvapay.com, which is a cross-site context. `Lax` makes the browser
+ * drop the cookie in that case, so the login would appear to succeed and then
+ * be forgotten. `None` requires `Secure`, hence the pairing.
+ *
+ * `Partitioned` (CHIPS) keeps the cookie scoped to the embedding top-level site,
+ * which is both more private and what modern browsers expect for third-party
+ * cookies.
+ */
 export function sessionCookie(token, { secure = true, maxAge = MAX_AGE_SECONDS } = {}) {
   const parts = [
     `${COOKIE_NAME}=${token}`,
     'Path=/',
     'HttpOnly',
-    'SameSite=Lax',
+    secure ? 'SameSite=None' : 'SameSite=Lax',
     `Max-Age=${maxAge}`,
   ];
-  if (secure) parts.push('Secure');
+  if (secure) {
+    parts.push('Secure');
+    parts.push('Partitioned');
+  }
   return parts.join('; ');
 }
 
-/** Build the clearing header value. */
+/** Build the clearing header value, matching the attributes of the original. */
 export function clearSessionCookie({ secure = true } = {}) {
-  const parts = [`${COOKIE_NAME}=`, 'Path=/', 'HttpOnly', 'SameSite=Lax', 'Max-Age=0'];
-  if (secure) parts.push('Secure');
+  const parts = [
+    `${COOKIE_NAME}=`,
+    'Path=/',
+    'HttpOnly',
+    secure ? 'SameSite=None' : 'SameSite=Lax',
+    'Max-Age=0',
+  ];
+  if (secure) {
+    parts.push('Secure');
+    parts.push('Partitioned');
+  }
   return parts.join('; ');
 }
 

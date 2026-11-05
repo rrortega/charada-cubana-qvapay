@@ -75,24 +75,41 @@ async function resolveDate(pool, raw) {
   }
 }
 
-/** Read the caller's session, or null when not linked. */
+/**
+ * Read the caller's session, or null when not linked.
+ *
+ * Accepts the signed token from either the cookie or an `Authorization: Bearer`
+ * header. The header exists because third-party cookie policies can drop the
+ * cookie inside the QvaPay WebView; the token is signed identically either way.
+ */
 export function currentSession(req) {
-  const cookies = parseCookies(req.headers.cookie);
   const secret = process.env.SESSION_SECRET;
   if (!secret) return null;
+
+  const auth = String(req.headers.authorization ?? '');
+  if (auth.startsWith('Bearer ')) {
+    const fromHeader = readSessionToken(auth.slice(7).trim(), secret);
+    if (fromHeader) return fromHeader;
+  }
+
+  const cookies = parseCookies(req.headers.cookie);
   return readSessionToken(cookies[COOKIE_NAME], secret);
 }
 
 /** Upsert the user row and return its id. */
-async function upsertUser(pool, { uuid, username }) {
+async function upsertUser(pool, user) {
+  const { uuid, username, name, lastname, avatar } = user;
   const { rows } = await pool.query(
-    `INSERT INTO users (qvapay_uuid, username)
-     VALUES ($1, $2)
+    `INSERT INTO users (qvapay_uuid, username, display_name, lastname, avatar)
+     VALUES ($1, $2, $3, $4, $5)
      ON CONFLICT (qvapay_uuid)
-     DO UPDATE SET username = COALESCE(EXCLUDED.username, users.username),
+     DO UPDATE SET username     = COALESCE(EXCLUDED.username, users.username),
+                   display_name = COALESCE(EXCLUDED.display_name, users.display_name),
+                   lastname     = COALESCE(EXCLUDED.lastname, users.lastname),
+                   avatar       = COALESCE(EXCLUDED.avatar, users.avatar),
                    last_seen_at = now()
      RETURNING id`,
-    [uuid, username ?? null],
+    [uuid, username ?? null, name ?? null, lastname ?? null, avatar ?? null],
   );
   return rows[0].id;
 }
@@ -105,9 +122,24 @@ async function handleAuth(req, res, url, pool) {
   if (url.pathname === '/api/sesion') {
     if (req.method !== 'GET') return false;
     const s = currentSession(req);
-    sendJson(res, 200, s
-      ? { linked: true, uuid: s.uuid, username: s.username }
-      : { linked: false, uuid: null, username: null }, { 'cache-control': 'no-store' });
+    if (!s) {
+      sendJson(res, 200, { linked: false, uuid: null, username: null }, { 'cache-control': 'no-store' });
+      return true;
+    }
+    // The cookie carries only id and username; the profile lives in the database.
+    const { rows } = await pool.query(
+      'SELECT display_name, lastname, avatar FROM users WHERE qvapay_uuid = $1',
+      [s.uuid],
+    );
+    const p = rows[0] ?? {};
+    sendJson(res, 200, {
+      linked: true,
+      uuid: s.uuid,
+      username: s.username,
+      name: p.display_name ?? null,
+      lastname: p.lastname ?? null,
+      avatar: p.avatar ?? null,
+    }, { 'cache-control': 'no-store' });
     return true;
   }
 
@@ -141,6 +173,11 @@ async function handleAuth(req, res, url, pool) {
         linked: true,
         uuid: verified.user.uuid,
         username: verified.user.username ?? null,
+        name: verified.user.name ?? null,
+        lastname: verified.user.lastname ?? null,
+        avatar: verified.user.avatar ?? null,
+        // The client persists this as a fallback when cookies are blocked.
+        token,
       }));
     } catch (err) {
       // Do not leak which check failed beyond the machine code.
