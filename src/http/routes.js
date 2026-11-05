@@ -1,7 +1,8 @@
 // HTTP routes for the mini-app.
 //
-// All routes are read-only GETs. No route ever accepts credentials, and the
-// QvaPay app-secret never leaves the server.
+// Almost every route is a read-only GET. The one write path is POST /api/sueno,
+// which stores the signals of a dream and never its text. No route ever accepts
+// credentials, and the QvaPay app-secret never leaves the server.
 
 import crypto from 'node:crypto';
 import { analyseNumber } from '../domain/analysis.js';
@@ -10,6 +11,7 @@ import { listArticles, getArticle } from '../content/loader.js';
 import { renderMarkdown } from '../markdown/markdown.js';
 import { compactList, getFicha, totals } from '../content/charada.js';
 import { createAdivinanzaService, addDays, toPublicView } from '../adivinanza/store.js';
+import { createSuenoService } from '../sueno/service.js';
 import { verifyInitData } from '../auth/verifyInitData.js';
 import {
   createSessionToken,
@@ -40,6 +42,18 @@ export function getAdivinanza(pool) {
   if (!service) {
     service = createAdivinanzaService({ pool });
     adivinanzaServices.set(pool, service);
+  }
+  return service;
+}
+
+// One dream service per pool, for the same reason as the adivinanza one: the
+// provider transport is built once, not per request.
+const suenoServices = new WeakMap();
+export function getSueno(pool) {
+  let service = suenoServices.get(pool);
+  if (!service) {
+    service = createSuenoService({ pool });
+    suenoServices.set(pool, service);
   }
   return service;
 }
@@ -328,6 +342,100 @@ export async function handleQvapayWebhook(req, res, pool) {
   }
 }
 
+// A dream is a text, so it has a hard ceiling on both counts: the bytes we are
+// willing to buffer and the characters a reading is worth.
+const CUERPO_MAX = 4000;
+const TEXTO_MAX = 2000;
+
+/** Read the body, or null when it goes over the cap. */
+async function readCappedBody(req, cap) {
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of req) {
+    size += chunk.length;
+    if (size > cap) return null;
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks).toString('utf8');
+}
+
+/**
+ * Handle POST /api/sueno: read a dream, analyse it and answer with the reading.
+ *
+ * The text is only ever an input (S2): it is not logged, not stored, and the
+ * response is built from its signals. The account is required (S7), and the
+ * entry is refused before the model is asked anything, so a bad request never
+ * costs a completion.
+ */
+async function handleSuenoPost(req, res, pool, deps) {
+  const raw = await readCappedBody(req, CUERPO_MAX);
+  if (raw === null) {
+    sendJson(res, 413, { error: 'sueno_largo' });
+    return;
+  }
+
+  let body = {};
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    // Not JSON is not a dream; it falls through to the empty-text answer.
+    body = {};
+  }
+
+  const texto = typeof body?.sueno === 'string' ? body.sueno.trim() : '';
+  if (!texto) {
+    sendJson(res, 400, { error: 'sueno_vacio' });
+    return;
+  }
+  if (texto.length > TEXTO_MAX) {
+    sendJson(res, 413, { error: 'sueno_largo' });
+    return;
+  }
+
+  const session = currentSession(req);
+  if (!session) {
+    sendJson(res, 401, { error: 'cuenta_requerida' });
+    return;
+  }
+
+  // The cookie carries the QvaPay uuid; the row's id is what the envelope
+  // references. A session for an account that has no row yet stores without it.
+  const { rows } = await pool.query('SELECT id FROM users WHERE qvapay_uuid = $1', [session.uuid]);
+  const userId = rows[0]?.id ?? null;
+
+  const service = deps.sueno ?? getSueno(pool);
+  if (service.configured === false) {
+    sendJson(res, 503, { error: 'no_configurado' });
+    return;
+  }
+
+  let out;
+  try {
+    out = await service.analizar({ texto, userId });
+  } catch (err) {
+    const code = String(err?.code ?? '');
+    if (code === 'llm_not_configured') {
+      sendJson(res, 503, { error: 'no_configurado' });
+      return;
+    }
+    // A provider or model-output failure is not the server's fault and not the
+    // client's: the machine code says which one it was.
+    if (/^(llm_|sueno_)/.test(code)) {
+      sendJson(res, 502, { error: code });
+      return;
+    }
+    throw err;
+  }
+
+  // The art of the chosen numbers, reused from the Significados screens (S5).
+  const elementos = await Promise.all(out.numeros.map(async (numero) => {
+    const ficha = await getFicha(numero);
+    return { numero, significado: ficha?.principal ?? null, icono: ficha?.icon ?? null };
+  }));
+
+  sendJson(res, 200, { ...out, elementos }, { 'cache-control': 'no-store' });
+}
+
 /**
  * Handle /api/*. Returns true when the request was handled.
  */
@@ -338,6 +446,20 @@ export async function handleApi(req, res, url, pool, deps = {}) {
   // read the RAW body, because the signature covers the exact bytes sent.
   if (url.pathname === '/api/qvapay/webhook' && req.method === 'POST') {
     await handleQvapayWebhook(req, res, pool);
+    return true;
+  }
+
+  // The one write path. It is claimed before the GET-only guard so the guard
+  // keeps refusing POST everywhere else.
+  if (url.pathname === '/api/sueno' && req.method === 'POST') {
+    try {
+      await handleSuenoPost(req, res, pool, deps);
+    } catch (err) {
+      // Same contract as the GET handlers below: one bad request must not take
+      // the process down.
+      console.error('/api/sueno failed:', err.message);
+      sendJson(res, 500, { error: 'internal_error' });
+    }
     return true;
   }
 
@@ -507,6 +629,15 @@ export async function handleApi(req, res, url, pool, deps = {}) {
           limit: url.searchParams.get('limite'),
         });
         sendRevalidatedJson(req, res, { items: rows.map(toPublicView) });
+        return true;
+      }
+
+      // The weekly counter of dream signals (S3, S4). Counts only: no texts, no
+      // identities, no other dream's signals.
+      case '/api/sueno/senales': {
+        const dias = intParam(url.searchParams.get('dias'), 7, { max: 90 });
+        const senales = await (deps.sueno ?? getSueno(pool)).senales({ dias });
+        sendRevalidatedJson(req, res, { dias, senales });
         return true;
       }
 
