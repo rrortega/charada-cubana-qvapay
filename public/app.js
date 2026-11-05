@@ -810,13 +810,30 @@ function resetAnalysis() {
 }
 
 /** Horizontal bar row used by the weekday/month breakdown. */
+/** Bars grow one after another; this counts them within one render. */
+let barSeq = 0;
+
 function barRow(label, hits, total, { highlight = false } = {}) {
   const row = el('div', `bar${highlight ? ' bar--hot' : ''}`);
   row.append(el('span', 'bar__label', label));
   const track = el('div', 'bar__track');
   const fill = el('div', 'bar__fill');
   const max = total || 1;
-  fill.style.width = `${Math.max(2, (hits / max) * 100)}%`;
+  const width = `${Math.max(2, (hits / max) * 100)}%`;
+
+  if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    fill.style.width = width;
+  } else {
+    // Zero now, real width after the row is in the document, so the transition
+    // plays. The delay cascades the bars instead of filling them at once.
+    fill.style.width = '0%';
+    const delay = Math.min(400, (barSeq += 1) * 45);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      fill.style.transitionDelay = `${delay}ms`;
+      fill.style.width = width;
+    }));
+  }
+
   track.append(fill);
   row.append(track);
   row.append(el('span', 'bar__value', String(hits)));
@@ -919,6 +936,7 @@ function renderAnalysisResult(a, ficha = null) {
 }
 
 function renderAnalysisPanels(a, drawKey, turn) {
+  barSeq = 0;
   const frag = document.createDocumentFragment();
   const turnLabel = drawKey === 'MIDDAY' ? 'Mediodía' : 'Noche';
   const t = turn ?? { hits: 0, draws: 0, averageSpacing: null, gap: { neverSeen: true } };
@@ -1235,7 +1253,7 @@ async function viewCultura() {
 }
 
 /** One tile: artwork slot on top, kicker, title, teaser and reading time. */
-function cultureTile(article, position) {
+function cultureTile(article, position, { mark = null, onOpen = null } = {}) {
   const tile = el('button', 'culturetile ripple');
   tile.type = 'button';
 
@@ -1249,7 +1267,7 @@ function cultureTile(article, position) {
   } else {
     // No artwork yet: the order number stands in for the illustration, so the
     // tile reads as designed rather than as a missing image.
-    art.append(el('span', 'culturetile__mark', String(position + 1).padStart(2, '0')));
+    art.append(el('span', 'culturetile__mark', mark ?? String(position + 1).padStart(2, '0')));
   }
 
   const body = el('span', 'culturetile__body');
@@ -1260,7 +1278,7 @@ function cultureTile(article, position) {
 
   tile.append(art, body);
   tile.setAttribute('aria-label', `${article.title} — ${article.readMinutes ?? 0} minutos de lectura`);
-  tile.addEventListener('click', () => openArticle(article.id));
+  tile.addEventListener('click', onOpen ?? (() => openArticle(article.id)));
   return tile;
 }
 
@@ -1274,9 +1292,21 @@ function renderCultureIndex(data) {
 
   const grid = el('div', 'culturegrid');
   data.articles.forEach((article, i) => grid.append(cultureTile(article, i)));
-  frag.append(grid);
 
-  frag.append(glossaryBlock(data.glossary));
+  // The glossary is one more tile, not a list hanging under the index: it is
+  // reference material, and it now opens like any other piece.
+  grid.append(cultureTile(
+    {
+      kicker: 'Jerga',
+      title: 'Diccionario del barrio',
+      pull: 'Del apuntador al banquero: cómo se nombra cada cosa en la bolita.',
+      image: '',
+    },
+    data.articles.length,
+    { mark: 'A-Z', onOpen: () => openGlossary() },
+  ));
+
+  frag.append(grid);
   view.replaceChildren(frag);
 }
 
@@ -1350,6 +1380,28 @@ async function openArticle(id, { push = true } = {}) {
   view.replaceChildren(frag);
   view.scrollTop = 0;
   syncChrome('article', { title: article.title });
+}
+
+async function openGlossary({ push = true } = {}) {
+  if (push) pushView('cultura', { glosario: true });
+  renderSkeleton(4);
+
+  if (!cultureIndex) {
+    cultureIndex = await getContent('/api/cultura',
+      (data) => Array.isArray(data?.articles),
+      'La sección de cultura no llegó completa. Reinicia el servidor y recarga.');
+  }
+
+  const frag = document.createDocumentFragment();
+  const head = el('div', 'morehead');
+  head.append(el('h2', 'panel__title', 'Diccionario del barrio'));
+  head.append(el('p', 'morehead__who', 'Las palabras con las que se habla la charada.'));
+  frag.append(head);
+  frag.append(glossaryBlock(cultureIndex.glossary));
+
+  view.replaceChildren(frag);
+  view.scrollTop = 0;
+  syncChrome('cultura', { titulo: 'Diccionario del barrio' });
 }
 
 function closeArticle() {
@@ -1614,7 +1666,7 @@ function chromeFor(name, context = {}) {
         ? { subtitle: `@${getSession().username ?? 'usuario'}` }
         : { subtitle: 'Herramientas', actions: [ACTION.user] };
     case 'cultura':
-      return { subtitle: 'Historia y cultura', actions: [ACTION.search] };
+      return { subtitle: context.titulo ?? 'Historia y cultura', actions: [ACTION.search] };
     case 'significados':
       return context.ficha
         ? { subtitle: context.ficha, actions: [ACTION.share] }
@@ -1740,6 +1792,7 @@ function pushView(name, extra = {}) {
   if (name !== 'tiros') params.set('vista', name);
   if (extra.article) params.set('articulo', extra.article);
   if (extra.numero) params.set('numero', extra.numero);
+  if (extra.glosario) params.set('glosario', '1');
   const qs = params.toString();
   history.pushState({ view: name, ...extra }, '', `${location.pathname}${qs ? `?${qs}` : ''}`);
 }
@@ -1755,16 +1808,29 @@ function wireHistory() {
       openFicha(state.numero, { push: false });
       return;
     }
+    if (state.glosario) {
+      openGlossary({ push: false });
+      return;
+    }
     navigate(state.view ?? initialView(), { push: false });
   });
 }
 
 /** A reload while reading must land on the article, not on the index. */
 async function openBootArticle() {
-  const id = new URLSearchParams(location.search).get('articulo');
-  if (!id) return;
-  history.replaceState({ view: 'cultura', article: id }, '', location.href);
-  await openArticle(id, { push: false });
+  const params = new URLSearchParams(location.search);
+
+  const id = params.get('articulo');
+  if (id) {
+    history.replaceState({ view: 'cultura', article: id }, '', location.href);
+    await openArticle(id, { push: false });
+    return;
+  }
+
+  if (params.get('glosario')) {
+    history.replaceState({ view: 'cultura', glosario: true }, '', location.href);
+    await openGlossary({ push: false });
+  }
 }
 
 /** Same for a ficha of the charada table. */

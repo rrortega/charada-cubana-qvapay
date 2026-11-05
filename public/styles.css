@@ -1246,7 +1246,8 @@ html.in-qvapay .actionbar { display: none; }
   height: 100%;
   border-radius: var(--radius-pill);
   background: var(--accent-strong);
-  transition: width 320ms var(--ease);
+  /* The row starts at zero and grows once it is on screen. */
+  transition: width 620ms var(--ease);
 }
 
 .bar__value {
@@ -2116,7 +2117,9 @@ html.in-qvapay .actionbar { display: none; }
 
 .culturegrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* One column: the tiles carry a title and a teaser, and two per row on a phone
+   * squeezed both of them. */
+  grid-template-columns: 1fr;
   gap: var(--s3);
   margin-bottom: var(--s5);
 }
