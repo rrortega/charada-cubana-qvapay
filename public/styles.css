@@ -1418,7 +1418,12 @@ body:not(.is-analyser) .actionbar { display: none; }
 
 /* ---------- Message sheet ------------------------------------------------ */
 
-.sheet--msg { padding-top: var(--s2); }
+.sheet--msg {
+  padding-top: var(--s2);
+  /* The last button sits close to the bottom edge on real devices: the sheet
+   * padding alone is not enough once the gesture bar is present. */
+  padding-bottom: calc(var(--s6) + env(safe-area-inset-bottom));
+}
 
 .sheetmsg__title {
   margin: var(--s1) 0 var(--s2);
@@ -1434,7 +1439,12 @@ body:not(.is-analyser) .actionbar { display: none; }
   color: var(--text-2);
 }
 
-.sheetmsg__actions { display: grid; gap: var(--s2); }
+.sheetmsg__actions {
+  display: grid;
+  gap: var(--s2);
+  /* A little breathing room under the last action. */
+  padding-bottom: var(--s2);
+}
 
 .sheetmsg__cancel {
   appearance: none;
@@ -1540,7 +1550,9 @@ body:not(.is-analyser) .actionbar { display: none; }
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: #2d2643;
+  /* The logo has a transparent background now, so the circle shows the theme
+   * through it instead of a hard-coded navy plate. */
+  background: color-mix(in srgb, var(--primary) 10%, var(--bg));
   box-shadow: 0 6px 22px -8px color-mix(in srgb, var(--primary) 60%, transparent);
   animation: splash-breathe 2200ms ease-in-out infinite;
 }
@@ -1550,8 +1562,8 @@ body:not(.is-analyser) .actionbar { display: none; }
   height: 100%;
   object-fit: cover;
   display: block;
-  /* The artwork is 1254px with margin; zoom slightly so the balls fill the circle. */
-  transform: scale(1.28);
+  /* The artwork is already cropped tight, so no extra zoom is needed. */
+  transform: scale(1);
 }
 
 @keyframes splash-breathe {
