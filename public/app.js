@@ -15,7 +15,7 @@ import { attachRipples } from '/src/ui/ripple.js';
 import { openCalendar } from '/src/ui/calendar.js';
 import { iconElement } from '/src/ui/icons.js';
 import { rollDigits, pulseBorder } from '/src/ui/motion.js';
-import { loadSession, getSession, linkAccount, restoreSession, isLinked } from '/src/ui/session.js';
+import { loadSession, getSession, linkAccount, restoreSession, isLinked, authHeaders } from '/src/ui/session.js';
 
 const view = document.getElementById('view');
 const tabbar = document.querySelector('.tabbar');
@@ -100,8 +100,14 @@ function renderSkeleton(rows = 4) {
   view.replaceChildren(frag);
 }
 
+// Every data request carries the session: the cookie when the browser keeps it,
+// and the Bearer token when the WebView's third-party cookie policy drops it
+// (R3-1). Sending only the cookie here made the token fallback dead code.
 async function getJson(path) {
-  const res = await fetch(path, { headers: { accept: 'application/json' } });
+  const res = await fetch(path, {
+    headers: authHeaders({ accept: 'application/json' }),
+    credentials: 'include',
+  });
   if (!res.ok) throw new Error(`No se pudo cargar (${res.status})`);
   return res.json();
 }
