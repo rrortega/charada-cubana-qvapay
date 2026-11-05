@@ -8,6 +8,7 @@ import { analyseNumber } from '../domain/analysis.js';
 import { GLOSSARY } from '../content/glossary.js';
 import { listArticles, getArticle } from '../content/loader.js';
 import { renderMarkdown } from '../markdown/markdown.js';
+import { compactList, getFicha, totals } from '../content/charada.js';
 import { verifyInitData } from '../auth/verifyInitData.js';
 import {
   createSessionToken,
@@ -33,6 +34,30 @@ const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' };
 function sendJson(res, status, body, extra = {}) {
   res.writeHead(status, { ...JSON_HEADERS, ...extra });
   res.end(JSON.stringify(body));
+}
+
+/**
+ * JSON the browser may store but must revalidate before reusing.
+ *
+ * Content endpoints change shape with the code, and a long `max-age` hides that
+ * from a client that already cached the previous shape: the failure shows up as
+ * a crash in the new client, not as a stale label. Conditional revalidation
+ * keeps repeat visits cheap (304, no body) without ever serving yesterday's
+ * contract.
+ */
+export function sendRevalidatedJson(req, res, body) {
+  const payload = JSON.stringify(body);
+  const etag = `W/"${crypto.createHash('sha1').update(payload).digest('base64url').slice(0, 16)}"`;
+  const headers = { ...JSON_HEADERS, 'cache-control': 'no-cache', etag };
+
+  if (req.headers['if-none-match'] === etag) {
+    res.writeHead(304, headers);
+    res.end();
+    return;
+  }
+
+  res.writeHead(200, { ...headers, 'content-length': Buffer.byteLength(payload) });
+  res.end(payload);
 }
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -365,49 +390,42 @@ export async function handleApi(req, res, url, pool) {
         return true;
       }
 
-      // The 100 charada meanings with their sprite coordinates.
+      // The charada table: 100 fichas with their meanings, artwork and the
+      // traditional relations between numbers (S16). The list carries only what
+      // the rows need — plus the meaning names, so the search filters locally —
+      // and the ficha is fetched when it is opened.
       case '/api/significados': {
-        const { rows } = await pool.query(
-          'SELECT entry_number, significados FROM charada_significados ORDER BY entry_number',
-        );
-        sendJson(res, 200, {
-          items: rows.map((r) => {
-            const n = r.entry_number;
-            // Symbols are laid out 10 per row across two 1800x900 sheets:
-            // 1-50 on the first, 51-100 on the second. Column and row are
-            // zero-based so the CSS can multiply by --tile.
-            const index = n - 1;
-            return {
-              number: n,
-              meaning: r.significados,
-              sheet: n <= 50 ? '/sprites/charada-1-50.png' : '/sprites/charada-51-100.png',
-              col: index % 10,
-              row: Math.floor((n <= 50 ? index : index - 50) / 10),
-              hasSymbol: true,
-            };
-          }),
-        }, { 'cache-control': 'public, max-age=3600' });
+        const numero = url.searchParams.get('numero');
+        if (numero !== null) {
+          const value = Number(numero);
+          if (!Number.isInteger(value) || value < 1 || value > 100) {
+            sendJson(res, 400, { error: 'numero_out_of_range' });
+            return true;
+          }
+          const ficha = await getFicha(value);
+          if (!ficha) { sendJson(res, 404, { error: 'not_found' }); return true; }
+          sendRevalidatedJson(req, res, ficha);
+          return true;
+        }
+        sendRevalidatedJson(req, res, { total: await totals(), numbers: await compactList() });
         return true;
       }
 
-      // Culture articles and glossary. Static content, cacheable for a long time.
-      // Articles are Markdown files: the index carries metadata only, and the
-      // single-article response carries the Markdown body for the client to
-      // render (S12).
+      // Culture articles and glossary. Static content: the browser may store it,
+      // but it revalidates, so a shape or wording change reaches the client.
       case '/api/cultura': {
         const id = url.searchParams.get('id');
         if (id) {
           const article = await getArticle(id);
           if (!article) { sendJson(res, 404, { error: 'not_found' }); return true; }
           const { body, ...meta } = article;
-          sendJson(res, 200, { ...meta, html: renderMarkdown(body) },
-            { 'cache-control': 'public, max-age=3600' });
+          sendRevalidatedJson(req, res, { ...meta, html: renderMarkdown(body) });
           return true;
         }
-        sendJson(res, 200, {
+        sendRevalidatedJson(req, res, {
           articles: await listArticles(),
           glossary: GLOSSARY,
-        }, { 'cache-control': 'public, max-age=3600' });
+        });
         return true;
       }
 

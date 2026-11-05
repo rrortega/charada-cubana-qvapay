@@ -1641,73 +1641,178 @@ html.in-qvapay .actionbar { display: none; }
 }
 
 
-/* ---------- Significados (sprite list) -----------------------------------
- * Icons are 180x180 tiles cut from an 1800x900 sheet. `background-size` scales
- * the whole sheet so one tile lands on 44px: 1800 * (44/180) = 440.
- */
+/* ---------- Significados: lista de fichas --------------------------------- */
 
 .signlist { display: grid; gap: 1px; }
 
+/* One tappable row per number: chip, artwork, name and what is inside. */
 .signrow {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 40px 44px 1fr auto;
   align-items: center;
   gap: var(--s3);
-  padding: 8px var(--s1);
+  width: 100%;
+  padding: 10px var(--s1);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
   border-bottom: 1px solid var(--hairline);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .signrow:last-child { border-bottom: 0; }
+.signrow:active { background: var(--card-bg); }
 
-/* Split tile: number half + symbol half, inside one rounded rectangle. */
-.signtile {
-  display: grid;
-  grid-template-columns: 46px 46px;
-  align-items: stretch;
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--card-bg);
-  flex: none;
-}
-
-.signtile__num {
+/* The number reads as a chip, not as a column of text. */
+.signrow__num {
   display: grid;
   place-items: center;
-  font-size: 15px;
-  font-weight: 750;
-  font-variant-numeric: tabular-nums;
-  color: var(--primary);
+  width: 40px;
+  min-height: 40px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
   background: var(--accent-soft);
-  border-right: 1px solid var(--hairline);
-  min-height: 46px;
-}
-
-.signrow__icon {
-  width: 46px;
-  height: 46px;
-  background-repeat: no-repeat;
-  /* Sheet 1770x885, tiles 177px. Rendered at 46px per tile means the sheet is
-   * 1770 * 46/177 = 460 wide and 885 * 46/177 = 230 tall. */
-  background-size: 460px 230px;
-  background-position: 0 0;
-}
-
-.signrow__num-unused {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 750;
   font-variant-numeric: tabular-nums;
   color: var(--primary);
-  text-align: right;
 }
 
-.signrow__meaning {
-  font-size: 14px;
-  line-height: 1.35;
-  letter-spacing: -0.004em;
+.signrow__thumb { display: block; width: 44px; height: 44px; object-fit: contain; }
+
+/* No artwork for the principal symbol: an empty slot, never a borrowed image. */
+.signrow__thumb--empty { border: 1px dashed var(--hairline); border-radius: 10px; }
+
+.signrow__text { display: grid; gap: 3px; min-width: 0; }
+
+.signrow__title {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.012em;
   color: var(--text);
-  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.signrow__meta { font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+
+.signrow__chev { font-size: 18px; color: var(--text-3); }
+
+/* ---------- Significados: ficha ------------------------------------------- */
+
+.fichahead { display: flex; align-items: center; gap: var(--s4); margin-bottom: var(--s3); }
+
+.fichahead__icon { display: block; width: 92px; height: 92px; object-fit: contain; flex: none; }
+
+.fichahead__titles { display: grid; gap: 2px; min-width: 0; }
+
+.fichahead__num {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+}
+
+.fichahead__title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 780;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  text-wrap: balance;
+}
+
+.fichameta { margin: 0 0 var(--s3); font-size: 12px; color: var(--text-3); }
+
+.ficha__contexto {
+  margin: 0 0 var(--s4);
+  padding-left: var(--s3);
+  border-left: 2px solid var(--accent-hair);
+  font-size: 14px;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.fichalinks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2);
+  margin-bottom: var(--s4);
+}
+
+.fichalinks__label {
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-pill);
+  background: var(--card-bg);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--text-2);
+}
+
+.chip--link { color: var(--primary); border-color: var(--accent-hair); cursor: pointer; }
+
+.fichalist { display: grid; gap: var(--s2); margin-bottom: var(--s4); }
+
+.fichaitem {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  align-items: start;
+  gap: var(--s3);
+  padding: var(--s3);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-panel);
+  background: var(--card-bg);
+}
+
+.fichaitem__icon { display: block; width: 48px; height: 48px; object-fit: contain; }
+
+.fichaitem__icon--empty { border: 1px dashed var(--hairline); border-radius: 10px; }
+
+.fichaitem__body { display: grid; gap: 3px; min-width: 0; }
+
+.fichaitem__title {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  color: var(--text);
+}
+
+.fichaitem__badge {
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.fichaitem__desc { font-size: 13px; line-height: 1.45; color: var(--text-3); }
 
 /* ---------- Search field (glossary + significados) ----------------------- */
 

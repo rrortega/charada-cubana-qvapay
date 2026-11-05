@@ -106,6 +106,28 @@ async function getJson(path) {
   return res.json();
 }
 
+// Version of the content contract, sent in the URL.
+//
+// These endpoints changed shape while the app was being built, and a browser can
+// still hold a stored copy of the previous payload. A different URL is a
+// different cache entry, so a stale copy can never be mistaken for the current
+// one — and when it does arrive, the shape check turns a TypeError in the middle
+// of a render into a sentence the user can act on.
+const CONTRACT = 'v=2';
+
+async function getContent(path, isValid, message) {
+  const data = await getJson(`${path}${path.includes('?') ? '&' : '?'}${CONTRACT}`);
+  if (!isValid(data)) {
+    // Name what arrived: the usual cause is a server still running the previous
+    // route, and the keys it returns say so at a glance.
+    const received = data && typeof data === 'object'
+      ? Object.keys(data).slice(0, 4).join(', ')
+      : typeof data;
+    throw new Error(`${message} (recibido: ${received || 'vacío'})`);
+  }
+  return data;
+}
+
 // ---------- Card pieces (shared by both screens) ----------
 
 function panelFijo(draw) {
@@ -950,7 +972,11 @@ let cultureIndex = null;
 
 async function viewCultura() {
   renderSkeleton(4);
-  if (!cultureIndex) cultureIndex = await getJson('/api/cultura');
+  if (!cultureIndex) {
+    cultureIndex = await getContent('/api/cultura',
+      (data) => Array.isArray(data?.articles),
+      'La sección de cultura no llegó completa. Reinicia el servidor y recarga.');
+  }
   renderCultureIndex(cultureIndex);
 }
 
@@ -1039,7 +1065,9 @@ function glossaryBlock(entries) {
 async function openArticle(id, { push = true } = {}) {
   if (push) pushView('cultura', { article: id });
   renderSkeleton(3);
-  const article = await getJson(`/api/cultura?id=${encodeURIComponent(id)}`);
+  const article = await getContent(`/api/cultura?id=${encodeURIComponent(id)}`,
+    (data) => typeof data?.html === 'string',
+    'El artículo no llegó completo. Reinicia el servidor y recarga.');
   const frag = document.createDocumentFragment();
 
   const back = el('button', 'backlink ripple', '‹ Historia y cultura');
@@ -1084,30 +1112,36 @@ function closeArticle() {
 
 // ---------- Significados ----------
 //
-// The 100 entries with their sprite icon. Each icon is a 180x180 tile cut from
-// an 1800x900 sheet with background-position, so the whole list is two images.
+// The charada table as delivered: 100 fichas with their meanings, artwork and
+// the traditional relations between numbers (S16). The list stays small (one row
+// per number) and the ficha is fetched when it is opened, so the two screens are
+// separate requests. Navigation goes through history: the native back button
+// returns from a ficha to the list.
 
-let meaningsIndex = null;
-
-/**
- * Rendered size of one sprite tile.
- * Sheet 1770x885 / 10x5 = 177px source tiles; displayed at 46px, so the step
- * between tiles is 46px (1770 * 46/177 = 460 wide, 885 * 46/177 = 230 tall).
- */
-const TILE_PX = 46;
+let charadaIndex = null;
 
 async function viewSignificados() {
   renderSkeleton(6);
-  if (!meaningsIndex) meaningsIndex = await getJson('/api/significados');
+  if (!charadaIndex) {
+    charadaIndex = await getContent('/api/significados',
+      (data) => Array.isArray(data?.numbers),
+      'La tabla de significados no llegó completa. Reinicia el servidor y recarga.');
+  }
+  renderCharadaList(charadaIndex);
+}
 
+function renderCharadaList(data) {
   const frag = document.createDocumentFragment();
 
   const head = el('div', 'morehead');
   head.append(el('h2', 'panel__title', 'Los 100 significados'));
-  head.append(el('p', 'morehead__who', 'La tabla de la charada cubana, del 1 al 100.'));
+  const totalSignificados = data.total?.significados
+    ?? data.numbers.reduce((acc, row) => acc + row.significados, 0);
+  head.append(el('p', 'morehead__who', `${totalSignificados} significados repartidos en 100 fichas.`));
 
   const search = el('input', 'glossary__search');
   search.type = 'search';
+  search.id = 'significados-search';
   search.placeholder = 'Buscar número o símbolo…';
   search.setAttribute('aria-label', 'Buscar en los significados');
   head.append(search);
@@ -1118,41 +1152,160 @@ async function viewSignificados() {
 
   const draw = (query) => {
     const q = query.trim().toLowerCase();
-    const items = meaningsIndex.items.filter((x) =>
-      q === '' || String(x.number) === q || String(x.number).startsWith(q) || x.meaning.toLowerCase().includes(q));
+    // The 693 names travel with the list, so filtering is local and instant: no
+    // request per keystroke. An entry matches by its number or by any meaning.
+    const rows = data.numbers.filter((entry) =>
+      q === ''
+      || String(entry.number).startsWith(q)
+      || entry.nombres.some((name) => name.toLowerCase().includes(q)));
 
-    list.replaceChildren(...items.map((x) => {
-      const row = el('div', 'signrow');
-
-      // Sprite icon: one element, two background values.
-      //
-      // Positions must be in RENDERED pixels, not source pixels. The sheet is
-      // scaled from 1800x900 to 440x220, so one 180px tile becomes 44px:
-      // offset = col * tileSize, not col * 180.
-      const icon = el('span', 'signrow__icon');
-      icon.style.backgroundImage = `url('${x.sheet}')`;
-      icon.style.backgroundPosition = `-${x.col * TILE_PX}px -${x.row * TILE_PX}px`;
-      icon.setAttribute('role', 'img');
-      icon.setAttribute('aria-label', x.meaning);
-      row.append(icon);
-
-      // The tile is a split rectangle: symbol on one half, number on the other.
-      const tile = el('span', 'signtile');
-      tile.append(el('span', 'signtile__num', String(x.number)));
-      tile.append(icon);
-      row.append(tile);
-
-      // The meaning stays outside the tile, as plain text.
-      row.append(el('span', 'signrow__meaning', x.meaning));
-      return row;
-    }));
-
-    if (items.length === 0) list.append(el('p', 'state', 'Sin resultados.'));
+    if (rows.length === 0) {
+      list.replaceChildren(el('p', 'state', 'Sin resultados.'));
+      return;
+    }
+    list.replaceChildren(...rows.map(charadaRow));
   };
 
   search.addEventListener('input', () => draw(search.value));
   draw('');
   view.replaceChildren(frag);
+}
+
+/** One row: number, principal artwork, name and how much is inside. */
+function charadaRow(entry) {
+  const row = el('button', 'signrow ripple');
+  row.type = 'button';
+  row.setAttribute('aria-label', `${entry.number}: ${entry.principal}`);
+
+  row.append(el('span', 'signrow__num', String(entry.number)));
+
+  if (entry.icon) {
+    const img = el('img', 'signrow__thumb');
+    img.src = entry.icon;
+    img.alt = '';
+    img.loading = 'lazy';
+    row.append(img);
+  } else {
+    // No artwork for the principal symbol: no grey placeholder pretending there
+    // is one, just the space the row already reserves.
+    row.append(el('span', 'signrow__thumb signrow__thumb--empty'));
+  }
+
+  const text = el('span', 'signrow__text');
+  text.append(el('span', 'signrow__title', entry.principal));
+  text.append(el('span', 'signrow__meta', `${entry.significados} significados · ${entry.conArte} con dibujo`));
+
+  row.append(text, el('span', 'signrow__chev', '›'));
+  row.addEventListener('click', () => openFicha(entry.number));
+  return row;
+}
+
+async function openFicha(number, { push = true } = {}) {
+  if (push) pushView('significados', { numero: number });
+  renderSkeleton(4);
+  const ficha = await getContent(`/api/significados?numero=${number}`,
+    (data) => Array.isArray(data?.significados),
+    `La ficha ${number} no llegó completa. Reinicia el servidor y recarga.`);
+  renderFicha(ficha);
+  syncChrome('significados', { ficha: `${ficha.number} · ${ficha.principal}` });
+}
+
+function renderFicha(ficha) {
+  const frag = document.createDocumentFragment();
+
+  const back = el('button', 'backlink ripple', '‹ Significados');
+  back.type = 'button';
+  back.addEventListener('click', closeFicha);
+  frag.append(back);
+
+  const head = el('header', 'fichahead');
+  if (ficha.icon) {
+    const img = el('img', 'fichahead__icon');
+    img.src = ficha.icon;
+    img.alt = '';
+    head.append(img);
+  }
+  const titles = el('div', 'fichahead__titles');
+  titles.append(el('span', 'fichahead__num', String(ficha.number)));
+  titles.append(el('h2', 'fichahead__title', ficha.principal));
+  head.append(titles);
+  frag.append(head);
+
+  const conArte = ficha.significados.filter((s) => s.icon).length;
+  frag.append(el('p', 'fichameta', `${ficha.significados.length} significados · ${conArte} con dibujo`));
+
+  if (ficha.contexto) frag.append(el('p', 'ficha__contexto', ficha.contexto));
+
+  // Tradition: the relations the table declares between numbers, as links. They
+  // are navigation, not a suggestion of what to play.
+  const links = el('div', 'fichalinks');
+  const tradicion = ficha.tradicion ?? {};
+  let hasLinks = false;
+  links.append(el('span', 'fichalinks__label', 'Tradición'));
+  for (const [label, value] of [['Peón', tradicion.peon], ['Compañero', tradicion.companero]]) {
+    if (!value) continue;
+    const chip = el('button', 'chip chip--link ripple', `${label} ${value}`);
+    chip.type = 'button';
+    chip.addEventListener('click', () => openFicha(value));
+    links.append(chip);
+    hasLinks = true;
+  }
+  if (tradicion.cuadrilla) {
+    links.append(el('span', 'chip', `Cuadrilla: ${tradicion.cuadrilla}`));
+    hasLinks = true;
+  }
+  if (hasLinks) frag.append(links);
+
+  const list = el('div', 'fichalist');
+  for (const meaning of ficha.significados) {
+    const item = el('div', 'fichaitem');
+
+    if (meaning.icon) {
+      const img = el('img', 'fichaitem__icon');
+      img.src = meaning.icon;
+      img.alt = '';
+      img.loading = 'lazy';
+      item.append(img);
+    } else {
+      item.append(el('span', 'fichaitem__icon fichaitem__icon--empty'));
+    }
+
+    const body = el('span', 'fichaitem__body');
+    const title = el('span', 'fichaitem__title', meaning.nombre);
+    if (meaning.rol === 'principal') title.append(el('span', 'fichaitem__badge', 'principal'));
+    body.append(title);
+    if (meaning.descripcion) body.append(el('span', 'fichaitem__desc', meaning.descripcion));
+    item.append(body);
+    list.append(item);
+  }
+  frag.append(list);
+
+  if (ficha.relacionadas.length > 0) {
+    const related = el('div', 'fichalinks');
+    related.append(el('span', 'fichalinks__label', 'Relacionadas'));
+    for (const number of ficha.relacionadas) {
+      const chip = el('button', 'chip chip--link ripple', String(number));
+      chip.type = 'button';
+      chip.addEventListener('click', () => openFicha(number));
+      related.append(chip);
+    }
+    frag.append(related);
+  }
+
+  view.replaceChildren(frag);
+  view.scrollTop = 0;
+}
+
+function closeFicha() {
+  // The ficha is its own history entry, so this link and the native back button
+  // do exactly the same thing.
+  if (history.state?.numero) {
+    history.back();
+    return;
+  }
+  if (charadaIndex) renderCharadaList(charadaIndex);
+  else viewSignificados();
+  syncChrome('significados');
 }
 
 // ---------- Router ----------
@@ -1214,7 +1367,9 @@ function chromeFor(name, context = {}) {
     case 'cultura':
       return { subtitle: 'Historia y cultura', actions: [ACTION.search] };
     case 'significados':
-      return { subtitle: 'Los 100 significados', actions: [ACTION.search] };
+      return context.ficha
+        ? { subtitle: context.ficha, actions: [ACTION.share] }
+        : { subtitle: 'Los 100 significados', actions: [ACTION.search] };
     case 'article':
       return { subtitle: context.title ?? 'Historia y cultura', actions: [ACTION.share] };
     default:
@@ -1266,9 +1421,14 @@ async function shareMiniApp() {
   }
 }
 
-/** Leave the WebView for an external article link. */
+/** Leave the WebView for an external link. */
 async function openExternal(href) {
-  if (!sdkRef) return false;
+  if (!sdkRef) {
+    // Outside QvaPay there is no host to hand the link to: a plain navigation is
+    // what the same click does in any browser.
+    location.href = href;
+    return true;
+  }
   const opened = await openLink(sdkRef, href).catch(() => false);
   if (!opened) toast(sdkRef, 'No se pudo abrir el enlace.', { type: 'error' }).catch(() => {});
   return opened;
@@ -1305,6 +1465,7 @@ function pushView(name, extra = {}) {
   const params = new URLSearchParams();
   if (name !== 'tiros') params.set('vista', name);
   if (extra.article) params.set('articulo', extra.article);
+  if (extra.numero) params.set('numero', extra.numero);
   const qs = params.toString();
   history.pushState({ view: name, ...extra }, '', `${location.pathname}${qs ? `?${qs}` : ''}`);
 }
@@ -1314,6 +1475,10 @@ function wireHistory() {
     const state = evt.state ?? {};
     if (state.article) {
       openArticle(state.article, { push: false });
+      return;
+    }
+    if (state.numero) {
+      openFicha(state.numero, { push: false });
       return;
     }
     navigate(state.view ?? initialView(), { push: false });
@@ -1326,6 +1491,15 @@ async function openBootArticle() {
   if (!id) return;
   history.replaceState({ view: 'cultura', article: id }, '', location.href);
   await openArticle(id, { push: false });
+}
+
+/** Same for a ficha of the charada table. */
+async function openBootFicha() {
+  const raw = new URLSearchParams(location.search).get('numero');
+  const number = Number(raw);
+  if (!Number.isInteger(number) || number < 1 || number > 100) return;
+  history.replaceState({ view: 'significados', numero: number }, '', location.href);
+  await openFicha(number, { push: false });
 }
 
 async function navigate(name, { push = true } = {}) {
@@ -1390,6 +1564,7 @@ async function start(sdk) {
   history.replaceState({ view: boot }, '', location.href);
   await navigate(boot, { push: false });
   await openBootArticle();
+  await openBootFicha();
   hideSplash();
 }
 
@@ -1402,7 +1577,10 @@ function bootWithoutSdk() {
   splashTimer = setTimeout(hideSplash, SPLASH_MAX_MS);
   const boot = initialView();
   history.replaceState({ view: boot }, '', location.href);
-  Promise.resolve(navigate(boot, { push: false })).then(openBootArticle).finally(hideSplash);
+  Promise.resolve(navigate(boot, { push: false }))
+    .then(openBootArticle)
+    .then(openBootFicha)
+    .finally(hideSplash);
 }
 
 if (getQvaPay()) {
