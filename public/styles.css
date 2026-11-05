@@ -20,6 +20,10 @@
    * applyTheme() overwrites this with the host colour. */
   --primary: #8b5cf6;
 
+  /* Discs behind the drawings: white on the dark palette, light grey when the
+   * host switches to its light theme. */
+  --disc-bg: #ffffff;
+
   --radius-card: 18px;
   --radius-panel: 14px;
   --radius-pill: 999px;
@@ -324,6 +328,8 @@ html.in-qvapay .own-header { display: none; }
 }
 
 /* Light themes need dark text on a bright accent. */
+body[data-theme-mode="light"] { --disc-bg: #e6e9ef; }
+
 body[data-theme-mode="light"] .drawtabs__tab[aria-selected="true"] { color: #0b0e13; }
 
 /* ---------- Panels ------------------------------------------------------ */
@@ -1765,7 +1771,7 @@ html.in-qvapay .actionbar { display: none; }
   width: 132px;
   height: 132px;
   border-radius: 50%;
-  background: #ffffff;
+  background: var(--disc-bg);
   box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.6);
 }
 
@@ -1999,27 +2005,56 @@ html.in-qvapay .actionbar { display: none; }
 
 /* Stretch, not centre: the strip must be bounded by the card so it scrolls
  * inside instead of growing past the edge. */
-.flipcard__art { display: grid; justify-items: stretch; gap: var(--s2); min-width: 0; }
+/* Clipped here, not on the face: the strip scrolls inside and never spills out
+ * of the card, while the 3D rotation keeps its own context. */
+.flipcard__art {
+  display: grid;
+  justify-items: stretch;
+  gap: var(--s2);
+  min-width: 0;
+  overflow: hidden;
+}
 
-.flipcard__hero {
-  display: block;
+/* The principal drawing on a white disc. */
+.flipcard__disc {
+  display: grid;
+  place-items: center;
   width: 132px;
   height: 132px;
   margin: 0 auto;
-  object-fit: contain;
+  border-radius: 50%;
+  background: var(--disc-bg);
+  box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.65);
 }
+
+.flipcard__hero { display: block; width: 96px; height: 96px; object-fit: contain; }
 
 .flipcard__caption { font-size: 12px; color: var(--text-3); text-align: center; }
 
 /* Inside the card the strip keeps its own scroll but not the full-bleed margins. */
-.symbolstrip--inline { margin: 0; padding: 0; width: 100%; min-width: 0; }
+/* Inside the card the strip must stay within the padding and never snap: the
+ * base .symbolstrip declares full-bleed margins and snapping for the analysis
+ * screen, and a single class was not enough to override them by source order. */
+.symbolstrip.symbolstrip--inline {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  scroll-snap-type: none;
+  /* No manual dragging here: the marquee drives it, and the finger keeps moving
+   * the page vertically. */
+  overflow: hidden;
+  touch-action: pan-y;
+}
 
 /* ---------- Analysis: the number's meanings as a swipeable strip ----------- */
 /* No visible scrollbar: it moves with the finger and nothing else shows it. */
 .symbolstrip {
   display: flex;
   gap: var(--s2);
+  max-width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
@@ -2040,19 +2075,21 @@ html.in-qvapay .actionbar { display: none; }
   scroll-snap-align: center;
 }
 
-.symbolstrip__icon { display: block; width: 62px; height: 62px; object-fit: contain; }
-
+/* Every drawing sits on a disc, same rule as the principal one. */
+.symbolstrip__disc,
 .symbolstrip__initial {
   display: grid;
   place-items: center;
   width: 62px;
   height: 62px;
+  overflow: hidden;
   border-radius: 50%;
-  background: var(--card-bg);
-  color: var(--primary);
-  font-size: 24px;
-  font-weight: 800;
+  background: var(--disc-bg);
 }
+
+.symbolstrip__icon { display: block; width: 46px; height: 46px; object-fit: contain; }
+
+.symbolstrip__initial { color: var(--primary); font-size: 24px; font-weight: 800; }
 
 .symbolstrip__name {
   display: -webkit-box;

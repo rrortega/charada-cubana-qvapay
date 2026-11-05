@@ -183,7 +183,6 @@ function panelFijo(draw) {
   back.append(el('h2', 'panel__title', `Fijo · ${draw.fijo.formatted}`));
   const art = el('div', 'flipcard__art');
   back.append(art);
-
   inner.append(front, back);
   card.append(inner);
 
@@ -217,7 +216,45 @@ function panelFijo(draw) {
 function toggleFlipCard(card) {
   const open = !card.classList.contains('is-open');
   card.classList.toggle('is-open', open);
-  if (open) loadCardArt(card);
+
+  if (open) {
+    loadCardArt(card);
+    return;
+  }
+
+  // The marquee only runs while its face can be seen.
+  card._stopMarquee?.();
+  card._stopMarquee = null;
+}
+
+/**
+ * Slow marquee for the secondary drawings of the cargador.
+ *
+ * It always drifts on its own and reverses at both ends; there is no manual
+ * dragging here, so nothing has to pause it. Honours prefers-reduced-motion.
+ */
+function startMarquee(strip, { speed = 0.35 } = {}) {
+  if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return () => {};
+
+  let direction = 1;
+  let frame = 0;
+  // The position lives outside scrollLeft: reading it back rounds, and with a
+  // sub-pixel step the strip would never move.
+  let position = strip.scrollLeft;
+
+  const step = () => {
+    const max = strip.scrollWidth - strip.clientWidth;
+    if (max > 1) {
+      position += direction * speed;
+      if (position >= max) { position = max; direction = -1; }
+      else if (position <= 0) { position = 0; direction = 1; }
+      strip.scrollLeft = position;
+    }
+    frame = requestAnimationFrame(step);
+  };
+  frame = requestAnimationFrame(step);
+
+  return () => cancelAnimationFrame(frame);
 }
 
 async function loadCardArt(card) {
@@ -232,14 +269,22 @@ async function loadCardArt(card) {
     card._art.replaceChildren();
 
     if (principal?.icon) {
+      // The principal sits on a white disc, like the ficha's hero.
+      const disc = el('div', 'flipcard__disc');
       const hero = el('img', 'flipcard__hero');
       hero.src = principal.icon;
       hero.alt = '';
-      card._art.append(hero);
+      disc.append(hero);
+      card._art.append(disc);
       card._art.append(el('span', 'flipcard__caption', principal.nombre));
     }
 
-    if (restantes.length > 0) card._art.append(symbolStrip({ significados: restantes }, { inline: true }));
+    if (restantes.length > 0) {
+      const strip = symbolStrip({ significados: restantes }, { inline: true });
+      card._art.append(strip);
+      card._stopMarquee?.();
+      card._stopMarquee = startMarquee(strip);
+    }
     card.dataset.art = 'ready';
   } catch {
     card._art.replaceChildren(el('p', 'state', 'No se pudo cargar el arte.'));
@@ -806,11 +851,13 @@ function symbolStrip(ficha, { inline = false } = {}) {
     item.setAttribute('role', 'listitem');
 
     if (meaning.icon) {
+      const disc = el('span', 'symbolstrip__disc');
       const img = el('img', 'symbolstrip__icon');
       img.src = meaning.icon;
       img.alt = '';
       img.loading = 'lazy';
-      item.append(img);
+      disc.append(img);
+      item.append(disc);
     } else {
       item.append(el('span', 'symbolstrip__initial', (meaning.nombre || '?').charAt(0)));
     }
