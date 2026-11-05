@@ -2129,6 +2129,99 @@ html.in-qvapay .actionbar { display: none; }
 
 /* ---------- Cultura: índice de tiles -------------------------------------- */
 
+/* The turn of the fijo card: the principal in the middle, its other drawings
+ * travelling around it. The ring turns and each item turns back against it, so
+ * the art stays upright while it orbits. */
+.flipcard__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  /* Two limits set the radius. Inner: the disc is 132 px across and a satellite
+   * is 46, so below 89 px they would cross it. Outer: the orbit has to fit the
+   * narrowest phone, or the drawings get cut at the sides as they swing past.
+   * 106 px leaves a 17 px gap to the disc and keeps the whole circle inside a
+   * 320 px screen; on a wider one it still stops growing, so the group stays
+   * gathered around the centre instead of drifting to the edges. */
+  --orbit-radius: min(106px, 30vw);
+  min-height: 268px;
+}
+
+.orbit {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.orbit__ring {
+  position: relative;
+  width: 0;
+  height: 0;
+  animation: orbit-turn 32s linear infinite;
+}
+
+/* The slot does the placing: rotate to its angle and push out to the radius.
+ * 120 px keeps a 31 px gap to the edge of the 132 px disc.
+ *
+ * The slot is a point (0x0) anchored at the ring's centre, and its origin is
+ * pinned to 0 0: with the default origin (the centre of the element's box) the
+ * circle was being traced around a point 23 px off the middle, so the orbit was
+ * not concentric and one side grazed the disc. */
+.orbit__slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  transform: rotate(var(--angle)) translate(var(--orbit-radius));
+}
+
+.orbit__item {
+  position: absolute;
+  top: -23px;
+  left: -23px;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--disc-bg);
+  box-shadow: 0 6px 14px -8px rgb(0 0 0 / 0.55);
+  cursor: pointer;
+  pointer-events: auto;
+  animation: orbit-counter 32s linear infinite;
+}
+
+/* Two rotations cancel: the ring's turn (animated) and the slot's angle (static).
+ * Without the static one the drawing travels on its side, which is what a
+ * forever-spinning ring does to everything inside it. */
+.orbit__spin {
+  display: grid;
+  place-items: center;
+  transform: rotate(calc(-1 * var(--angle)));
+}
+
+.orbit__icon { display: block; width: 32px; height: 32px; object-fit: contain; }
+.orbit__initial { font-size: 15px; font-weight: 800; color: var(--primary); }
+
+@keyframes orbit-turn {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes orbit-counter {
+  to { transform: rotate(-360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit__ring,
+  .orbit__item { animation: none; }
+}
+
 /* La adivinanza: a reading panel with its date, and the days behind it. */
 .adiv__head .morehead__who { margin-top: 0; }
 .adiv { padding: var(--s4) var(--s4) var(--s3); }
@@ -2184,6 +2277,418 @@ html.in-qvapay .actionbar { display: none; }
 }
 .adiv__rowsnip { font-size: 13px; line-height: 1.5; color: var(--text-2); }
 
+/* ---------- Sueño: el texto, su lectura y la semana ---------------------- */
+
+.sueno__head .morehead__who { margin-top: 0; }
+
+.sueno__composer { margin-bottom: var(--s4); }
+
+/* The field is the app's, not the browser's: no inset shadow, no native focus
+ * ring, no resize handle over the tab bar. 16px is also the size iOS refuses to
+ * zoom into, which is what keeps the layout still while the keyboard opens. */
+.sueno__input {
+  display: block;
+  width: 100%;
+  min-height: 132px;
+  padding: var(--s3) var(--s3) var(--s2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.006em;
+  outline: none;
+  resize: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  /* Focusing must land the field above the on-screen keyboard instead of under
+   * it, so the scroll leaves the bar and the keyboard some room. */
+  scroll-margin-block: 96px;
+}
+
+.sueno__input::placeholder { color: var(--text-3); opacity: 0.7; }
+
+.sueno__input:focus {
+  border-color: var(--accent-hair);
+  background: var(--card-bg-raised);
+}
+
+/* The open tab's content, and the form that lives in the first one. */
+.sueno__pane { display: grid; gap: var(--s3); }
+.sueno__form { display: grid; gap: var(--s3); }
+
+/* The skeleton has its own class: `.anaskeleton` is hidden unless the analyser
+ * is loading, and borrowing it made the boxes invisible here. */
+.sueno__skeleton {
+  display: grid;
+  gap: var(--s3);
+}
+
+/* A hairline keeps the placeholder visible while the shimmer is between its two
+ * dark stops; without it the boxes read as empty space. */
+.sueno__skeleton .skeleton { border: 1px solid var(--hairline); }
+
+/* Two readings of one answer: the dream as it was told, and what it evoked. */
+.sueno__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  padding: 3px;
+  margin-bottom: var(--s3);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-pill);
+  background: var(--card-bg-raised);
+}
+
+.sueno__tab {
+  padding: 10px var(--s2);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.sueno__tab.is-active { background: var(--primary); color: #ffffff; }
+
+/* The tab with nothing to show yet: present, so the shape does not move, and
+ * unmistakably not clickable. */
+.sueno__tab.is-locked {
+  color: var(--text-3);
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Same accent as .analysecircle, but the label is a word: the analyser's action
+ * is an icon in a circle, and "Interpretar" would not fit in one. Full width,
+ * because on a phone the button is the target and a corner button is a miss. */
+.sueno__go {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--s3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  color: #ffffff;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.006em;
+  cursor: pointer;
+  transition: transform 140ms var(--ease), opacity 160ms var(--ease);
+  box-shadow: 0 10px 22px -12px color-mix(in srgb, var(--primary) 85%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.18);
+}
+
+.sueno__go:active { transform: scale(0.98); }
+.sueno__go[disabled] { opacity: 0.42; cursor: default; }
+
+/* The reading below the field. The panels already carry their own air; the last
+ * one must not add a gap over the tab bar. */
+.sueno__result { display: grid; gap: 0; }
+.sueno__result .panel:last-child { margin-bottom: 0; }
+
+/* The sentence that ties the dream to its symbols comes before the numbers:
+ * the same answer, in words. */
+.sueno__resumen {
+  margin: 0 0 var(--s3);
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+  text-wrap: pretty;
+}
+
+/* The numbers: the coloured surface of the screen. */
+.sueno__nums {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(94px, 1fr));
+  gap: var(--s3);
+}
+
+.sueno__num {
+  display: grid;
+  justify-items: center;
+  gap: var(--s2);
+  min-width: 0;
+  padding: var(--s3) var(--s1) 10px;
+  border: 1px solid color-mix(in srgb, var(--primary) 70%, #000);
+  border-radius: var(--radius-card);
+  background: var(--primary);
+  color: #ffffff;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.sueno__num:active { transform: scale(0.985); }
+
+/* A white disc holds the drawing; the number hangs off its bottom-right corner,
+ * ringed in white so it reads against the disc and against the purple. */
+.sueno__numdisc {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.sueno__numicon { display: block; width: 46px; height: 46px; object-fit: contain; }
+.sueno__numinitial { font-size: 24px; font-weight: 800; line-height: 1; color: var(--primary); }
+
+.sueno__numbadge {
+  position: absolute;
+  right: -9px;
+  bottom: -9px;
+  display: grid;
+  place-items: center;
+  min-width: 27px;
+  height: 27px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+  color: #ffffff;
+  box-shadow: 0 0 0 2px #ffffff;
+  font-size: 12.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Two lines and no more: the long meanings of the table would push the number
+ * card taller than the drawing it belongs to. */
+.sueno__numname {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.25;
+  text-align: center;
+  color: rgb(255 255 255 / 0.85);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* The signals: a name and, underneath, the numbers its symbols suggest. */
+.sueno__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+.sueno__chip {
+  display: inline-grid;
+  gap: 1px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 6px 11px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-panel);
+  background: var(--card-bg-raised);
+}
+
+.sueno__chipname {
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.sueno__chipnums {
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+
+/* One row per signal: the name on one end, the count of dreams on the other. */
+.sueno__rows { display: grid; }
+
+.sueno__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s3);
+  padding: var(--s2) 0;
+  font-size: 13px;
+}
+
+.sueno__row + .sueno__row { border-top: 1px solid var(--hairline); }
+.sueno__rowname { color: var(--text); overflow-wrap: anywhere; }
+.sueno__rowcount { flex: 0 0 auto; color: var(--text-3); font-variant-numeric: tabular-nums; }
+
+.sueno__note,
+.sueno__empty {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+/* The week's play, in the shapes it is played: fijo, corridos and parles. */
+.sueno__fijorow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding-bottom: var(--s3);
+  margin-bottom: var(--s3);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.sueno__fijolabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.sueno__fijonum {
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.sueno__fijonum .digit-lead { color: var(--primary); }
+.sueno__fijonum .digit-rest { color: var(--text); }
+
+.sueno__playblock + .sueno__playblock { margin-top: var(--s3); }
+
+.sueno__playsub {
+  margin: 0 0 var(--s2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* Corridos: two balls, the way they sit on a Pick 4 ticket. */
+.sueno__balls { display: flex; gap: var(--s3); }
+
+.sueno__ball {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--card-bg-raised);
+  border: 1px solid var(--accent-hair);
+  font-size: 21px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+}
+
+/* Parles: a pair, one number over the other. */
+.sueno__parles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s2);
+}
+
+.sueno__parle {
+  display: grid;
+  gap: 2px;
+  padding: var(--s2) 0;
+  text-align: center;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-panel);
+  background: var(--card-bg-raised);
+  font-size: 17px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.sueno__parletop { color: var(--primary); }
+
+.sueno__parlebottom {
+  color: var(--text-2);
+  border-top: 1px dashed var(--hairline);
+  padding-top: 2px;
+}
+
+/* The stored dreams, as a way back into a reading. */
+.sueno__historyrow {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: var(--s3) 0;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sueno__historyrow:first-of-type { border-top: 0; }
+
+.sueno__historydate {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.sueno__historysnip { font-size: 12.5px; line-height: 1.45; color: var(--text-2); }
+
+/* Who else dreamt something like this: their public profile and a count. */
+.sueno__people {
+  display: grid;
+  gap: var(--s2);
+  margin-top: var(--s2);
+}
+
+.sueno__person {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  min-width: 0;
+}
+
+.sueno__avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--disc-bg);
+}
+
+.sueno__avatarimg { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sueno__avatarinitial { font-size: 15px; font-weight: 800; color: var(--primary); }
+
+.sueno__whobody { display: grid; min-width: 0; }
+
+.sueno__whoname {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sueno__whoshared { font-size: 11.5px; color: var(--text-3); }
+
 /* The line under the heading needs air before the first tile. */
 .culturehead { margin-bottom: var(--s5); }
 
@@ -2220,6 +2725,7 @@ html.in-qvapay .actionbar { display: none; }
 .toolcard,
 .flipcard__inner,
 .chip,
+.sueno__go,
 .tabbar,
 .dayrow {
   -webkit-user-select: none;
