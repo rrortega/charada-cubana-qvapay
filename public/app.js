@@ -154,50 +154,17 @@ async function ensureCharadaIndex() {
 /** A fijo's charada number: "00" is the entry 100. */
 const toEntry = (twoDigits) => (twoDigits === 0 ? 100 : twoDigits);
 
-/** Artwork of one charada entry, or null. */
-function symbolIconFor(entryNumber) {
-  const entry = charadaIndex?.numbers.find((n) => n.number === entryNumber);
-  return entry?.icon ?? null;
-}
-
-/**
- * Card that shows a drawing and turns over to show the number when tapped.
- * The back face receives the caller's node so the digit roll keeps its targets.
- */
-function flipCard({ icon, back, label, numberText }) {
-  const wrap = el('button', 'flip');
-  wrap.type = 'button';
-  wrap.setAttribute('aria-label', `${label}: ${numberText}. Toca para ver el dibujo o el número.`);
-
-  const inner = el('span', 'flip__inner');
-
-  const front = el('span', 'flip__face flip__face--front');
-  if (icon) {
-    const img = el('img', 'flip__icon');
-    img.src = icon;
-    img.alt = '';
-    img.loading = 'lazy';
-    front.append(img);
-  } else {
-    // No drawing for this entry: the number is the honest front face.
-    front.append(el('span', 'flip__number', numberText));
-    wrap.dataset.noArt = 'true';
-  }
-
-  const backFace = el('span', 'flip__face flip__face--back');
-  backFace.append(back ?? el('span', 'flip__number', numberText));
-
-  inner.append(front, backFace);
-  wrap.append(inner);
-  wrap.addEventListener('click', () => wrap.classList.toggle('is-open'));
-  return wrap;
-}
-
 // ---------- Card pieces (shared by both screens) ----------
 
 function panelFijo(draw) {
-  const panel = el('section', 'panel');
-  panel.append(el('h2', 'panel__title', 'Fijo'));
+  const entry = toEntry(draw.charada?.value ?? 0);
+
+  // The whole card turns over: one side is the number, the other its artwork.
+  const card = el('section', 'flipcard');
+  const inner = el('div', 'flipcard__inner');
+
+  const front = el('div', 'flipcard__face flipcard__face--front');
+  front.append(el('h2', 'panel__title', 'Fijo'));
 
   const row = el('div', 'fijo');
   // Each digit starts at 0 and rolls up; the targets are the real digits.
@@ -207,18 +174,77 @@ function panelFijo(draw) {
     digits.push({ element: node, text: String(digit) });
     row.append(node);
   });
+  front.append(row);
+  if (draw.fijo.significado) front.append(el('p', 'fijo__meaning', draw.fijo.significado));
 
-  // The drawing takes the front; the number waits on the other side of a turn.
-  panel.append(flipCard({
-    icon: symbolIconFor(toEntry(draw.charada?.value ?? 0)),
-    back: row,
-    label: 'Fijo',
-    numberText: draw.fijo.formatted,
-  }));
+  // The other side: the principal drawing big, the rest in a strip that never
+  // wraps — it overflows sideways and moves with the finger.
+  const back = el('div', 'flipcard__face flipcard__face--back');
+  back.append(el('h2', 'panel__title', `Fijo · ${draw.fijo.formatted}`));
+  const art = el('div', 'flipcard__art');
+  back.append(art);
 
-  if (draw.fijo.significado) panel.append(el('p', 'fijo__meaning', draw.fijo.significado));
-  panel._digits = digits;
-  return panel;
+  inner.append(front, back);
+  card.append(inner);
+
+  card._digits = digits;
+  card._art = art;
+  card._entry = entry;
+
+  card.setAttribute('role', 'button');
+  card.setAttribute('tabindex', '0');
+  card.setAttribute('aria-label', `Fijo ${draw.fijo.formatted}. Toca para ver los símbolos del número.`);
+
+  // A tap turns the card; a sideways drag belongs to the strip, not to the turn.
+  let start = null;
+  card.addEventListener('pointerdown', (event) => { start = { x: event.clientX, y: event.clientY }; });
+  card.addEventListener('pointerup', (event) => {
+    const dragged = start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 12;
+    start = null;
+    if (!dragged) toggleFlipCard(card);
+  });
+  card.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      toggleFlipCard(card);
+    }
+  });
+
+  return card;
+}
+
+/** Turn the card over, loading its artwork the first time that side is seen. */
+function toggleFlipCard(card) {
+  const open = !card.classList.contains('is-open');
+  card.classList.toggle('is-open', open);
+  if (open) loadCardArt(card);
+}
+
+async function loadCardArt(card) {
+  if (card.dataset.art) return;
+  card.dataset.art = 'loading';
+
+  try {
+    const ficha = await getJson(`/api/significados?numero=${card._entry}`);
+    const principal = ficha.significados.find((s) => s.rol === 'principal') ?? ficha.significados[0];
+    const restantes = ficha.significados.filter((s) => s !== principal);
+
+    card._art.replaceChildren();
+
+    if (principal?.icon) {
+      const hero = el('img', 'flipcard__hero');
+      hero.src = principal.icon;
+      hero.alt = '';
+      card._art.append(hero);
+      card._art.append(el('span', 'flipcard__caption', principal.nombre));
+    }
+
+    if (restantes.length > 0) card._art.append(symbolStrip({ significados: restantes }, { inline: true }));
+    card.dataset.art = 'ready';
+  } catch {
+    card._art.replaceChildren(el('p', 'state', 'No se pudo cargar el arte.'));
+    delete card.dataset.art;
+  }
 }
 
 /** Note shown when the partner draw (Pick 4) has not been published yet. */
@@ -760,12 +786,22 @@ function tile(label, value, sub) {
   return box;
 }
 
-/** Horizontal art strip: every meaning of the number, swipeable, no scrollbar. */
-function symbolStrip(ficha) {
-  const strip = el('div', 'symbolstrip');
+/**
+ * Horizontal art strip: the meanings' drawings, swipeable, no visible scrollbar.
+ *
+ * One drawing appears once: the delivered table reuses the same image under
+ * several names, and repeating it in the strip says nothing new.
+ */
+function symbolStrip(ficha, { inline = false } = {}) {
+  const strip = el('div', `symbolstrip${inline ? ' symbolstrip--inline' : ''}`);
   strip.setAttribute('role', 'list');
 
+  const seen = new Set();
   for (const meaning of ficha.significados) {
+    const key = meaning.clave ?? meaning.icon ?? `sin-arte-${meaning.id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
     const item = el('div', 'symbolstrip__item');
     item.setAttribute('role', 'listitem');
 

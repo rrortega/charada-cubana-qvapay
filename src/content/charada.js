@@ -11,6 +11,7 @@
 // drawing is picked up as soon as it is dropped in, with no JSON edit and no
 // stale `null` to maintain.
 
+import { createHash } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 
 const SOURCE = new URL('../../public/significados/charada-cubana.json', import.meta.url);
@@ -136,6 +137,29 @@ function declaredPrincipal(ficha) {
   return at === -1 ? 0 : at;
 }
 
+/** @type {Map<string, string>} icon path -> short content hash */
+const iconKeys = new Map();
+
+/**
+ * Short content hash of one drawing, cached per path.
+ *
+ * The delivered artwork reuses the same image under several names (the audit
+ * finds 221 files that repeat another's bytes). The key lets a screen show each
+ * drawing once without shipping the bytes to the client.
+ *
+ * @param {string} publicPath
+ * @returns {Promise<string>}
+ */
+async function iconKey(publicPath) {
+  const cachedKey = iconKeys.get(publicPath);
+  if (cachedKey) return cachedKey;
+
+  const bytes = await readFile(new URL(`../../public${publicPath}`, import.meta.url));
+  const key = createHash('sha1').update(bytes).digest('base64url').slice(0, 12);
+  iconKeys.set(publicPath, key);
+  return key;
+}
+
 /** Files that no meaning of their number claims, so nothing hides silently. */
 function orphansOf(art, fichas, idsByNumber) {
   const out = [];
@@ -212,13 +236,15 @@ export async function getFicha(number) {
     fuente: ficha.fuente ?? '',
     tradicion: normaliseTradicion(ficha.tradicion),
     relacionadas: (ficha.fichas_relacionadas ?? []).map(Number),
-    significados: ficha.significados.map((s, i) => ({
+    significados: await Promise.all(ficha.significados.map(async (s, i) => ({
       id: s.id,
       nombre: displayName(s.nombre),
       rol: s.rol,
       descripcion: s.descripcion ?? '',
       icon: icons[i],
-    })),
+      // Two meanings that share a drawing share this key.
+      clave: icons[i] ? await iconKey(icons[i]) : null,
+    }))),
   };
 }
 

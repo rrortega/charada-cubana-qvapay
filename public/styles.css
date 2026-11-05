@@ -15,7 +15,10 @@
   --bg: #0e1116;
   --text: #f2f5fa;
   --surface: #171b22;
-  --primary: #4c8dff;
+  /* Purple by default: outside QvaPay no theme is injected, and the artwork is
+   * violet, so the interface agrees with the drawings. Inside the app,
+   * applyTheme() overwrites this with the host colour. */
+  --primary: #8b5cf6;
 
   --radius-card: 18px;
   --radius-panel: 14px;
@@ -1955,52 +1958,61 @@ html.in-qvapay .actionbar { display: none; }
 .analyser__symbol[hidden] { display: none; }
 
 /* ---------- Flip card of the cargador ------------------------------------- */
-/* The drawing on one face, the number on the other; a tap turns it over. */
-.flip {
-  display: block;
-  width: 100%;
-  padding: var(--s2) 0 var(--s1);
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
+/* The whole card turns over: the number on one face, the artwork on the other. */
+.flipcard {
+  perspective: 1200px;
+  margin-bottom: var(--s3);
+}
+
+.flipcard__inner {
+  position: relative;
+  display: grid;
+  min-height: 218px;
+  transition: transform 560ms var(--ease);
+  transform-style: preserve-3d;
   cursor: pointer;
-  perspective: 900px;
   -webkit-tap-highlight-color: transparent;
 }
 
-.flip__inner {
-  position: relative;
-  display: grid;
-  place-items: center;
-  min-height: 150px;
-  transition: transform 520ms var(--ease);
-  transform-style: preserve-3d;
-}
+.flipcard.is-open .flipcard__inner { transform: rotateY(180deg); }
 
-.flip.is-open .flip__inner { transform: rotateY(180deg); }
-
-.flip__face {
+.flipcard__face {
   grid-area: 1 / 1;
   display: grid;
-  place-items: center;
-  width: 100%;
+  align-content: center;
+  justify-items: center;
+  gap: var(--s2);
+  padding: var(--s4);
+  background: var(--card-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
-.flip__face--back { transform: rotateY(180deg); }
-
-.flip__icon { display: block; width: 150px; height: 150px; object-fit: contain; }
-
-.flip__number {
-  font-size: 84px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  font-variant-numeric: tabular-nums;
-  color: var(--primary);
+.flipcard__face--back {
+  transform: rotateY(180deg);
+  justify-items: stretch;
+  align-content: start;
+  gap: var(--s3);
 }
+
+/* Stretch, not centre: the strip must be bounded by the card so it scrolls
+ * inside instead of growing past the edge. */
+.flipcard__art { display: grid; justify-items: stretch; gap: var(--s2); min-width: 0; }
+
+.flipcard__hero {
+  display: block;
+  width: 132px;
+  height: 132px;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+.flipcard__caption { font-size: 12px; color: var(--text-3); text-align: center; }
+
+/* Inside the card the strip keeps its own scroll but not the full-bleed margins. */
+.symbolstrip--inline { margin: 0; padding: 0; width: 100%; min-width: 0; }
 
 /* ---------- Analysis: the number's meanings as a swipeable strip ----------- */
 /* No visible scrollbar: it moves with the finger and nothing else shows it. */
