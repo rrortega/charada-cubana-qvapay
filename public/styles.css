@@ -1990,12 +1990,26 @@ html.in-qvapay .actionbar { display: none; }
   justify-items: center;
   gap: var(--s2);
   padding: var(--s4);
-  background: var(--card-bg);
-  border: 1px solid var(--hairline);
+  /* The cargador card is the one coloured surface: primary background, and text
+   * pinned to white so it stays legible whatever theme the host injects. */
+  background: var(--primary);
+  border: 1px solid color-mix(in srgb, var(--primary) 70%, #000);
   border-radius: var(--radius-card);
+  color: #ffffff;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
+
+.flipcard .panel__title { color: rgb(255 255 255 / 0.72); }
+
+/* Inside the coloured card the digits and captions are white; the leading digit
+ * keeps its emphasis by staying fully opaque. */
+.flipcard .fijo__digit--lead { color: #ffffff; }
+.flipcard .fijo__digit--rest { color: rgb(255 255 255 / 0.7); }
+.flipcard .fijo__meaning { color: rgb(255 255 255 / 0.82); }
+.flipcard .flipcard__caption { color: rgb(255 255 255 / 0.82); }
+.flipcard .symbolstrip__name { color: rgb(255 255 255 / 0.78); }
+.flipcard .state { color: rgb(255 255 255 / 0.82); }
 
 .flipcard__face--back {
   transform: rotateY(180deg);
