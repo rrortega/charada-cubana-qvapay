@@ -1342,6 +1342,11 @@ async function navigate(name, { push = true } = {}) {
     btn.setAttribute('aria-selected', String(active));
   }
   if (push) pushView(name);
+  // Chrome first: the bar and the main button must follow the tap, not the
+  // network. The second call after the view renders corrects anything the
+  // screen only knows once its data (or its session) is loaded; the dedupe in
+  // `syncChrome` keeps the unchanged case from sending twice.
+  syncChrome(name);
   try {
     await (VIEWS[name] ?? viewTiros)();
     syncChrome(name);

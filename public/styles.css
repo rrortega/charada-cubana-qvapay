@@ -1859,10 +1859,13 @@ html.in-qvapay .actionbar { display: none; }
 .readerhead__meta { font-size: 12px; color: var(--text-3); }
 
 .readerhead__pull {
-  margin: var(--s2) 0 0;
-  font-size: 15px;
-  line-height: 1.5;
-  color: color-mix(in srgb, var(--text) 72%, var(--bg));
+  margin: var(--s3) 0 0;
+  padding-left: var(--s3);
+  border-left: 2px solid var(--accent-hair);
+  font-size: 14.5px;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--text-2);
   text-wrap: pretty;
 }
 
