@@ -536,19 +536,26 @@ async function openDatePicker() {
   calendarOpen = true;
   syncChrome('tiros');
 
-  openCalendar({
+  const closeCalendar = openCalendar({
     value: initial,
     min: range.from,
     max: range.to,
     onSelect: (iso) => {
+      // Picking a day navigates: the sheet's entry is neutralised, not walked
+      // back, or the back lands after the push and undoes it.
+      settleOverlay('calendar');
       currentDate = iso;
       navigate('tiros');
     },
     onClose: () => {
       calendarOpen = false;
       syncChrome('tiros');
+      // Closed by its own controls: take the entry back off with it.
+      releaseOverlayEntry('calendar');
     },
   });
+
+  openOverlay('calendar', closeCalendar);
 }
 
 // ---------- Historial (one row per day, accordion) ----------
@@ -795,6 +802,11 @@ async function runAnalysis() {
     const ficha = await getJson(`/api/significados?numero=${analysisNumber}`).catch(() => null);
     analysisData = data;
     renderAnalysisResult(data, ficha);
+    // The result is a screen state the user walked into: it earns an entry, so
+    // the native back button returns to the input instead of leaving the app.
+    if (!history.state?.resultado) {
+      history.pushState({ ...(history.state ?? {}), view: 'analisis', resultado: true }, '', location.href);
+    }
     syncChrome('analisis');
   } catch (err) {
     setState(err.message, true);
@@ -807,6 +819,13 @@ function resetAnalysis() {
   analysisData = null;
   renderAnalysisInput({ focus: true });
   syncChrome('analisis');
+
+  // Same rule as a sheet: leaving the result takes its entry back off, so back
+  // is not spent on a screen that is already gone.
+  if (history.state?.resultado) {
+    ignoringPop = true;
+    history.back();
+  }
 }
 
 /** Horizontal bar row used by the weekday/month breakdown. */
@@ -1210,7 +1229,10 @@ async function startLink() {
 }
 
 /** Small bottom sheet with a message and an optional action. */
+let sheetSeq = 0;
+
 function sheetMessage({ title, body, action, onAction }) {
+  const name = `sheet-${(sheetSeq += 1)}`;
   const overlay = el('div', 'sheet-overlay is-open');
   const sheet = el('div', 'sheet sheet--msg');
 
@@ -1225,17 +1247,22 @@ function sheetMessage({ title, body, action, onAction }) {
 
   if (action) {
     const go = el('button', 'actionbar__btn ripple ripple--on-accent', action);
-    go.addEventListener('click', () => { close(); onAction?.(); });
+    // The action usually opens another sheet or navigates; settle in place so no
+    // back is in flight when that happens.
+    go.addEventListener('click', () => { settleOverlay(name); onAction?.(); });
     actions.append(go);
   }
   const cancel = el('button', 'sheetmsg__cancel ripple', action ? 'Ahora no' : 'Entendido');
-  cancel.addEventListener('click', close);
+  cancel.addEventListener('click', () => closeOverlay(name));
   actions.append(cancel);
 
   sheet.append(grab, h, p, actions);
   overlay.append(sheet);
-  overlay.addEventListener('click', (evt) => { if (evt.target === overlay) close(); });
+  overlay.addEventListener('click', (evt) => { if (evt.target === overlay) closeOverlay(name); });
   document.body.append(overlay);
+
+  // A sheet is a step: the native back button closes it (S16).
+  openOverlay(name, close);
 }
 
 
@@ -1945,6 +1972,72 @@ function watchTabbarHeight() {
 //
 // QvaPay's back button walks the browser history, so navigation has to write
 // history. Every screen and every in-view step (an article) is an entry (S15).
+//
+// A sheet is a step too (S16). The calendar and the message sheets push their own
+// entry when they open, so back closes them instead of leaving the screen behind
+// them; a sheet dismissed by its own controls takes that entry back off, so what
+// is stored and what is on screen never disagree.
+
+/** Open sheets, oldest first. The last one is what back closes. */
+const overlays = [];
+
+/** Set while we walk back ourselves, so the popstate we caused is not re-handled. */
+let ignoringPop = false;
+
+function openOverlay(name, close) {
+  if (overlays.some((overlay) => overlay.name === name)) return;
+  overlays.push({ name, close });
+  history.pushState({ ...(history.state ?? {}), overlay: name }, '', location.href);
+}
+
+/** Remove a sheet from the stack, or undefined when it was already gone. */
+function takeOverlay(name) {
+  const index = overlays.findIndex((overlay) => overlay.name === name);
+  if (index === -1) return undefined;
+  return overlays.splice(index, 1)[0];
+}
+
+/**
+ * Reconcile a sheet that closed itself (its own button, the backdrop, Escape).
+ *
+ * Called from the sheet's `onClose`. When the close came from us the sheet is
+ * already off the stack and this is a no-op, which is what keeps the two paths
+ * from fighting over history.
+ */
+function releaseOverlayEntry(name) {
+  if (!takeOverlay(name)) return;
+  if (history.state?.overlay !== name) return;
+  ignoringPop = true;
+  history.back();
+}
+
+/** Close from the screen's controls: the entry goes away with the sheet. */
+function closeOverlay(name) {
+  const overlay = takeOverlay(name);
+  if (!overlay) return;
+  overlay.close();
+  if (history.state?.overlay === name) {
+    ignoringPop = true;
+    history.back();
+  }
+}
+
+/**
+ * Close while something else takes over — a navigation, another sheet.
+ *
+ * The entry is neutralised in place instead of walked back: a `history.back()`
+ * in flight would land after the push that follows and undo it.
+ */
+function settleOverlay(name) {
+  const overlay = takeOverlay(name);
+  if (!overlay) return;
+  overlay.close();
+  if (history.state?.overlay === name) {
+    const { overlay: _dropped, ...rest } = history.state;
+    history.replaceState(rest, '', location.href);
+  }
+}
+
 
 /** True when the page runs inside the QvaPay WebView, which draws its own bar. */
 function isHosted() {
@@ -1964,7 +2057,24 @@ function pushView(name, extra = {}) {
 
 function wireHistory() {
   window.addEventListener('popstate', (evt) => {
+    // Our own walk back for a dismissed sheet: nothing to render.
+    if (ignoringPop) {
+      ignoringPop = false;
+      return;
+    }
+
+    // Back is the way out of a sheet, and only of a sheet, while one is open.
+    const overlay = overlays.pop();
+    if (overlay) {
+      overlay.close();
+      return;
+    }
+
     const state = evt.state ?? {};
+
+    // Back out of a finished analysis shows the input again, not the same result.
+    if (state.view === 'analisis' && !state.resultado) analysisData = null;
+
     if (state.article) {
       openArticle(state.article, { push: false });
       return;
