@@ -1,17 +1,17 @@
 {
-  "version": 1,
+  "version": 2,
   "fuente_indice": "https://labolitadecuba.com/charada-cubana",
   "idioma": "es-CU",
   "resumen": {
     "fichas": 100,
     "significados": 693,
-    "png": 369,
-    "pendientes": 324
+    "png": 693,
+    "pendientes": 0
   },
   "notas": [
     "Se reúnen el nombre principal, la lista de cada ficha y la lista del índice. Las asociaciones adicionales identificadas en la prosa se marcan como texto_de_la_ficha.",
     "Las fichas relacionadas, el compañero y el peón son relaciones tradicionales separadas de la lista de significados.",
-    "Los recortes reutilizan el sprite aportado. La referencia visual indica el motivo representado cuando se reutiliza para variantes. Un valor png nulo identifica un significado sin ilustración.",
+    "Los motivos existentes reutilizan el sprite aportado. Las ilustraciones nuevas completan los significados indicados en la auditoría. Se reutiliza el mismo dibujo cuando un significado idéntico aparece en varios números. Los conceptos abstractos se representan mediante escenas o emblemas simbólicos.",
     "Las denominaciones se conservan como registro de la fuente. Algunas son regionalismos o reflejan lenguaje histórico."
   ],
   "numeros": {
@@ -128,9 +128,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "01/fiebre-alta.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "fiebre alta",
+            "brief_visual": "A feverish face with a thermometer, gentle expression, tiny heat waves."
           }
         }
       ]
@@ -229,9 +231,11 @@
           "registrado_en": [
             "texto_de_la_ficha"
           ],
-          "png": null,
+          "png": "02/flor-mariposa-blanca.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "flor mariposa blanca",
+            "brief_visual": "Hedychium coronarium, the Cuban national white butterfly ginger flower. Recognizable four open white petals, purple shading."
           }
         }
       ]
@@ -345,9 +349,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "03/ciempies.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "ciempiés",
+            "brief_visual": "A centipede, segmented body and many paired legs."
           }
         },
         {
@@ -464,9 +470,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "04/boca.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "boca",
+            "brief_visual": "A clearly recognizable icon of boca, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -599,9 +607,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "05/fruta.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "fruta",
+            "brief_visual": "A clearly recognizable icon of fruta, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -630,9 +640,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "05/lengua.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "lengua",
+            "brief_visual": "A clearly recognizable icon of lengua, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -955,9 +967,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "08/tigre.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tigre",
+            "brief_visual": "A clearly recognizable icon of tigre, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -1006,9 +1020,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "09/entierro.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "entierro",
+            "brief_visual": "A closed coffin being lowered into a simple rectangular grave, tiny ceremonial flower. Non-graphic."
           }
         },
         {
@@ -1054,9 +1070,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "09/esqueleto.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "esqueleto",
+            "brief_visual": "A clearly recognizable icon of esqueleto, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -1222,9 +1240,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "10/miedo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "miedo",
+            "brief_visual": "A clearly recognizable icon of miedo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -1289,9 +1309,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "11/fosforera.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "fosforera",
+            "brief_visual": "A clearly recognizable icon of fosforera, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -1320,9 +1342,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "11/fabrica.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "fábrica",
+            "brief_visual": "A clearly recognizable icon of fábrica, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -1351,9 +1375,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "11/miami.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "miami",
+            "brief_visual": "A clearly recognizable icon of miami, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -1380,9 +1406,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "12/gallina.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "gallina",
+            "brief_visual": "A domestic hen, small comb and rounded body."
           }
         },
         {
@@ -1428,9 +1456,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "12/toallas.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "toallas",
+            "brief_visual": "A clearly recognizable icon of toallas, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -1578,9 +1608,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "13/anafe.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "anafe",
+            "brief_visual": "A clearly recognizable icon of anafe, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -1626,9 +1658,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "14/tigre.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tigre",
+            "brief_visual": "A clearly recognizable icon of tigre, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -1640,9 +1674,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "14/gato-tigre.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "gato tigre",
+            "brief_visual": "A clearly striped tabby cat, seated."
           }
         },
         {
@@ -1894,9 +1930,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "16/funerales.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "funerales",
+            "brief_visual": "A funeral wreath beside a closed coffin. Non-graphic."
           }
         },
         {
@@ -1925,9 +1963,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "16/regalo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "regalo",
+            "brief_visual": "A clearly recognizable icon of regalo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -1990,9 +2030,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "17/hule.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "hule",
+            "brief_visual": "A folded sheet of flexible rubber, one corner rolled."
           }
         },
         {
@@ -2157,9 +2199,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "18/gato-amarillo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "gato amarillo",
+            "brief_visual": "A yellow-furred domestic cat with warm golden highlights within the purple palette."
           }
         }
       ]
@@ -2269,9 +2313,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "19/armadura.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "armadura",
+            "brief_visual": "A clearly recognizable icon of armadura, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -2283,9 +2329,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "19/jutia.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "jutía",
+            "brief_visual": "A Cuban hutia, stocky rodent with rounded ears, short furry limbs, blunt muzzle, visible thick tail. Not a rat or rabbit."
           }
         },
         {
@@ -2297,9 +2345,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "19/caida.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "caída",
+            "brief_visual": "A person slipping backward, harmless cartoon pose, no injury."
           }
         }
       ]
@@ -2380,9 +2430,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "20/camiseta.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "camiseta",
+            "brief_visual": "A clearly recognizable icon of camiseta, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -2394,9 +2446,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "20/frijol.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "frijol",
+            "brief_visual": "A clearly recognizable icon of frijol, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -2408,9 +2462,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "20/orinal.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "orinal",
+            "brief_visual": "An old ceramic chamber pot with one side handle."
           }
         },
         {
@@ -2422,9 +2478,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "20/libro.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "libro",
+            "brief_visual": "A clearly recognizable icon of libro, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -2453,9 +2511,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "20/fruta.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "fruta",
+            "brief_visual": "A clearly recognizable icon of fruta, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -2569,9 +2629,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "21/cigarro.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cigarro",
+            "brief_visual": "A clearly recognizable icon of cigarro, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -2721,9 +2783,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "22/resguardo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "resguardo",
+            "brief_visual": "A little protective charm, tied fabric pouch with an eye-shaped amulet."
           }
         }
       ]
@@ -2976,9 +3040,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "24/hermano.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "hermano",
+            "brief_visual": "A clearly recognizable icon of hermano, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -3094,9 +3160,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "25/ojo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "ojo",
+            "brief_visual": "A clearly recognizable icon of ojo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -3108,9 +3176,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "25/lagrimas.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "lágrimas",
+            "brief_visual": "A clearly recognizable icon of lágrimas, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -3226,9 +3296,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "26/nube-de-oro.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "nube de oro",
+            "brief_visual": "A clearly recognizable icon of nube de oro, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -3240,9 +3312,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "26/curandero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "curandero",
+            "brief_visual": "A folk healer holding a small bundle of medicinal herbs, respectful portrait."
           }
         }
       ]
@@ -3339,9 +3413,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "27/baul.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "baúl",
+            "brief_visual": "A clearly recognizable icon of baúl, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -3474,9 +3550,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "28/collar.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "collar",
+            "brief_visual": "A clearly recognizable icon of collar, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -3593,9 +3671,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "29/maracas.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "maracas",
+            "brief_visual": "A clearly recognizable icon of maracas, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -3813,9 +3893,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "31/diente.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "diente",
+            "brief_visual": "A clearly recognizable icon of diente, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -3861,9 +3943,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "32/enemigo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "enemigo",
+            "brief_visual": "A clearly recognizable icon of enemigo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -3926,9 +4010,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "32/dentista.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "dentista",
+            "brief_visual": "A clearly recognizable icon of dentista, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -4006,9 +4092,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "33/bofeton.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "bofetón",
+            "brief_visual": "A clearly recognizable icon of bofetón, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -4243,9 +4331,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "35/amarre.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "amarre",
+            "brief_visual": "A knotted cord encircling a small heart, symbolic folk binding charm."
           }
         }
       ]
@@ -4327,9 +4417,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "36/opio.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "opio",
+            "brief_visual": "An opium poppy seed capsule with its distinct crown and a small ornamental poppy flower. Botanical icon."
           }
         },
         {
@@ -4373,9 +4465,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "37/galgo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "galgo",
+            "brief_visual": "A clearly recognizable icon of galgo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -4387,9 +4481,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "37/gallina-prieta.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "gallina prieta",
+            "brief_visual": "A black-feathered hen, deep plum-black plumage with purple highlights."
           }
         },
         {
@@ -4401,9 +4497,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "37/gitana.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "gitana",
+            "brief_visual": "A Romani woman portrait in a simple headscarf and earrings, dignified."
           }
         },
         {
@@ -4483,9 +4581,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "37/robo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "robo",
+            "brief_visual": "A gloved hand taking a small coin purse."
           }
         }
       ]
@@ -4546,9 +4646,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "38/macao.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "macao",
+            "brief_visual": "A hermit crab emerging from its spiral shell. This is the Cuban crustacean, not a monkey or parrot."
           }
         },
         {
@@ -4594,9 +4696,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "38/guantes.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "guantes",
+            "brief_visual": "A clearly recognizable icon of guantes, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -4608,9 +4712,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "38/barril.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "barril",
+            "brief_visual": "A clearly recognizable icon of barril, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -4654,9 +4760,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "39/jutia.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "jutía",
+            "brief_visual": "A Cuban hutia, stocky rodent with rounded ears, short furry limbs, blunt muzzle, visible thick tail. Not a rat or rabbit."
           }
         },
         {
@@ -4736,9 +4844,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "39/tintorero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tintorero",
+            "brief_visual": "A textile dyer dipping cloth into a small vat."
           }
         },
         {
@@ -4750,9 +4860,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "39/ladron.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "ladrón",
+            "brief_visual": "A clearly recognizable icon of ladrón, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -4764,9 +4876,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "39/pelota.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "pelota",
+            "brief_visual": "A clearly recognizable icon of pelota, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -4810,9 +4924,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "40/cura.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cura",
+            "brief_visual": "A Catholic priest portrait with clerical collar."
           }
         },
         {
@@ -4858,9 +4974,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "40/cantina.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cantina",
+            "brief_visual": "A clearly recognizable icon of cantina, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -4989,9 +5107,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "41/clarin.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "clarín",
+            "brief_visual": "A simple brass bugle."
           }
         },
         {
@@ -5003,9 +5123,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "41/plato.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "plato",
+            "brief_visual": "A clearly recognizable icon of plato, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -5083,9 +5205,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "42/pais-lejano.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "país lejano",
+            "brief_visual": "A small globe with a dotted flight arc to a distant island."
           }
         },
         {
@@ -5131,9 +5255,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "42/abismo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "abismo",
+            "brief_visual": "A clearly recognizable icon of abismo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -5160,9 +5286,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "43/sereno.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "sereno",
+            "brief_visual": "A traditional night watchman in cap holding a lantern and staff, small moon above."
           }
         },
         {
@@ -5259,9 +5387,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "43/jorobado.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "jorobado",
+            "brief_visual": "An adult with a visibly curved upper back, respectful side portrait."
           }
         },
         {
@@ -5305,9 +5435,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "44/cuero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cuero",
+            "brief_visual": "A piece of tanned leather hide."
           }
         },
         {
@@ -5319,9 +5451,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "44/ano-del-cuero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "año del cuero",
+            "brief_visual": "An empty wallet beside a small calendar, symbolizing a year of scarcity, no writing."
           }
         },
         {
@@ -5333,9 +5467,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "44/ano-malo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "año malo",
+            "brief_visual": "A small calendar with a storm cloud over it, no writing."
           }
         },
         {
@@ -5530,9 +5666,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "45/palo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "palo",
+            "brief_visual": "A clearly recognizable icon of palo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -5610,9 +5748,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "46/hambre.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "hambre",
+            "brief_visual": "An empty bowl and a spoon, with a small human silhouette holding their stomach."
           }
         },
         {
@@ -5658,9 +5798,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "46/chino.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "chino",
+            "brief_visual": "A dignified portrait of a Chinese adult in everyday clothing, natural features."
           }
         },
         {
@@ -5806,9 +5948,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "47/rosa.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "rosa",
+            "brief_visual": "A clearly recognizable icon of rosa, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -5835,9 +5979,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "48/tabaco.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tabaco",
+            "brief_visual": "A clearly recognizable icon of tabaco, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6034,9 +6180,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "49/fantasma.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "fantasma",
+            "brief_visual": "A clearly recognizable icon of fantasma, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6048,9 +6196,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "49/fogon.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "fogón",
+            "brief_visual": "A clearly recognizable icon of fogón, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6062,9 +6212,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "49/espiritu.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "espíritu",
+            "brief_visual": "A soft ethereal human silhouette with glowing purple contours."
           }
         }
       ]
@@ -6161,9 +6313,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "50/picaro.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "pícaro",
+            "brief_visual": "A mischievous smiling adult with a sly raised eyebrow."
           }
         },
         {
@@ -6175,9 +6329,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "50/arbol.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "árbol",
+            "brief_visual": "A clearly recognizable icon of árbol, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6189,9 +6345,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "50/panuelo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "pañuelo",
+            "brief_visual": "A clearly recognizable icon of pañuelo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -6218,9 +6376,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "51/canguro.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "canguro",
+            "brief_visual": "A kangaroo with long hind legs, long thick tail, small joey in pouch."
           }
         },
         {
@@ -6249,9 +6409,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "51/sed.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "sed",
+            "brief_visual": "A thirsty face beside a nearly empty glass and a single water droplet."
           }
         },
         {
@@ -6263,9 +6425,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "51/oro.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "oro",
+            "brief_visual": "A clearly recognizable icon of oro, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6277,9 +6441,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "51/sereno.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "sereno",
+            "brief_visual": "A traditional night watchman in cap holding a lantern and staff, small moon above."
           }
         },
         {
@@ -6291,9 +6457,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "51/anteojos.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "anteojos",
+            "brief_visual": "A clearly recognizable icon of anteojos, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6305,9 +6473,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "51/cumpleanos.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cumpleaños",
+            "brief_visual": "A clearly recognizable icon of cumpleaños, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6319,9 +6489,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "51/plato.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "plato",
+            "brief_visual": "A clearly recognizable icon of plato, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -6365,9 +6537,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "52/bicicleta.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "bicicleta",
+            "brief_visual": "A clearly recognizable icon of bicicleta, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6413,9 +6587,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "52/abogado.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "abogado",
+            "brief_visual": "A clearly recognizable icon of abogado, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6427,9 +6603,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "52/libreta.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "libreta",
+            "brief_visual": "A clearly recognizable icon of libreta, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -6456,9 +6634,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "53/mazo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "mazo",
+            "brief_visual": "A clearly recognizable icon of mazo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6487,9 +6667,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "53/prenda.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "prenda",
+            "brief_visual": "A pendant on a short chain, a piece of jewelry."
           }
         },
         {
@@ -6501,9 +6683,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "53/tragedia.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tragedia",
+            "brief_visual": "A broken heart with a tiny storm cloud, symbolic sadness."
           }
         },
         {
@@ -6532,9 +6716,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "53/beso.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "beso",
+            "brief_visual": "A clearly recognizable icon of beso, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6612,9 +6798,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "54/gallina-blanca.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "gallina blanca",
+            "brief_visual": "A white hen with pale lavender shadows."
           }
         },
         {
@@ -6643,9 +6831,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "54/timbre.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "timbre",
+            "brief_visual": "A clearly recognizable icon of timbre, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6674,9 +6864,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "54/rosas.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "rosas",
+            "brief_visual": "A clearly recognizable icon of rosas, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -6703,9 +6895,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "55/abeja.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "abeja",
+            "brief_visual": "A clearly recognizable icon of abeja, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6749,9 +6943,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "55/iglesia-grande.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "iglesia grande",
+            "brief_visual": "A clearly recognizable icon of iglesia grande, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6763,9 +6959,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "55/caerse.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "caerse",
+            "brief_visual": "A person losing balance with open arms, harmless cartoon pose, no injury."
           }
         },
         {
@@ -6777,9 +6975,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "55/sellos.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "sellos",
+            "brief_visual": "A clearly recognizable icon of sellos, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6791,9 +6991,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "55/comida.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "comida",
+            "brief_visual": "A clearly recognizable icon of comida, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -6837,9 +7039,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "56/reina-escorpion.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "reina escorpión",
+            "brief_visual": "A stylized scorpion wearing a small royal crown."
           }
         },
         {
@@ -6868,9 +7072,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "56/merengue.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "merengue",
+            "brief_visual": "A swirled meringue confection on a tiny plate."
           }
         },
         {
@@ -6882,9 +7088,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "56/piedra.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "piedra",
+            "brief_visual": "A clearly recognizable icon of piedra, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6896,9 +7104,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "56/dolor-de-cabeza.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "dolor de cabeza",
+            "brief_visual": "A clearly recognizable icon of dolor de cabeza, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -6910,9 +7120,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "56/dulces.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "dulces",
+            "brief_visual": "A clearly recognizable icon of dulces, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -6973,9 +7185,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "57/angeles.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "ángeles",
+            "brief_visual": "A clearly recognizable icon of ángeles, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7070,9 +7284,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "58/adulterio.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "adulterio",
+            "brief_visual": "Two wedding rings separated by a third ring and a small broken heart, abstract symbol."
           }
         },
         {
@@ -7084,9 +7300,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "58/retrato.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "retrato",
+            "brief_visual": "A clearly recognizable icon of retrato, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7098,9 +7316,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "58/cuchillo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cuchillo",
+            "brief_visual": "A clearly recognizable icon of cuchillo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7127,9 +7347,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "58/ferretero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "ferretero",
+            "brief_visual": "A clearly recognizable icon of ferretero, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7141,9 +7363,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "58/batea.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "batea",
+            "brief_visual": "A clearly recognizable icon of batea, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7155,9 +7379,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "58/bebida.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "bebida",
+            "brief_visual": "A clearly recognizable icon of bebida, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -7184,9 +7410,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "59/perdiz.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "perdiz",
+            "brief_visual": "A clearly recognizable icon of perdiz, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7198,9 +7426,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "59/loco.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "loco",
+            "brief_visual": "A confused adult portrait with tousled hair and small spiral marks overhead, kind expression."
           }
         },
         {
@@ -7212,9 +7442,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "59/fonografo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "fonógrafo",
+            "brief_visual": "A clearly recognizable icon of fonógrafo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7226,9 +7458,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "59/langosta.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "langosta",
+            "brief_visual": "A clearly recognizable icon of langosta, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7240,9 +7474,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "59/anillo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "anillo",
+            "brief_visual": "A clearly recognizable icon of anillo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7320,9 +7556,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "60/sol-oscuro.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "sol oscuro",
+            "brief_visual": "An eclipsed sun, dark circular center and purple corona."
           }
         },
         {
@@ -7334,9 +7572,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "60/huevo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "huevo",
+            "brief_visual": "A clearly recognizable icon of huevo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7348,9 +7588,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "60/payaso.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "payaso",
+            "brief_visual": "A clearly recognizable icon of payaso, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7362,9 +7604,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "60/comico.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cómico",
+            "brief_visual": "A smiling comedian portrait with small theatrical comedy mask."
           }
         },
         {
@@ -7393,9 +7637,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "60/gallina-prieta.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "gallina prieta",
+            "brief_visual": "A black-feathered hen, deep plum-black plumage with purple highlights."
           }
         }
       ]
@@ -7422,9 +7668,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "61/cuchillo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cuchillo",
+            "brief_visual": "A clearly recognizable icon of cuchillo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7436,9 +7684,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "61/canonazo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cañonazo",
+            "brief_visual": "A clearly recognizable icon of cañonazo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7450,9 +7700,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "61/piedra-grande.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "piedra grande",
+            "brief_visual": "A clearly recognizable icon of piedra grande, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7464,9 +7716,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "61/revolver.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "revolver",
+            "brief_visual": "A clearly recognizable icon of revolver, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7478,9 +7732,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "61/boticario.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "boticario",
+            "brief_visual": "An old-fashioned pharmacist portrait holding a medicine bottle with a mortar beside them."
           }
         },
         {
@@ -7492,9 +7748,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "61/pintor.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "pintor",
+            "brief_visual": "A clearly recognizable icon of pintor, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7506,9 +7764,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "61/enfermo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "enfermo",
+            "brief_visual": "A clearly recognizable icon of enfermo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7552,9 +7812,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "62/faisan.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "faisán",
+            "brief_visual": "A clearly recognizable icon of faisán, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7583,9 +7845,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "62/nieve.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "nieve",
+            "brief_visual": "A clearly recognizable icon of nieve, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7597,9 +7861,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "62/lampara.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "lámpara",
+            "brief_visual": "A clearly recognizable icon of lámpara, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7611,9 +7877,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "62/vision.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "visión",
+            "brief_visual": "An open eye with a small radiant star above it."
           }
         },
         {
@@ -7625,9 +7893,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "62/academia.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "academia",
+            "brief_visual": "A clearly recognizable icon of academia, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7639,9 +7909,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "62/carretilla.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "carretilla",
+            "brief_visual": "A clearly recognizable icon of carretilla, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7653,9 +7925,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "62/iniciacion.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "iniciación",
+            "brief_visual": "An open doorway with a small person stepping through and one radiant star."
           }
         }
       ]
@@ -7699,9 +7973,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "63/asesino.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "asesino",
+            "brief_visual": "A mysterious cloaked adult silhouette with a small dagger lowered at their side, no violence."
           }
         },
         {
@@ -7713,9 +7989,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "63/cuernos.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cuernos",
+            "brief_visual": "Two curved animal horns."
           }
         },
         {
@@ -7744,9 +8022,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "63/bandidos.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "bandidos",
+            "brief_visual": "A clearly recognizable icon of bandidos, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7822,9 +8102,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "64/muerto-grande.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "muerto grande",
+            "brief_visual": "A large closed ornate coffin with a tiny memorial flower, non-graphic."
           }
         },
         {
@@ -7836,9 +8118,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "64/tiro-de-rifle.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tiro de rifle",
+            "brief_visual": "A clearly recognizable icon of tiro de rifle, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7850,9 +8134,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "64/maromero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "maromero",
+            "brief_visual": "An acrobat balancing upside down on one hand."
           }
         },
         {
@@ -7864,9 +8150,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "64/relajo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "relajo",
+            "brief_visual": "A pair of playful laughing faces surrounded by curved confetti."
           }
         },
         {
@@ -7878,9 +8166,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "64/fiera.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "fiera",
+            "brief_visual": "A clearly recognizable icon of fiera, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7892,9 +8182,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "64/herramientas.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "herramientas",
+            "brief_visual": "A clearly recognizable icon of herramientas, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -7955,9 +8247,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "65/comida.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "comida",
+            "brief_visual": "A clearly recognizable icon of comida, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -7986,9 +8280,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "65/ventana.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "ventana",
+            "brief_visual": "A clearly recognizable icon of ventana, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8017,9 +8313,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "65/guiros.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "guiros",
+            "brief_visual": "A Cuban güiro percussion instrument with ridged gourd surface and scraper."
           }
         }
       ]
@@ -8046,9 +8344,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "66/oso.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "oso",
+            "brief_visual": "A clearly recognizable icon of oso, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8060,9 +8360,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "66/divorcio.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "divorcio",
+            "brief_visual": "A clearly recognizable icon of divorcio, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8074,9 +8376,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "66/tarros.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tarros",
+            "brief_visual": "A pair of curved cattle horns."
           }
         },
         {
@@ -8139,9 +8443,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "66/carnaval.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "carnaval",
+            "brief_visual": "A clearly recognizable icon of carnaval, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8153,9 +8459,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "66/toque-de-tambor.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "toque de tambor",
+            "brief_visual": "A clearly recognizable icon of toque de tambor, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8200,9 +8508,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "67/punalada.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "puñalada",
+            "brief_visual": "A dagger beside a cracked heart, symbolic, no body, no wound, no blood."
           }
         },
         {
@@ -8231,9 +8541,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "67/autoridad.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "autoridad",
+            "brief_visual": "A clearly recognizable icon of autoridad, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8245,9 +8557,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "67/fonda.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "fonda",
+            "brief_visual": "A clearly recognizable icon of fonda, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8259,9 +8573,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "67/aborto.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "aborto",
+            "brief_visual": "A neutral medical symbol, an outline of a uterus with a small medical cross. No fetus, no graphic content."
           }
         },
         {
@@ -8290,9 +8606,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "67/tatuajes.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tatuajes",
+            "brief_visual": "A clearly recognizable icon of tatuajes, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -8370,9 +8688,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "68/cuchillo-grande.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cuchillo grande",
+            "brief_visual": "A clearly recognizable icon of cuchillo grande, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8384,9 +8704,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "68/templo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "templo",
+            "brief_visual": "A clearly recognizable icon of templo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8398,9 +8720,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "68/bolos.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "bolos",
+            "brief_visual": "A clearly recognizable icon of bolos, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8429,9 +8753,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "68/muela.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "muela",
+            "brief_visual": "A clearly recognizable icon of muela, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8443,9 +8769,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "68/hierros.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "hierros",
+            "brief_visual": "A clearly recognizable icon of hierros, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -8489,9 +8817,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "69/pozo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "pozo",
+            "brief_visual": "A clearly recognizable icon of pozo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8503,9 +8833,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "69/fiera.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "fiera",
+            "brief_visual": "A clearly recognizable icon of fiera, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8534,9 +8866,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "69/vagos.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "vagos",
+            "brief_visual": "A clearly recognizable icon of vagos, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8548,9 +8882,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "69/polvorin.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "polvorín",
+            "brief_visual": "A small powder magazine storage hut with two sealed barrels, no writing."
           }
         },
         {
@@ -8562,9 +8898,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "69/jicara.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "jícara",
+            "brief_visual": "A clearly recognizable icon of jícara, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8575,9 +8913,11 @@
           "registrado_en": [
             "texto_de_la_ficha"
           ],
-          "png": null,
+          "png": "69/persona-de-las-islas-canarias.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "persona de las islas canarias",
+            "brief_visual": "A dignified modern Canary Islander traveler portrait holding a medallion with the silhouettes of the Canary Islands."
           }
         }
       ]
@@ -8621,9 +8961,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "70/telefono.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "teléfono",
+            "brief_visual": "A clearly recognizable icon of teléfono, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8635,9 +8977,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "70/coco.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "coco",
+            "brief_visual": "A clearly recognizable icon of coco, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8649,9 +8993,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "70/tiro.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tiro",
+            "brief_visual": "A small stylized burst at the muzzle of a vintage sporting pistol pointing away, no people."
           }
         },
         {
@@ -8663,9 +9009,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "70/barril.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "barril",
+            "brief_visual": "A clearly recognizable icon of barril, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8694,9 +9042,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "70/bala.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "bala",
+            "brief_visual": "A clearly recognizable icon of bala, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -8723,9 +9073,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "71/guarapo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "guarapo",
+            "brief_visual": "A tall glass of sugarcane juice beside two sugarcane stalks."
           }
         },
         {
@@ -8737,9 +9089,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "71/rio.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "río",
+            "brief_visual": "A clearly recognizable icon of río, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8751,9 +9105,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "71/sombrero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "sombrero",
+            "brief_visual": "A clearly recognizable icon of sombrero, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8782,9 +9138,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "71/pantera.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "pantera",
+            "brief_visual": "A clearly recognizable icon of pantera, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8796,9 +9154,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "71/fusil.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "fusil",
+            "brief_visual": "A clearly recognizable icon of fusil, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8810,9 +9170,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "71/hierba.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "hierba",
+            "brief_visual": "A clearly recognizable icon of hierba, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -8890,9 +9252,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "72/serrucho.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "serrucho",
+            "brief_visual": "A clearly recognizable icon of serrucho, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8904,9 +9268,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "72/collar.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "collar",
+            "brief_visual": "A clearly recognizable icon of collar, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8918,9 +9284,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "72/cetro.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cetro",
+            "brief_visual": "A clearly recognizable icon of cetro, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -8998,9 +9366,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "73/parque.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "parque",
+            "brief_visual": "A clearly recognizable icon of parque, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9012,9 +9382,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "73/navaja.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "navaja",
+            "brief_visual": "A clearly recognizable icon of navaja, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9026,9 +9398,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "73/manzanas.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "manzanas",
+            "brief_visual": "A clearly recognizable icon of manzanas, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9040,9 +9414,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "73/maleta.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "maleta",
+            "brief_visual": "A clearly recognizable icon of maleta, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9054,9 +9430,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "73/ajedrez.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "ajedrez",
+            "brief_visual": "A clearly recognizable icon of ajedrez, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9068,9 +9446,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "73/cigarrillo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cigarrillo",
+            "brief_visual": "A clearly recognizable icon of cigarrillo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9148,9 +9528,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "74/coronel.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "coronel",
+            "brief_visual": "A clearly recognizable icon of coronel, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9179,9 +9561,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "74/colera.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cólera",
+            "brief_visual": "An angry face with furrowed brow and small steam puffs."
           }
         },
         {
@@ -9193,9 +9577,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "74/tarima.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tarima",
+            "brief_visual": "A clearly recognizable icon of tarima, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9256,9 +9642,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "75/cine.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cine",
+            "brief_visual": "A clearly recognizable icon of cine, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9270,9 +9658,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "75/corbata.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "corbata",
+            "brief_visual": "A clearly recognizable icon of corbata, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9284,9 +9674,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "75/viento.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "viento",
+            "brief_visual": "A clearly recognizable icon of viento, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9298,9 +9690,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "75/guitarra.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "guitarra",
+            "brief_visual": "A clearly recognizable icon of guitarra, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9329,9 +9723,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "75/quiosco.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "quiosco",
+            "brief_visual": "A clearly recognizable icon of quiosco, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9392,9 +9788,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "76/bailarina.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "bailarina",
+            "brief_visual": "A clearly recognizable icon of bailarina, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9423,9 +9821,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "76/caja-de-hierro.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "caja de hierro",
+            "brief_visual": "A clearly recognizable icon of caja de hierro, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9437,9 +9837,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "76/violin.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "violín",
+            "brief_visual": "A clearly recognizable icon of violín, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9451,9 +9853,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "76/represa.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "represa",
+            "brief_visual": "A clearly recognizable icon of represa, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9465,9 +9869,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "76/vestido-blanco.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "vestido blanco",
+            "brief_visual": "A clearly recognizable icon of vestido blanco, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -9494,9 +9900,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "77/cuerno.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cuerno",
+            "brief_visual": "A single curved animal horn."
           }
         },
         {
@@ -9508,9 +9916,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "77/banderas.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "banderas",
+            "brief_visual": "A clearly recognizable icon of banderas, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9556,9 +9966,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "77/billetes-de-banco.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "billetes de banco",
+            "brief_visual": "A clearly recognizable icon of billetes de banco, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9570,9 +9982,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "77/muletas.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "muletas",
+            "brief_visual": "A clearly recognizable icon of muletas, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -9599,9 +10013,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "78/guanajo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "guanajo",
+            "brief_visual": "A domestic turkey with fan tail and visible wattle."
           }
         },
         {
@@ -9613,9 +10029,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "78/obispo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "obispo",
+            "brief_visual": "A clearly recognizable icon of obispo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9627,9 +10045,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "78/tigre.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tigre",
+            "brief_visual": "A clearly recognizable icon of tigre, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9658,9 +10078,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "78/rey.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "rey",
+            "brief_visual": "A clearly recognizable icon of rey, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9672,9 +10094,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "78/apetito.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "apetito",
+            "brief_visual": "A person smiling at a covered serving plate."
           }
         },
         {
@@ -9686,9 +10110,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "78/lunares.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "lunares",
+            "brief_visual": "A close-up friendly adult face turned slightly sideways, with three clearly visible dark skin moles on the cheek."
           }
         },
         {
@@ -9700,9 +10126,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "78/casa-grande.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "casa grande",
+            "brief_visual": "A clearly recognizable icon of casa grande, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9714,9 +10142,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "78/rio.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "río",
+            "brief_visual": "A clearly recognizable icon of río, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -9743,9 +10173,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "79/pelota.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "pelota",
+            "brief_visual": "A clearly recognizable icon of pelota, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9791,9 +10223,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "79/abogado.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "abogado",
+            "brief_visual": "A clearly recognizable icon of abogado, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9822,9 +10256,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "79/dulces.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "dulces",
+            "brief_visual": "A clearly recognizable icon of dulces, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9836,9 +10272,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "79/bautizo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "bautizo",
+            "brief_visual": "A baptismal font with a small water drop and tiny cross."
           }
         },
         {
@@ -9849,9 +10287,11 @@
           "registrado_en": [
             "texto_de_la_ficha"
           ],
-          "png": null,
+          "png": "79/beisbol.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "béisbol",
+            "brief_visual": "A clearly recognizable icon of béisbol, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -9878,9 +10318,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "80/muneca.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "muñeca",
+            "brief_visual": "A clearly recognizable icon of muñeca, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9926,9 +10368,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "80/luna-llena.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "luna llena",
+            "brief_visual": "A clearly recognizable icon of luna llena, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9940,9 +10384,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "80/paraguas.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "paraguas",
+            "brief_visual": "A clearly recognizable icon of paraguas, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9954,9 +10400,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "80/barba.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "barba",
+            "brief_visual": "A clearly recognizable icon of barba, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9968,9 +10416,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "80/trompo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "trompo",
+            "brief_visual": "A clearly recognizable icon of trompo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -9982,9 +10432,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "80/pintura.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "pintura",
+            "brief_visual": "A clearly recognizable icon of pintura, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -10011,9 +10463,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "81/pulpo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "pulpo",
+            "brief_visual": "A clearly recognizable icon of pulpo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10059,9 +10513,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "81/navaja-grande.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "navaja grande",
+            "brief_visual": "A clearly recognizable icon of navaja grande, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10073,9 +10529,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "81/ingeniero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "ingeniero",
+            "brief_visual": "A clearly recognizable icon of ingeniero, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10087,9 +10545,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "81/cuerda.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cuerda",
+            "brief_visual": "A clearly recognizable icon of cuerda, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10101,9 +10561,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "81/actriz.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "actriz",
+            "brief_visual": "A clearly recognizable icon of actriz, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10115,9 +10577,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "81/hijo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "hijo",
+            "brief_visual": "A clearly recognizable icon of hijo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10129,9 +10593,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "81/despojo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "despojo",
+            "brief_visual": "A bundle of cleansing herbs beside a shallow ritual bowl."
           }
         }
       ]
@@ -10158,9 +10624,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "82/soga.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "soga",
+            "brief_visual": "A clearly recognizable icon of soga, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10206,9 +10674,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "82/batea.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "batea",
+            "brief_visual": "A clearly recognizable icon of batea, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10220,9 +10690,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "82/pleito.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "pleito",
+            "brief_visual": "A clearly recognizable icon of pleito, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10251,9 +10723,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "82/muelle.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "muelle",
+            "brief_visual": "A clearly recognizable icon of muelle, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10265,9 +10739,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "82/madrina.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "madrina",
+            "brief_visual": "A clearly recognizable icon of madrina, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -10309,9 +10785,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "83/tragedia.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tragedia",
+            "brief_visual": "A broken heart with a tiny storm cloud, symbolic sadness."
           }
         },
         {
@@ -10323,9 +10801,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "83/procesion.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "procesión",
+            "brief_visual": "A clearly recognizable icon of procesión, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10337,9 +10817,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "83/limosnero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "limosnero",
+            "brief_visual": "A clearly recognizable icon of limosnero, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10351,9 +10833,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "83/baston.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "bastón",
+            "brief_visual": "A clearly recognizable icon of bastón, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10365,9 +10849,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "83/madera.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "madera",
+            "brief_visual": "A clearly recognizable icon of madera, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10379,9 +10865,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "83/sabana.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "sabana",
+            "brief_visual": "A folded bed sheet with a flowing corner. Bedding."
           }
         }
       ]
@@ -10425,9 +10913,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "84/ciego.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "ciego",
+            "brief_visual": "A clearly recognizable icon of ciego, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10439,9 +10929,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "84/sastre.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "sastre",
+            "brief_visual": "A clearly recognizable icon of sastre, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10453,9 +10945,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "84/bohio.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "bohío",
+            "brief_visual": "A clearly recognizable icon of bohío, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10467,9 +10961,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "84/banquero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "banquero",
+            "brief_visual": "A clearly recognizable icon of banquero, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10515,9 +11011,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "84/chiva.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "chiva",
+            "brief_visual": "A clearly recognizable icon of chiva, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -10578,9 +11076,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "85/madrid.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "madrid",
+            "brief_visual": "A clearly recognizable icon of madrid, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10609,9 +11109,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "85/espejo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "espejo",
+            "brief_visual": "A clearly recognizable icon of espejo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10623,9 +11125,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "85/guano.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "guano",
+            "brief_visual": "Palm fronds tied into a thatching bundle."
           }
         }
       ]
@@ -10652,9 +11156,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "86/rifle.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "rifle",
+            "brief_visual": "A clearly recognizable icon of rifle, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10666,9 +11172,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "86/convento.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "convento",
+            "brief_visual": "A clearly recognizable icon of convento, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10697,9 +11205,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "86/ardilla.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "ardilla",
+            "brief_visual": "A clearly recognizable icon of ardilla, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10711,9 +11221,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "86/tijera.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tijera",
+            "brief_visual": "A clearly recognizable icon of tijera, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10742,9 +11254,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "86/hermano.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "hermano",
+            "brief_visual": "A clearly recognizable icon of hermano, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -10788,9 +11302,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "87/nueva-york.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "nueva york",
+            "brief_visual": "A clearly recognizable icon of nueva york, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10802,9 +11318,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "87/baul.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "baúl",
+            "brief_visual": "A clearly recognizable icon of baúl, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10850,9 +11368,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "87/platanos.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "plátanos",
+            "brief_visual": "A clearly recognizable icon of plátanos, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -10879,9 +11399,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "88/espejuelo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "espejuelo",
+            "brief_visual": "A pair of eyeglasses. Espejuelo and espejuelos share the same icon, matching the Cuban meaning of lenses or glasses."
           }
         },
         {
@@ -10893,9 +11415,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "88/espejuelos.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "espejuelos",
+            "brief_visual": "A clearly recognizable icon of espejuelos, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10924,9 +11448,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "88/vaso.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "vaso",
+            "brief_visual": "A clearly recognizable icon of vaso, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10938,9 +11464,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "88/hojas.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "hojas",
+            "brief_visual": "A clearly recognizable icon of hojas, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10952,9 +11480,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "88/aduanero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "aduanero",
+            "brief_visual": "A customs officer checking a small suitcase, no writing."
           }
         }
       ]
@@ -10981,9 +11511,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "89/garza.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "garza",
+            "brief_visual": "A clearly recognizable icon of garza, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -10995,9 +11527,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "89/loteria.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "lotería",
+            "brief_visual": "Two lottery tickets and three numbered balls represented by blank circles, no legible text."
           }
         },
         {
@@ -11026,9 +11560,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "89/mona-vieja.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "mona vieja",
+            "brief_visual": "An elderly female monkey, gray muzzle, gentle face."
           }
         },
         {
@@ -11057,9 +11593,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "89/melon.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "melón",
+            "brief_visual": "A clearly recognizable icon of melón, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11071,9 +11609,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "89/tesorero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tesorero",
+            "brief_visual": "A clearly recognizable icon of tesorero, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11117,9 +11657,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "90/asesino.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "asesino",
+            "brief_visual": "A mysterious cloaked adult silhouette with a small dagger lowered at their side, no violence."
           }
         },
         {
@@ -11131,9 +11673,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "90/viejo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "viejo",
+            "brief_visual": "A dignified elderly man bust portrait with silver hair, fine age lines and gentle expression."
           }
         },
         {
@@ -11145,9 +11689,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "90/espejo-grande.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "espejo grande",
+            "brief_visual": "A clearly recognizable icon of espejo grande, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11159,9 +11705,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "90/caramelo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "caramelo",
+            "brief_visual": "A clearly recognizable icon of caramelo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11239,9 +11787,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "91/trompeta.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "trompeta",
+            "brief_visual": "A clearly recognizable icon of trompeta, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11270,9 +11820,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "91/pajaro-negro.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "pájaro negro",
+            "brief_visual": "A clearly recognizable icon of pájaro negro, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11284,9 +11836,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "91/limosnero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "limosnero",
+            "brief_visual": "A clearly recognizable icon of limosnero, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11298,9 +11852,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "91/alpargatas.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "alpargatas",
+            "brief_visual": "A clearly recognizable icon of alpargatas, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11312,9 +11868,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "91/bolsas.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "bolsas",
+            "brief_visual": "A clearly recognizable icon of bolsas, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11326,9 +11884,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "91/enfermo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "enfermo",
+            "brief_visual": "A clearly recognizable icon of enfermo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -11355,9 +11915,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "92/platano.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "plátano",
+            "brief_visual": "A clearly recognizable icon of plátano, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11386,9 +11948,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "92/globo-muy-alto.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "globo muy alto",
+            "brief_visual": "A small hot-air balloon above a tiny cloud, emphasizing height."
           }
         },
         {
@@ -11400,9 +11964,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "92/suicidio.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "suicidio",
+            "brief_visual": "A symbolic extinguished candle beside a small cracked heart and a wilted flower. Quiet memorial, no person, no method, no injury."
           }
         },
         {
@@ -11414,9 +11980,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "92/cuba.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cuba",
+            "brief_visual": "A clearly recognizable icon of cuba, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11428,9 +11996,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "92/anarquista.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "anarquista",
+            "brief_visual": "A symbolic raised fist inside an incomplete circular border, no text."
           }
         },
         {
@@ -11442,9 +12012,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "92/bendicion.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "bendición",
+            "brief_visual": "A hand making a blessing gesture with a small radiant star."
           }
         }
       ]
@@ -11488,9 +12060,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "93/extranjero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "extranjero",
+            "brief_visual": "A traveler holding a passport and small suitcase, no writing."
           }
         },
         {
@@ -11502,9 +12076,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "93/sortija-de-valor.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "sortija de valor",
+            "brief_visual": "A clearly recognizable icon of sortija de valor, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11516,9 +12092,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "93/general.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "general",
+            "brief_visual": "A clearly recognizable icon of general, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11530,9 +12108,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "93/joyas.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "joyas",
+            "brief_visual": "A clearly recognizable icon of joyas, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11544,9 +12124,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "93/libertad.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "libertad",
+            "brief_visual": "A bird flying out of an open cage."
           }
         },
         {
@@ -11558,9 +12140,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "93/traicion.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "traición",
+            "brief_visual": "Two hands shaking in front of a third hand concealing a clearly visible dagger behind the handshake. Symbolic betrayal, no injury."
           }
         }
       ]
@@ -11604,9 +12188,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "94/machete.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "machete",
+            "brief_visual": "A clearly recognizable icon of machete, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11618,9 +12204,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "94/mariposa-grande.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "mariposa grande",
+            "brief_visual": "A clearly recognizable icon of mariposa grande, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11632,9 +12220,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "94/habana.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "habana",
+            "brief_visual": "Havana Capitol dome with a small palm tree."
           }
         },
         {
@@ -11663,9 +12253,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "94/perfume.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "perfume",
+            "brief_visual": "A clearly recognizable icon of perfume, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -11692,9 +12284,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "95/pollo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "pollo",
+            "brief_visual": "A young chicken with small comb."
           }
         },
         {
@@ -11740,9 +12334,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "95/pelo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "pelo",
+            "brief_visual": "A clearly recognizable icon of pelo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11788,9 +12384,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "95/matanzas.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "matanzas",
+            "brief_visual": "Matanzas Cuba city symbol, Puente de la Concordia bridge over water."
           }
         },
         {
@@ -11802,9 +12400,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "95/cuchillo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "cuchillo",
+            "brief_visual": "A clearly recognizable icon of cuchillo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         }
       ]
@@ -11831,9 +12431,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "96/mangle.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "mangle",
+            "brief_visual": "A mangrove tree with exposed arching roots reaching into shallow water."
           }
         },
         {
@@ -11845,9 +12447,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "96/desafio.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "desafío",
+            "brief_visual": "Two upright fists facing each other with a small spark between them."
           }
         },
         {
@@ -11876,9 +12480,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "96/picaro.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "pícaro",
+            "brief_visual": "A mischievous smiling adult with a sly raised eyebrow."
           }
         },
         {
@@ -11907,9 +12513,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "96/roca.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "roca",
+            "brief_visual": "A clearly recognizable icon of roca, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -11970,9 +12578,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "97/flecha.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "flecha",
+            "brief_visual": "A clearly recognizable icon of flecha, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -12018,9 +12628,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "97/sinsonte.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "sinsonte",
+            "brief_visual": "A Cuban mockingbird, slender gray songbird with long tail."
           }
         },
         {
@@ -12032,9 +12644,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "97/grillo-grande.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "grillo grande",
+            "brief_visual": "A large cricket insect with very long antennae and powerful folded hind legs."
           }
         },
         {
@@ -12046,9 +12660,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "97/correr.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "correr",
+            "brief_visual": "A clearly recognizable icon of correr, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -12060,9 +12676,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "97/limosnero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "limosnero",
+            "brief_visual": "A clearly recognizable icon of limosnero, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -12074,9 +12692,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "97/polvo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "polvo",
+            "brief_visual": "A small pile of dust with soft floating particles."
           }
         }
       ]
@@ -12103,9 +12723,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "98/guayaba.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "guayaba",
+            "brief_visual": "A clearly recognizable icon of guayaba, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -12117,9 +12739,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "98/piano.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "piano",
+            "brief_visual": "A clearly recognizable icon of piano, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -12131,9 +12755,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "98/entierro.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "entierro",
+            "brief_visual": "A closed coffin being lowered into a simple rectangular grave, tiny ceremonial flower. Non-graphic."
           }
         },
         {
@@ -12145,9 +12771,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "98/traicion.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "traición",
+            "brief_visual": "Two hands shaking in front of a third hand concealing a clearly visible dagger behind the handshake. Symbolic betrayal, no injury."
           }
         },
         {
@@ -12159,9 +12787,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "98/beso.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "beso",
+            "brief_visual": "A clearly recognizable icon of beso, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -12173,9 +12803,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "98/visita-regia.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "visita regia",
+            "brief_visual": "A royal visitor with crown approaching a small doorway."
           }
         },
         {
@@ -12187,9 +12819,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "98/fonografo.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "fonógrafo",
+            "brief_visual": "A clearly recognizable icon of fonógrafo, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -12217,9 +12851,11 @@
           "registrado_en": [
             "texto_de_la_ficha"
           ],
-          "png": null,
+          "png": "98/embuste.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "embuste",
+            "brief_visual": "A theatrical smiling face with an elongated Pinocchio-like nose."
           }
         }
       ]
@@ -12246,9 +12882,11 @@
           "registrado_en": [
             "titulo_del_indice"
           ],
-          "png": null,
+          "png": "99/tierra.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "tierra",
+            "brief_visual": "A mound of fertile soil with a tiny sprout, showing layered earth. Soil or ground."
           }
         },
         {
@@ -12260,9 +12898,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "99/serrucho.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "serrucho",
+            "brief_visual": "A clearly recognizable icon of serrucho, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -12274,9 +12914,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "99/gallo-grande.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "gallo grande",
+            "brief_visual": "A proud large rooster with a prominent comb, full tail and strong rounded chest."
           }
         },
         {
@@ -12305,9 +12947,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "99/carbonero.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "carbonero",
+            "brief_visual": "A traditional charcoal worker holding a sack with lumps of charcoal."
           }
         },
         {
@@ -12385,9 +13029,11 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "100/escoba.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "escoba",
+            "brief_visual": "A clearly recognizable icon of escoba, interpreted as its Cuban Spanish everyday or traditional charada meaning."
           }
         },
         {
@@ -12416,12 +13062,30 @@
             "lista_de_la_ficha",
             "lista_del_indice"
           ],
-          "png": null,
+          "png": "100/jimagua.png",
           "arte": {
-            "tipo": "pendiente"
+            "tipo": "ilustracion_generada",
+            "referencia_visual": "jimagua",
+            "brief_visual": "Two identical siblings side by side, matching faces and clothing."
           }
         }
       ]
     }
+  },
+  "generacion_imagenes": {
+    "metodo": "Generador de imágenes integrado",
+    "referencia_de_estilo": "Sprite aportado por el usuario",
+    "identificadores_visuales_completados": 293,
+    "archivos_pendientes_completados": 324,
+    "criterio": "Un dibujo por concepto visual, reutilizado en significados iguales o equivalentes",
+    "instruccion_comun": "One isolated inventory icon for the Cuban charada symbol. Glossy purple/lavender sculpted game icon, dark violet outer contour, compact silhouette, crisp lilac highlights. Centered subject or self-contained symbolic grouping, transparent background, square canvas, balanced padding. No caption, text, numbers, grid or sprite sheet. The individual subject specification is recorded in arte.brief_visual."
+  },
+  "imagenes": {
+    "formato": "PNG",
+    "ancho": 128,
+    "alto": 128,
+    "fondo": "transparente",
+    "alineacion": "centrada",
+    "reescalado": "proporcional"
   }
 }
