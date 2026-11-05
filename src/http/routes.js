@@ -7,6 +7,7 @@ import crypto from 'node:crypto';
 import { analyseNumber } from '../domain/analysis.js';
 import { GLOSSARY } from '../content/glossary.js';
 import { listArticles, getArticle } from '../content/loader.js';
+import { renderMarkdown } from '../markdown/markdown.js';
 import { verifyInitData } from '../auth/verifyInitData.js';
 import {
   createSessionToken,
@@ -398,7 +399,9 @@ export async function handleApi(req, res, url, pool) {
         if (id) {
           const article = await getArticle(id);
           if (!article) { sendJson(res, 404, { error: 'not_found' }); return true; }
-          sendJson(res, 200, article, { 'cache-control': 'public, max-age=3600' });
+          const { body, ...meta } = article;
+          sendJson(res, 200, { ...meta, html: renderMarkdown(body) },
+            { 'cache-control': 'public, max-age=3600' });
           return true;
         }
         sendJson(res, 200, {
