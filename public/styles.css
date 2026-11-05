@@ -1128,6 +1128,10 @@ body[data-theme-mode="light"] .actionbar__btn { color: #0b0e13; }
 /* The action bar only exists on the analyser screen. */
 body:not(.is-analyser) .actionbar { display: none; }
 
+/* Inside QvaPay the primary action belongs to the native main button; two
+ * stacked bars would be exactly the duplication the SDK docs warn about. */
+html.in-qvapay .actionbar { display: none; }
+
 /* Compact result header */
 .anahead {
   display: grid;

@@ -7,7 +7,10 @@
 // Runs inside the QvaPay WebView (or its simulator). Outside QvaPay
 // `window.QvaPay` does not exist and the page still works.
 
-import { whenReady, capabilities, applyTheme, configureHeader, getQvaPay } from '/src/sdk/qvapay.js';
+import {
+  whenReady, capabilities, applyTheme, configureHeader, getQvaPay,
+  setHeader, setMainButton, setColors, haptic, toast, share, openLink, describeSdkError,
+} from '/src/sdk/qvapay.js';
 import { attachRipples } from '/src/ui/ripple.js';
 import { openCalendar } from '/src/ui/calendar.js';
 import { iconElement } from '/src/ui/icons.js';
@@ -494,6 +497,8 @@ function buildNumberNode() {
     analysisNumber = clean === '' ? null : Number(clean);
     const btn = document.getElementById('analyser-btn');
     if (btn) btn.disabled = analysisNumber === null;
+    // The native main button mirrors the same enablement.
+    if (currentView === 'analisis') syncChrome('analisis');
   });
 
   input.addEventListener('keydown', (evt) => {
@@ -571,6 +576,7 @@ async function runAnalysis() {
     const data = await getJson(`/api/analisis?numero=${analysisNumber}`);
     analysisData = data;
     renderAnalysisResult(data);
+    syncChrome('analisis');
   } catch (err) {
     setState(err.message, true);
   }
@@ -581,6 +587,7 @@ function resetAnalysis() {
   numberEls?.wrap.classList.remove('is-compact');
   analysisData = null;
   renderAnalysisInput({ focus: true });
+  syncChrome('analisis');
 }
 
 /** Horizontal bar row used by the weekday/month breakdown. */
@@ -866,20 +873,32 @@ async function openTool(tool) {
 }
 
 async function linkAndRetry(tool) {
+  if (!(await startLink())) return;
+  await viewMas();
+  syncChrome('mas');
+  openTool(tool);
+}
+
+/**
+ * Run the login handshake and explain the outcome.
+ *
+ * Shared by the "needs an account" sheet and the header's account action, so a
+ * cancellation is handled exactly once.
+ */
+async function startLink() {
   const sdk = getQvaPay();
   if (!sdk) {
     sheetMessage({
       title: 'Abre QvaPay',
       body: 'El vínculo con tu cuenta solo funciona dentro de la app de QvaPay o de su simulador.',
     });
-    return;
+    return false;
   }
 
   const result = await linkAccount(sdk);
   if (result.ok) {
-    await viewMas();
-    openTool(tool);
-    return;
+    haptic(sdk, 'success').catch(() => {});
+    return true;
   }
 
   sheetMessage({
@@ -888,6 +907,7 @@ async function linkAndRetry(tool) {
       ? 'Cerraste la ventana de permiso. Puedes intentarlo cuando quieras.'
       : 'Inténtalo de nuevo en un momento.',
   });
+  return false;
 }
 
 /** Small bottom sheet with a message and an optional action. */
@@ -1016,7 +1036,8 @@ function glossaryBlock(entries) {
   return wrap;
 }
 
-async function openArticle(id) {
+async function openArticle(id, { push = true } = {}) {
+  if (push) pushView('cultura', { article: id });
   renderSkeleton(3);
   const article = await getJson(`/api/cultura?id=${encodeURIComponent(id)}`);
   const frag = document.createDocumentFragment();
@@ -1046,11 +1067,19 @@ async function openArticle(id) {
 
   view.replaceChildren(frag);
   view.scrollTop = 0;
+  syncChrome('article', { title: article.title });
 }
 
 function closeArticle() {
+  // The article is its own history entry, so this link and the native back
+  // button do exactly the same thing.
+  if (history.state?.article) {
+    history.back();
+    return;
+  }
   if (cultureIndex) renderCultureIndex(cultureIndex);
   else viewCultura();
+  syncChrome('cultura');
 }
 
 // ---------- Significados ----------
@@ -1147,8 +1176,161 @@ function initialView() {
   return wanted && wanted in VIEWS ? wanted : 'tiros';
 }
 
-async function navigate(name) {
+// ---------- Host chrome (header, main button, notices) ----------
+//
+// One table decides what QvaPay's own bar says on each screen (S14). Keeping it
+// in one place means a screen cannot disagree with itself, and the dedupe below
+// keeps us from re-sending an identical state on every re-render.
+
+let sdkRef = null;
+let currentView = 'tiros';
+let chromeSent = null;
+
+/** Brand colours for the host surfaces, matching :root in the stylesheet. */
+const BRAND = { header: '#0e1116', background: '#0e1116' };
+
+const ACTION = {
+  calendar: { id: 'calendar', icon: 'calendar', label: 'Elegir fecha' },
+  search: { id: 'search', icon: 'search', label: 'Buscar' },
+  share: { id: 'share', icon: 'share', label: 'Compartir' },
+  user: { id: 'user', icon: 'user', label: 'Mi cuenta' },
+};
+
+function chromeFor(name, context = {}) {
+  switch (name) {
+    case 'tiros':
+      return { subtitle: 'El cargador de hoy', actions: [ACTION.calendar, ACTION.share] };
+    case 'historial':
+      return { subtitle: 'Historial', actions: [ACTION.calendar] };
+    case 'analisis':
+      return {
+        subtitle: 'Análisis',
+        main: analysisData ? null : { text: 'Analizar', enabled: analysisNumber !== null },
+      };
+    case 'mas':
+      return isLinked()
+        ? { subtitle: `@${getSession().username ?? 'usuario'}` }
+        : { subtitle: 'Herramientas', actions: [ACTION.user] };
+    case 'cultura':
+      return { subtitle: 'Historia y cultura', actions: [ACTION.search] };
+    case 'significados':
+      return { subtitle: 'Los 100 significados', actions: [ACTION.search] };
+    case 'article':
+      return { subtitle: context.title ?? 'Historia y cultura', actions: [ACTION.share] };
+    default:
+      return { subtitle: 'El cargador de hoy' };
+  }
+}
+
+/** Push the current screen's chrome to the host. Fire and forget: chrome is optional. */
+function syncChrome(name, context = {}) {
+  if (!sdkRef) return;
+  const state = chromeFor(name, context);
+  const key = JSON.stringify(state);
+  if (key === chromeSent) return;
+  chromeSent = key;
+
+  setHeader(sdkRef, { subtitle: state.subtitle ?? '', actions: state.actions ?? [] }).catch(() => {});
+  applyMainButton(state.main ?? null);
+}
+
+function applyMainButton(cfg) {
+  if (!sdkRef) return;
+  if (cfg) setMainButton(sdkRef, { text: cfg.text, visible: true, enabled: cfg.enabled ?? true }).catch(() => {});
+  else setMainButton(sdkRef, { text: '', visible: false }).catch(() => {});
+}
+
+const HEADER_ACTIONS = {
+  calendar: () => openDatePicker(),
+  search: () => focusSearch(),
+  share: () => shareMiniApp(),
+  user: () => startLink(),
+};
+
+/** Focus the search field of the screen that has one (cultura or significados). */
+function focusSearch() {
+  const input = view.querySelector('.glossary__search');
+  if (!input) return;
+  input.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  input.focus({ preventScroll: true });
+}
+
+/** Share the mini-app itself; QvaPay supplies the public link. */
+async function shareMiniApp() {
+  if (!sdkRef) return;
+  try {
+    await share(sdkRef, { text: 'La charada cubana: el cargador de cada día, su historia y sus 100 significados.' });
+  } catch (err) {
+    const info = describeSdkError(err);
+    if (!info.silent) toast(sdkRef, info.message, { type: 'error' }).catch(() => {});
+  }
+}
+
+/** Leave the WebView for an external article link. */
+async function openExternal(href) {
+  if (!sdkRef) return false;
+  const opened = await openLink(sdkRef, href).catch(() => false);
+  if (!opened) toast(sdkRef, 'No se pudo abrir el enlace.', { type: 'error' }).catch(() => {});
+  return opened;
+}
+
+/** Inside QvaPay there is no `target=_blank`: links leave through the host. */
+function wireExternalLinks() {
+  document.addEventListener('click', (evt) => {
+    const node = evt.target instanceof Element ? evt.target : null;
+    const link = node?.closest('.prose a[data-external]');
+    if (!link || !sdkRef) return;
+    evt.preventDefault();
+    openExternal(link.href);
+  });
+}
+
+function wireHostEvents(sdk) {
+  if (typeof sdk?.on !== 'function') return;
+  sdk.on('headerAction', ({ id } = {}) => {
+    const run = HEADER_ACTIONS[id];
+    if (run) run();
+  });
+  sdk.on('mainButton', () => {
+    if (currentView === 'analisis' && !analysisData) runAnalysis();
+  });
+}
+
+// ---------- History ----------
+//
+// QvaPay's back button walks the browser history, so navigation has to write
+// history. Every screen and every in-view step (an article) is an entry (S15).
+
+function pushView(name, extra = {}) {
+  const params = new URLSearchParams();
+  if (name !== 'tiros') params.set('vista', name);
+  if (extra.article) params.set('articulo', extra.article);
+  const qs = params.toString();
+  history.pushState({ view: name, ...extra }, '', `${location.pathname}${qs ? `?${qs}` : ''}`);
+}
+
+function wireHistory() {
+  window.addEventListener('popstate', (evt) => {
+    const state = evt.state ?? {};
+    if (state.article) {
+      openArticle(state.article, { push: false });
+      return;
+    }
+    navigate(state.view ?? initialView(), { push: false });
+  });
+}
+
+/** A reload while reading must land on the article, not on the index. */
+async function openBootArticle() {
+  const id = new URLSearchParams(location.search).get('articulo');
+  if (!id) return;
+  history.replaceState({ view: 'cultura', article: id }, '', location.href);
+  await openArticle(id, { push: false });
+}
+
+async function navigate(name, { push = true } = {}) {
   clearCountdown();
+  currentView = name;
   doc_body_class_toggle('is-analyser', name === 'analisis');
   if (name !== 'historial') {
     historialDays = null;
@@ -1159,8 +1341,10 @@ async function navigate(name) {
     btn.classList.toggle('is-active', active);
     btn.setAttribute('aria-selected', String(active));
   }
+  if (push) pushView(name);
   try {
     await (VIEWS[name] ?? viewTiros)();
+    syncChrome(name);
   } catch (err) {
     setState(err.message, true);
   }
@@ -1170,36 +1354,50 @@ function wireTabbar() {
   attachRipples(document);
   tabbar.addEventListener('click', (evt) => {
     const btn = evt.target.closest('[data-view]');
-    if (btn) navigate(btn.dataset.view);
+    if (!btn) return;
+    haptic(sdkRef, 'light').catch(() => {});
+    navigate(btn.dataset.view);
   });
 }
 
 // ---------- Boot ----------
 
 async function start(sdk) {
+  sdkRef = sdk;
   splashTimer = setTimeout(hideSplash, SPLASH_MAX_MS);
   const caps = capabilities(sdk);
 
   const cleanupTheme = await applyTheme(sdk, document);
   window.addEventListener('pagehide', cleanupTheme, { once: true });
 
-  if (caps.header) {
-    await configureHeader(sdk, { subtitle: 'El cargador de hoy' }).catch(() => {});
-  }
+  // Mark the page as hosted so the local bar steps aside; the per-screen
+  // subtitle and actions arrive with the first `syncChrome` below.
+  if (caps.header) await configureHeader(sdk, {}).catch(() => {});
+  setColors(sdk, BRAND).catch(() => {});
+  wireHostEvents(sdk);
   if (caps.present) await sdk.ready().catch(() => {});
 
   restoreSession();
   wireTabbar();
-  await navigate(initialView());
+  wireHistory();
+  wireExternalLinks();
+  const boot = initialView();
+  history.replaceState({ view: boot }, '', location.href);
+  await navigate(boot, { push: false });
+  await openBootArticle();
   hideSplash();
 }
 
 function bootWithoutSdk() {
   restoreSession();
   wireTabbar();
+  wireHistory();
+  wireExternalLinks();
   // Hide as soon as the view has content, and fail open if it never does.
   splashTimer = setTimeout(hideSplash, SPLASH_MAX_MS);
-  Promise.resolve(navigate(initialView())).finally(hideSplash);
+  const boot = initialView();
+  history.replaceState({ view: boot }, '', location.href);
+  Promise.resolve(navigate(boot, { push: false })).then(openBootArticle).finally(hideSplash);
 }
 
 if (getQvaPay()) {
