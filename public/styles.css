@@ -1683,8 +1683,9 @@ html.in-qvapay .actionbar { display: none; }
 
 .signrow__thumb { display: block; width: 44px; height: 44px; object-fit: contain; }
 
-/* No artwork for the principal symbol: an empty slot, never a borrowed image. */
-.signrow__thumb--empty { border: 1px dashed var(--hairline); border-radius: 10px; }
+/* No artwork for the principal symbol: the slot stays, the box does not. A
+ * dashed rectangle reads as a broken image, and there is nothing broken. */
+.signrow__thumb--empty { }
 
 .signrow__text { display: grid; gap: 3px; min-width: 0; }
 
@@ -1787,7 +1788,8 @@ html.in-qvapay .actionbar { display: none; }
 
 .fichaitem__icon { display: block; width: 48px; height: 48px; object-fit: contain; }
 
-.fichaitem__icon--empty { border: 1px dashed var(--hairline); border-radius: 10px; }
+/* Same in the ficha: the column keeps the text aligned, nothing else. */
+.fichaitem__icon--empty { }
 
 .fichaitem__body { display: grid; gap: 3px; min-width: 0; }
 
