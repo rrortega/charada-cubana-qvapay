@@ -536,19 +536,26 @@ async function openDatePicker() {
   calendarOpen = true;
   syncChrome('tiros');
 
-  openCalendar({
+  const closeCalendar = openCalendar({
     value: initial,
     min: range.from,
     max: range.to,
     onSelect: (iso) => {
+      // Picking a day navigates: the sheet's entry is neutralised, not walked
+      // back, or the back lands after the push and undoes it.
+      settleOverlay('calendar');
       currentDate = iso;
       navigate('tiros');
     },
     onClose: () => {
       calendarOpen = false;
       syncChrome('tiros');
+      // Closed by its own controls: take the entry back off with it.
+      releaseOverlayEntry('calendar');
     },
   });
+
+  openOverlay('calendar', closeCalendar);
 }
 
 // ---------- Historial (one row per day, accordion) ----------
@@ -795,6 +802,11 @@ async function runAnalysis() {
     const ficha = await getJson(`/api/significados?numero=${analysisNumber}`).catch(() => null);
     analysisData = data;
     renderAnalysisResult(data, ficha);
+    // The result is a screen state the user walked into: it earns an entry, so
+    // the native back button returns to the input instead of leaving the app.
+    if (!history.state?.resultado) {
+      history.pushState({ ...(history.state ?? {}), view: 'analisis', resultado: true }, '', location.href);
+    }
     syncChrome('analisis');
   } catch (err) {
     setState(err.message, true);
@@ -807,6 +819,13 @@ function resetAnalysis() {
   analysisData = null;
   renderAnalysisInput({ focus: true });
   syncChrome('analisis');
+
+  // Same rule as a sheet: leaving the result takes its entry back off, so back
+  // is not spent on a screen that is already gone.
+  if (history.state?.resultado) {
+    ignoringPop = true;
+    history.back();
+  }
 }
 
 /** Horizontal bar row used by the weekday/month breakdown. */
@@ -1022,8 +1041,8 @@ const MORE_TOOLS = [
     title: 'La adivinanza',
     blurb: 'Cada día, un dicharacho con doble sentido armado con las combinaciones del día.',
     icon: 'sun',
-    needsAccount: true,
-    status: 'soon',
+    needsAccount: false,
+    status: 'ready',
   },
   {
     id: 'corazonada',
@@ -1157,6 +1176,11 @@ async function openTool(tool) {
     return;
   }
 
+  if (tool.id === 'adivinanza') {
+    navigate('adivinanza');
+    return;
+  }
+
   if (tool.status === 'soon') {
     sheetMessage({
       title: 'Muy pronto',
@@ -1205,7 +1229,10 @@ async function startLink() {
 }
 
 /** Small bottom sheet with a message and an optional action. */
+let sheetSeq = 0;
+
 function sheetMessage({ title, body, action, onAction }) {
+  const name = `sheet-${(sheetSeq += 1)}`;
   const overlay = el('div', 'sheet-overlay is-open');
   const sheet = el('div', 'sheet sheet--msg');
 
@@ -1220,17 +1247,22 @@ function sheetMessage({ title, body, action, onAction }) {
 
   if (action) {
     const go = el('button', 'actionbar__btn ripple ripple--on-accent', action);
-    go.addEventListener('click', () => { close(); onAction?.(); });
+    // The action usually opens another sheet or navigates; settle in place so no
+    // back is in flight when that happens.
+    go.addEventListener('click', () => { settleOverlay(name); onAction?.(); });
     actions.append(go);
   }
   const cancel = el('button', 'sheetmsg__cancel ripple', action ? 'Ahora no' : 'Entendido');
-  cancel.addEventListener('click', close);
+  cancel.addEventListener('click', () => closeOverlay(name));
   actions.append(cancel);
 
   sheet.append(grab, h, p, actions);
   overlay.append(sheet);
-  overlay.addEventListener('click', (evt) => { if (evt.target === overlay) close(); });
+  overlay.addEventListener('click', (evt) => { if (evt.target === overlay) closeOverlay(name); });
   document.body.append(overlay);
+
+  // A sheet is a step: the native back button closes it (S16).
+  openOverlay(name, close);
 }
 
 
@@ -1613,6 +1645,150 @@ function renderFicha(ficha) {
 // No back control here: the QvaPay header carries the native one, and a browser
 // has its own. Navigation already pushes history, so both return to the list.
 
+// ---------- La adivinanza ----------
+
+// The dicharacho on screen, so the header's share button shares this text and
+// not the app's sales pitch.
+let adivinanzaShown = null;
+
+// A screen that cannot be filled says why; it never shows invented text (S18).
+const ADIV_EMPTY = {
+  sin_tiro: 'Todavía no hay tiro para ese día, así que tampoco hay adivinanza.',
+  unconfigured: 'La adivinanza todavía no está encendida en este servidor.',
+  error: 'El dicharacho se atascó al generarse. Prueba de nuevo en un rato.',
+  rejected: 'El dicharacho de hoy no pasó el filtro de calidad. Prueba de nuevo en un rato.',
+};
+
+/**
+ * The daily adivinanza: one dicharacho, read-only, plus the days behind it.
+ *
+ * The text is generated server-side once per date and stored (S2), so this
+ * screen composes nothing: it asks for a date and prints what comes back.
+ */
+async function viewAdivinanza() {
+  const fecha = new URLSearchParams(location.search).get('fecha');
+  renderSkeleton(3);
+
+  let data;
+  try {
+    data = await getContent(
+      `/api/adivinanza${fecha ? `?fecha=${encodeURIComponent(fecha)}` : ''}`,
+      (d) => typeof d?.disponible === 'boolean',
+      'La adivinanza no llegó completa. Reinicia el servidor y recarga.',
+    );
+  } catch (err) {
+    setState(err.message, true);
+    return;
+  }
+
+  renderAdivinanza(data);
+  fillAdivinanzaHistory(data.date);
+}
+
+function renderAdivinanza(data) {
+  const frag = document.createDocumentFragment();
+
+  const head = el('div', 'morehead adiv__head');
+  // The QvaPay header already says "La adivinanza"; repeating it inside the page
+  // spends the first screenful on a title the user just read.
+  if (!isHosted()) head.append(el('h2', 'panel__title', 'La adivinanza'));
+  head.append(el('p', 'morehead__who', 'Un dicharacho con doble sentido, publicado después de las 8 de la noche para el tiro siguiente.'));
+  frag.append(head);
+
+  if (!data.disponible) {
+    adivinanzaShown = null;
+    const empty = el('div', 'panel adiv adiv--empty');
+    empty.append(el('p', 'adiv__texto', ADIV_EMPTY[data.motivo] ?? ADIV_EMPTY.error));
+    frag.append(empty);
+    view.replaceChildren(frag);
+    view.scrollTop = 0;
+    return;
+  }
+
+  adivinanzaShown = data;
+
+  const card = el('article', 'panel adiv');
+  const meta = el('div', 'adiv__meta');
+  // The date is the day the riddle is FOR, so it is never the day of the draw it
+  // hints at (S11). The number it evokes is not on screen at all (S10).
+  meta.append(el('span', 'adiv__date', `Para el ${formatDate(data.date)} · ${weekdayOf(data.date)}`));
+  card.append(meta);
+  card.append(el('p', 'adiv__texto', data.texto));
+  card.append(el('p', 'adiv__foot', 'Juego de palabras con los significados del día. No es un pronóstico.'));
+  frag.append(card);
+
+  // Filled after the card, so the text never waits for the list.
+  frag.append(el('div', 'adiv__history'));
+
+  view.replaceChildren(frag);
+  view.scrollTop = 0;
+}
+
+/** Short version of a text, cut on a word so the ellipsis does not orphan one. */
+function snippet(text, limit = 110) {
+  const clean = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (clean.length <= limit) return clean;
+  const cut = clean.slice(0, limit);
+  const space = cut.lastIndexOf(' ');
+  return `${cut.slice(0, space > limit * 0.6 ? space : limit).trimEnd()}…`;
+}
+
+async function fillAdivinanzaHistory(currentDate) {
+  const holder = view.querySelector('.adiv__history');
+  if (!holder) return;
+
+  let data;
+  try {
+    data = await getContent('/api/adivinanzas?limite=20',
+      (d) => Array.isArray(d?.items),
+      'El historial de adivinanzas no llegó completo.');
+  } catch {
+    // A missing history is not worth an error banner over a text that is fine.
+    holder.remove();
+    return;
+  }
+
+  const rows = data.items.filter((row) => row.date !== currentDate);
+  if (rows.length === 0) {
+    holder.remove();
+    return;
+  }
+
+  const head = el('div', 'morehead adiv__histhead');
+  head.append(el('h2', 'panel__title', 'Adivinanzas anteriores'));
+  holder.append(head);
+
+  for (const row of rows) {
+    const btn = el('button', 'adiv__row ripple');
+    btn.type = 'button';
+
+    const line = el('span', 'adiv__rowhead');
+    line.append(el('span', 'adiv__rowdate', formatDate(row.date)));
+    btn.append(line);
+    btn.append(el('span', 'adiv__rowsnip', snippet(row.texto)));
+
+    btn.addEventListener('click', () => navigate('adivinanza', { extra: { fecha: row.date } }));
+    holder.append(btn);
+  }
+}
+
+/** The header's share button: the dicharacho on its screen, the app elsewhere. */
+async function shareCurrentScreen() {
+  if (currentView === 'adivinanza' && adivinanzaShown?.texto) {
+    // Shared text carries the day and the riddle, never the number it evokes
+    // (S10): the illusion only holds while the number stays hidden.
+    const text = `La adivinanza para el ${formatDate(adivinanzaShown.date)}:\n\n`
+      + `${adivinanzaShown.texto}\n\nLa charada cubana, en QvaPay.`;
+    try {
+      await share(sdkRef, { text });
+      return;
+    } catch {
+      // Fall through: sharing the app is better than a dead button.
+    }
+  }
+  await shareMiniApp();
+}
+
 // ---------- Router ----------
 
 const VIEWS = {
@@ -1622,6 +1798,7 @@ const VIEWS = {
   mas: viewMas,
   cultura: viewCultura,
   significados: viewSignificados,
+  adivinanza: viewAdivinanza,
 };
 
 async function viewAnalisis() {
@@ -1674,6 +1851,8 @@ function chromeFor(name, context = {}) {
       return isLinked()
         ? { subtitle: `@${getSession().username ?? 'usuario'}` }
         : { subtitle: 'Herramientas', actions: [ACTION.user] };
+    case 'adivinanza':
+      return { subtitle: 'La adivinanza', actions: [ACTION.share] };
     case 'cultura':
       return { subtitle: context.titulo ?? 'Historia y cultura', actions: [ACTION.search] };
     case 'significados':
@@ -1708,7 +1887,7 @@ function applyMainButton(cfg) {
 const HEADER_ACTIONS = {
   calendar: () => openDatePicker(),
   search: () => focusSearch(),
-  share: () => shareMiniApp(),
+  share: () => shareCurrentScreen(),
   user: () => startLink(),
 };
 
@@ -1795,6 +1974,77 @@ function watchTabbarHeight() {
 //
 // QvaPay's back button walks the browser history, so navigation has to write
 // history. Every screen and every in-view step (an article) is an entry (S15).
+//
+// A sheet is a step too (S16). The calendar and the message sheets push their own
+// entry when they open, so back closes them instead of leaving the screen behind
+// them; a sheet dismissed by its own controls takes that entry back off, so what
+// is stored and what is on screen never disagree.
+
+/** Open sheets, oldest first. The last one is what back closes. */
+const overlays = [];
+
+/** Set while we walk back ourselves, so the popstate we caused is not re-handled. */
+let ignoringPop = false;
+
+function openOverlay(name, close) {
+  if (overlays.some((overlay) => overlay.name === name)) return;
+  overlays.push({ name, close });
+  history.pushState({ ...(history.state ?? {}), overlay: name }, '', location.href);
+}
+
+/** Remove a sheet from the stack, or undefined when it was already gone. */
+function takeOverlay(name) {
+  const index = overlays.findIndex((overlay) => overlay.name === name);
+  if (index === -1) return undefined;
+  return overlays.splice(index, 1)[0];
+}
+
+/**
+ * Reconcile a sheet that closed itself (its own button, the backdrop, Escape).
+ *
+ * Called from the sheet's `onClose`. When the close came from us the sheet is
+ * already off the stack and this is a no-op, which is what keeps the two paths
+ * from fighting over history.
+ */
+function releaseOverlayEntry(name) {
+  if (!takeOverlay(name)) return;
+  if (history.state?.overlay !== name) return;
+  ignoringPop = true;
+  history.back();
+}
+
+/** Close from the screen's controls: the entry goes away with the sheet. */
+function closeOverlay(name) {
+  const overlay = takeOverlay(name);
+  if (!overlay) return;
+  overlay.close();
+  if (history.state?.overlay === name) {
+    ignoringPop = true;
+    history.back();
+  }
+}
+
+/**
+ * Close while something else takes over — a navigation, another sheet.
+ *
+ * The entry is neutralised in place instead of walked back: a `history.back()`
+ * in flight would land after the push that follows and undo it.
+ */
+function settleOverlay(name) {
+  const overlay = takeOverlay(name);
+  if (!overlay) return;
+  overlay.close();
+  if (history.state?.overlay === name) {
+    const { overlay: _dropped, ...rest } = history.state;
+    history.replaceState(rest, '', location.href);
+  }
+}
+
+
+/** True when the page runs inside the QvaPay WebView, which draws its own bar. */
+function isHosted() {
+  return document.body.classList.contains('is-hosted');
+}
 
 function pushView(name, extra = {}) {
   const params = new URLSearchParams();
@@ -1802,13 +2052,31 @@ function pushView(name, extra = {}) {
   if (extra.article) params.set('articulo', extra.article);
   if (extra.numero) params.set('numero', extra.numero);
   if (extra.glosario) params.set('glosario', '1');
+  if (extra.fecha) params.set('fecha', extra.fecha);
   const qs = params.toString();
   history.pushState({ view: name, ...extra }, '', `${location.pathname}${qs ? `?${qs}` : ''}`);
 }
 
 function wireHistory() {
   window.addEventListener('popstate', (evt) => {
+    // Our own walk back for a dismissed sheet: nothing to render.
+    if (ignoringPop) {
+      ignoringPop = false;
+      return;
+    }
+
+    // Back is the way out of a sheet, and only of a sheet, while one is open.
+    const overlay = overlays.pop();
+    if (overlay) {
+      overlay.close();
+      return;
+    }
+
     const state = evt.state ?? {};
+
+    // Back out of a finished analysis shows the input again, not the same result.
+    if (state.view === 'analisis' && !state.resultado) analysisData = null;
+
     if (state.article) {
       openArticle(state.article, { push: false });
       return;
@@ -1851,7 +2119,7 @@ async function openBootFicha() {
   await openFicha(number, { push: false });
 }
 
-async function navigate(name, { push = true } = {}) {
+async function navigate(name, { push = true, extra = {} } = {}) {
   clearCountdown();
   currentView = name;
   doc_body_class_toggle('is-analyser', name === 'analisis');
@@ -1864,7 +2132,7 @@ async function navigate(name, { push = true } = {}) {
     btn.classList.toggle('is-active', active);
     btn.setAttribute('aria-selected', String(active));
   }
-  if (push) pushView(name);
+  if (push) pushView(name, extra);
   // Chrome first: the bar and the main button must follow the tap, not the
   // network. The second call after the view renders corrects anything the
   // screen only knows once its data (or its session) is loaded; the dedupe in
@@ -1892,6 +2160,9 @@ function wireTabbar() {
 
 async function start(sdk) {
   sdkRef = sdk;
+  // Inside QvaPay the host draws the bar and names the screen, so the page must
+  // not repeat the title. In a plain browser it does (see `isHosted`).
+  document.body.classList.add('is-hosted');
   splashTimer = setTimeout(hideSplash, SPLASH_MAX_MS);
   const caps = capabilities(sdk);
 

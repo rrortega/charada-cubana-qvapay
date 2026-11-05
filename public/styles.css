@@ -2129,6 +2129,61 @@ html.in-qvapay .actionbar { display: none; }
 
 /* ---------- Cultura: índice de tiles -------------------------------------- */
 
+/* La adivinanza: a reading panel with its date, and the days behind it. */
+.adiv__head .morehead__who { margin-top: 0; }
+.adiv { padding: var(--s4) var(--s4) var(--s3); }
+/* The provenance number is never on screen (S10): the line carries the target
+ * date only, so this is a plain block, not a two-ended row. */
+.adiv__meta { margin-bottom: var(--s3); }
+.adiv__date {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.adiv__texto {
+  margin: 0;
+  font-size: 16.5px;
+  line-height: 1.62;
+  color: var(--text);
+  text-wrap: pretty;
+}
+.adiv--empty .adiv__texto { font-size: 14px; line-height: 1.55; color: var(--text-2); }
+.adiv__foot {
+  margin: var(--s3) 0 0;
+  padding-top: var(--s3);
+  border-top: 1px solid var(--hairline);
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+.adiv__histhead { margin-top: var(--s5); }
+.adiv__row {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  margin-bottom: var(--s2);
+  padding: var(--s3);
+  text-align: left;
+  background: var(--card-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.adiv__row:active { border-color: var(--accent-hair); }
+.adiv__rowhead { display: flex; justify-content: space-between; gap: var(--s2); }
+.adiv__rowdate {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.adiv__rowsnip { font-size: 13px; line-height: 1.5; color: var(--text-2); }
+
 /* The line under the heading needs air before the first tile. */
 .culturehead { margin-bottom: var(--s5); }
 

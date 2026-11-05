@@ -140,6 +140,11 @@ app sin `backButton.set`: del artículo al índice, de una vista a la anterior. 
 botón atrás propio queda solo fuera del host. Los enlaces externos del artículo
 salen por `openLink` (el WebView no tiene `window.open`).
 
+Una hoja abierta es un paso más (S17). El calendario y las hojas de mensaje
+empujan su entrada al abrirse y atrás las cierra en vez de abandonar la pantalla;
+al cerrarse por sus propios controles devuelven la entrada. El resultado del
+análisis también es un paso: atrás vuelve a la entrada del número.
+
 ### Verificación ejecutada
 
 Con Playwright y un `window.QvaPay` inyectado antes de cargar la página (mismo
