@@ -112,6 +112,22 @@ async function getJson(path) {
   return res.json();
 }
 
+// A write is the one request whose answer the screen has to read: a 4xx carries
+// a machine code that becomes a sentence, so this one hands back the status
+// instead of throwing on it. Same session as `getJson`, because the account is
+// what the write is gated on (S7).
+async function postJson(path, body) {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: authHeaders({ accept: 'application/json', 'content-type': 'application/json' }),
+    credentials: 'include',
+    body: JSON.stringify(body ?? {}),
+  });
+  // An error page is still an answer: a missing body must not throw here.
+  const data = await res.json().catch(() => null);
+  return { status: res.status, data };
+}
+
 // Version of the content contract, sent in the URL.
 //
 // These endpoints changed shape while the app was being built, and a browser can
@@ -1031,10 +1047,10 @@ const MORE_TOOLS = [
   {
     id: 'sueno',
     title: 'Cuéntame tu sueño',
-    blurb: 'Graba o escribe lo que soñaste y te lo interpretamos en clave de charada.',
+    blurb: 'Cuéntanos lo que soñaste, con tus palabras, y te lo leemos en clave de charada.',
     icon: 'moon',
     needsAccount: true,
-    status: 'soon',
+    status: 'ready',
   },
   {
     id: 'adivinanza',
@@ -1178,6 +1194,11 @@ async function openTool(tool) {
 
   if (tool.id === 'adivinanza') {
     navigate('adivinanza');
+    return;
+  }
+
+  if (tool.id === 'sueno') {
+    navigate('sueno');
     return;
   }
 
@@ -1789,6 +1810,270 @@ async function shareCurrentScreen() {
   await shareMiniApp();
 }
 
+// ---------- Cuéntame tu sueño ----------
+//
+// One dream in, one reading out (S1). The text goes up once and is not kept:
+// what comes back are the signals it left, the numbers they point at (S5) and
+// the week's coincidences (S3, S4). Nothing of another dream ever reaches this
+// screen — the route answers with counts only (S4).
+//
+// The last reading lives in a module variable, like `analysisData`, so stepping
+// into the tab again shows the reading instead of an empty field.
+
+const SUENO_PROMISE = 'Escribe lo que soñaste. No guardamos tu sueño: solo las señales que saca el análisis.';
+const SUENO_HINT = 'Escribe tu sueño con tus palabras. El análisis tarda unos segundos.';
+
+let suenoResult = null;
+let suenoSemana = null;
+let suenoText = '';
+let suenoLoading = false;
+let suenoError = null;
+/** The nodes of the current render, so a request can update the state in place. */
+let suenoEls = null;
+
+async function viewSueno() {
+  const frag = document.createDocumentFragment();
+
+  const head = el('div', 'morehead sueno__head');
+  // The host bar already says "Cuéntame tu sueño"; repeating it would spend the
+  // first screenful on a title the user just read.
+  if (!isHosted()) head.append(el('h2', 'panel__title', 'Cuéntame tu sueño'));
+  head.append(el('p', 'morehead__who', SUENO_PROMISE));
+  frag.append(head);
+
+  const input = el('textarea', 'sueno__input');
+  input.setAttribute('rows', '5');
+  input.setAttribute('maxlength', '2000');
+  input.setAttribute('placeholder', 'Anoche soñé que…');
+  input.setAttribute('aria-label', 'Lo que soñaste');
+  // Coming back to the tab keeps what was typed, like the reading below it.
+  input.value = suenoText;
+  input.addEventListener('input', () => {
+    suenoText = input.value;
+    syncSuenoButton();
+  });
+
+  // The button is the only submit: Enter inside the field is a newline, because
+  // a dream is prose and a stray Enter must not send it.
+  const go = el('button', 'sueno__go ripple', 'Interpretar');
+  go.type = 'button';
+  go.addEventListener('click', runSueno);
+
+  const actions = el('div', 'sueno__actions');
+  actions.append(go);
+
+  const composer = el('div', 'sueno__composer');
+  composer.append(input, actions);
+  frag.append(composer);
+
+  // Everything under the field is one state at a time (idle, loading, reading,
+  // error). The field is never rebuilt, so a failed request leaves the text
+  // exactly where the user left it.
+  const state = el('div', 'sueno__state');
+  frag.append(state);
+
+  view.replaceChildren(frag);
+  view.scrollTop = 0;
+  suenoEls = { input, go, state };
+  syncSuenoButton();
+  renderSuenoState();
+  loadSuenoSemana();
+}
+
+/** Empty text and an in-flight request both disable the action. */
+function syncSuenoButton() {
+  if (!suenoEls) return;
+  suenoEls.go.disabled = suenoLoading || suenoEls.input.value.trim() === '';
+}
+
+/** The week's counter, read before anything is submitted (S3). */
+async function loadSuenoSemana() {
+  try {
+    const data = await getJson('/api/sueno/senales?dias=7');
+    suenoSemana = Array.isArray(data?.senales) ? data.senales : [];
+  } catch {
+    // The counter is context, not the point of the screen: its absence must not
+    // put an error over a field that still works.
+    suenoSemana = null;
+  }
+  renderSuenoState();
+}
+
+function renderSuenoState() {
+  const holder = suenoEls?.state;
+  if (!holder) return;
+
+  if (suenoLoading) {
+    const wrap = el('div', 'anaskeleton');
+    for (const height of ['92px', '128px', '182px']) {
+      const box = el('div', 'skeleton');
+      box.style.height = height;
+      wrap.append(box);
+    }
+    holder.replaceChildren(wrap);
+    return;
+  }
+  if (suenoError) {
+    holder.replaceChildren(el('p', 'state state--error', suenoError));
+    return;
+  }
+  if (suenoResult) {
+    holder.replaceChildren(suenoReading(suenoResult));
+    return;
+  }
+
+  const quiet = document.createDocumentFragment();
+  quiet.append(el('p', 'sueno__hint', SUENO_HINT));
+  if (suenoSemana?.length) quiet.append(suenoWeek(suenoSemana));
+  holder.replaceChildren(quiet);
+}
+
+/** The week's signal counter: one row per signal, never a dream (S4). */
+function suenoWeek(rows) {
+  const panel = el('section', 'panel sueno__week');
+  panel.append(el('h2', 'panel__title', 'Esta semana'));
+
+  if (!rows.length) {
+    panel.append(el('p', 'sueno__empty', 'Todavía nadie ha soñado con esto esta semana.'));
+    return panel;
+  }
+
+  const list = el('div', 'sueno__rows');
+  for (const row of rows) {
+    const line = el('div', 'sueno__row');
+    line.append(el('span', 'sueno__rowname', row.senal));
+    line.append(el('span', 'sueno__rowcount', `${row.suenos} ${row.suenos === 1 ? 'sueño' : 'sueños'}`));
+    list.append(line);
+  }
+  panel.append(list);
+  return panel;
+}
+
+/** The reading of one dream: its numbers, its signals, the week around it. */
+function suenoReading(data) {
+  const block = el('div', 'sueno__result');
+
+  // The numbers chosen for the whole dream, with the art of each element (S5).
+  const numeros = el('section', 'panel');
+  numeros.append(el('h2', 'panel__title', 'Los números'));
+  const cards = el('div', 'sueno__nums');
+  for (const item of data.elementos ?? []) {
+    const card = el('div', 'sueno__num');
+    const disc = el('span', 'sueno__numdisc');
+    if (item.icono) {
+      const img = el('img', 'sueno__numicon');
+      img.src = item.icono;
+      img.alt = '';
+      img.loading = 'lazy';
+      disc.append(img);
+    } else {
+      // Without art the initial of the meaning holds the disc, same rule as the
+      // ficha hero: a missing drawing must not leave a hole.
+      disc.append(el('span', 'sueno__numinitial', (item.significado || '?').charAt(0).toUpperCase()));
+    }
+    card.append(disc, el('span', 'sueno__numvalue', pad2(item.numero)));
+    if (item.significado) card.append(el('span', 'sueno__numname', item.significado));
+    cards.append(card);
+  }
+  numeros.append(cards);
+  block.append(numeros);
+
+  // One chip per signal: its name and the numbers its symbols suggest.
+  const senales = el('section', 'panel');
+  senales.append(el('h2', 'panel__title', 'Las señales'));
+  const chips = el('div', 'sueno__chips');
+  for (const senal of data.senales ?? []) {
+    const chip = el('span', 'sueno__chip');
+    chip.append(el('span', 'sueno__chipname', senal.nombre));
+    if (senal.numeros?.length) {
+      chip.append(el('span', 'sueno__chipnums', senal.numeros.map((n) => pad2(n)).join(' · ')));
+    }
+    chips.append(chip);
+  }
+  senales.append(chips);
+  block.append(senales);
+
+  const coincidencias = data.coincidencias ?? {};
+  block.append(suenoWeek(coincidencias.senales ?? []));
+
+  // How close this dream is to the week's others. Counts only: the route never
+  // sends another dream's text, id or author (S4).
+  const parecidos = coincidencias.parecidos ?? { total: 0, muestra: [] };
+  const pare = el('section', 'panel');
+  pare.append(el('h2', 'panel__title', 'Se parece a'));
+  if (parecidos.total > 0) {
+    pare.append(el('p', 'sueno__note', parecidos.total === 1
+      ? 'Tu sueño se parece al de 1 persona esta semana.'
+      : `Tu sueño se parece al de ${parecidos.total} personas esta semana.`));
+    for (const match of parecidos.muestra ?? []) {
+      pare.append(el('p', 'sueno__match', `${match.compartidas} `
+        + `${match.compartidas === 1 ? 'señal en común' : 'señales en común'}`));
+    }
+  } else {
+    pare.append(el('p', 'sueno__empty', 'De momento es el único sueño así esta semana.'));
+  }
+  block.append(pare);
+
+  return block;
+}
+
+async function runSueno() {
+  const texto = suenoEls?.input.value.trim() ?? '';
+  if (suenoLoading || !texto) return;
+
+  suenoLoading = true;
+  suenoError = null;
+  syncSuenoButton();
+  renderSuenoState();
+
+  let out = null;
+  try {
+    out = await postJson('/api/sueno', { sueno: texto });
+  } catch {
+    // A dead network is not an answer: there is no code to read, so it falls
+    // through to the generic retry line below.
+    out = null;
+  }
+
+  suenoLoading = false;
+
+  if (out?.status === 200 && Array.isArray(out.data?.numeros)) {
+    suenoResult = out.data;
+    suenoError = null;
+    syncSuenoButton();
+    renderSuenoState();
+    return;
+  }
+
+  // A failed request keeps the text: rewriting a dream is worse than retrying it.
+  suenoResult = null;
+  suenoError = suenoErrorFor(out?.data?.error);
+  syncSuenoButton();
+  renderSuenoState();
+  if (out?.data?.error === 'cuenta_requerida') suenoNeedAccount();
+}
+
+/** The machine code of the route, turned into a sentence the user can act on. */
+function suenoErrorFor(code) {
+  if (code === 'sueno_vacio') return 'Escribe tu sueño primero.';
+  if (code === 'sueno_largo') return 'Tu sueño es muy largo: resúmelo en 2000 caracteres.';
+  if (code === 'no_configurado') return 'La interpretación todavía no está encendida en este servidor.';
+  if (code === 'cuenta_requerida') return 'Vincula tu cuenta de QvaPay para interpretar tu sueño.';
+  // llm_* and internal errors are not the user's to fix: offer the way back.
+  return 'No se pudo interpretar tu sueño. Inténtalo otra vez en un momento.';
+}
+
+/** The gate of S7 as an action, so the refusal is not a dead end. */
+function suenoNeedAccount() {
+  sheetMessage({
+    title: 'Necesitas tu cuenta',
+    body: 'Para interpretar tu sueño vincula tu cuenta de QvaPay. Lo que escribiste sigue ahí.',
+    action: 'Vincular cuenta',
+    onAction: async () => { if (await startLink()) runSueno(); },
+  });
+}
+
+
 // ---------- Router ----------
 
 const VIEWS = {
@@ -1799,6 +2084,7 @@ const VIEWS = {
   cultura: viewCultura,
   significados: viewSignificados,
   adivinanza: viewAdivinanza,
+  sueno: viewSueno,
 };
 
 async function viewAnalisis() {
@@ -1853,6 +2139,10 @@ function chromeFor(name, context = {}) {
         : { subtitle: 'Herramientas', actions: [ACTION.user] };
     case 'adivinanza':
       return { subtitle: 'La adivinanza', actions: [ACTION.share] };
+    case 'sueno':
+      // Same as the analyser: the screen owns its action (the button under the
+      // field), so the native main button stays hidden instead of doubling it.
+      return { subtitle: 'Cuéntame tu sueño', main: null };
     case 'cultura':
       return { subtitle: context.titulo ?? 'Historia y cultura', actions: [ACTION.search] };
     case 'significados':
