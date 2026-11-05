@@ -8,7 +8,14 @@
 import { createLlm } from '../llm/openai.js';
 import { analizarSueno, PROMPT_VERSION } from './analizar.js';
 import { elegirConjunto } from './coherencia.js';
-import { guardarSueno, contarSenales, suenosParecidos } from './store.js';
+import {
+  guardarSueno,
+  contarSenales,
+  contarNumeros,
+  suenosParecidos,
+  historialDeSuenos,
+  suenoDe,
+} from './store.js';
 
 /** The window of the coincidence (S3): the same week, seven days. */
 const DIAS = 7;
@@ -26,17 +33,30 @@ export function createSuenoService({ pool, llm = createLlm() } = {}) {
    * part of the counter and of nothing else: `suenosParecidos` excludes it.
    */
   async function analizar({ texto, userId = null }) {
-    const { senales } = await analizarSueno({ sueno: texto, llm });
+    const { resumen, senales } = await analizarSueno({ sueno: texto, llm });
     const { numeros, soporte } = elegirConjunto(senales);
 
-    const { id } = await guardarSueno(pool, { senales, userId, modelo: llm.model });
+    const { id } = await guardarSueno(pool, {
+      senales,
+      texto,
+      resumen,
+      numeros,
+      userId,
+      modelo: llm.model,
+    });
 
     const [semana, parecidos] = await Promise.all([
       contarSenales(pool, { dias: DIAS }),
-      suenosParecidos(pool, { suenoId: id, senales: senales.map((senal) => senal.nombre), dias: DIAS }),
+      suenosParecidos(pool, {
+        suenoId: id,
+        senales: senales.map((senal) => senal.nombre),
+        // Comparing someone with their own dreams is not a coincidence.
+        usuarioId: userId,
+        dias: DIAS,
+      }),
     ]);
 
-    return { senales, numeros, soporte, coincidencias: { senales: semana, parecidos } };
+    return { resumen, senales, numeros, soporte, coincidencias: { senales: semana, parecidos } };
   }
 
   return {
@@ -45,5 +65,8 @@ export function createSuenoService({ pool, llm = createLlm() } = {}) {
     promptVersion: PROMPT_VERSION,
     analizar,
     senales: (options) => contarSenales(pool, options),
+    numeros: (options) => contarNumeros(pool, options),
+    historial: (options) => historialDeSuenos(pool, options),
+    lectura: (options) => suenoDe(pool, options),
   };
 }

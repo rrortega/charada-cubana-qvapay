@@ -45,13 +45,17 @@ Reglas:
 - Los números salen del vocabulario de abajo, del 1 al 100. Nunca inventes un
   número mayor que 100 ni uno que no esté en la lista. Como máximo cuatro por
   señal.
+- Además del JSON de señales escribes "resumen": una lectura de tres o cuatro
+  frases, de 400 caracteres como máximo, que diga qué evoca el sueño y a qué
+  símbolos de la charada está vinculado (nombra los símbolos, no las cifras).
+  Se lee como una interpretación, nunca como un pronóstico.
 - Es una lectura de símbolos, no un pronóstico. Nunca predices un resultado,
   nunca dices que un número "va a salir" ni que ayuda a ganar.
 - Respondes SOLO con el objeto JSON, sin markdown, sin bloque de código, sin
   texto antes ni después.
 
 Forma exacta de la respuesta:
-{"senales":[{"nombre":"agua","peso":0.8,"numeros":[9,33]}]}
+{"resumen":"El sueño se mueve entre el agua y el camino: ...","senales":[{"nombre":"agua","peso":0.8,"numeros":[9,33]}]}
 
 Vocabulario de la charada (número: significado):
 ${material}`;
@@ -72,7 +76,7 @@ export async function buildPrompt({ sueno }) {
     system: systemPrompt(material),
     user: `Sueño: ${String(sueno ?? '').trim()}
 
-Devuelve el JSON con sus señales.`,
+Devuelve el JSON con el resumen y sus señales.`,
   };
 }
 
@@ -147,6 +151,21 @@ function parseJson(raw) {
  * @param {string} raw
  * @returns {{ senales: Array<{nombre: string, peso: number, numeros: number[]}> }}
  */
+/** The narrative reading: one paragraph, no markdown, at most 400 characters. */
+export const MAX_RESUMEN = 400;
+
+/** Clean the reading the model wrote, cutting on a word when it runs long. */
+export function cleanResumen(value) {
+  let text = String(value ?? '').trim();
+  text = text.replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, '$1').replace(/\s+/g, ' ').trim();
+  if (text.length <= MAX_RESUMEN) return text;
+
+  // A sentence chopped mid-word reads as a bug, so the cut lands on a space.
+  const cut = text.slice(0, MAX_RESUMEN);
+  const space = cut.lastIndexOf(' ');
+  return `${cut.slice(0, space > MAX_RESUMEN * 0.7 ? space : MAX_RESUMEN).trimEnd()}…`;
+}
+
 export function parseAnalysis(raw) {
   const payload = parseJson(raw);
   const list = Array.isArray(payload?.senales) ? payload.senales : [];
@@ -173,7 +192,7 @@ export function parseAnalysis(raw) {
     .slice(0, MAX_SENALES);
 
   if (senales.length === 0) throw invalid('sueno_sin_senales', 'no quedó ninguna señal válida');
-  return { senales };
+  return { resumen: cleanResumen(payload?.resumen), senales };
 }
 
 /**

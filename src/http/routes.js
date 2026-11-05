@@ -1,8 +1,9 @@
 // HTTP routes for the mini-app.
 //
 // Almost every route is a read-only GET. The one write path is POST /api/sueno,
-// which stores the signals of a dream and never its text. No route ever accepts
-// credentials, and the QvaPay app-secret never leaves the server.
+// which stores a dream under its author — text, reading and signals — and is
+// readable back only by that author. No route ever accepts credentials, and the
+// QvaPay app-secret never leaves the server.
 
 import crypto from 'node:crypto';
 import { analyseNumber } from '../domain/analysis.js';
@@ -12,6 +13,7 @@ import { renderMarkdown } from '../markdown/markdown.js';
 import { compactList, getFicha, totals } from '../content/charada.js';
 import { createAdivinanzaService, addDays, toPublicView } from '../adivinanza/store.js';
 import { createSuenoService } from '../sueno/service.js';
+import { combinacionesDeLaSemana } from '../sueno/combinaciones.js';
 import { verifyInitData } from '../auth/verifyInitData.js';
 import {
   createSessionToken,
@@ -398,10 +400,7 @@ async function handleSuenoPost(req, res, pool, deps) {
     return;
   }
 
-  // The cookie carries the QvaPay uuid; the row's id is what the envelope
-  // references. A session for an account that has no row yet stores without it.
-  const { rows } = await pool.query('SELECT id FROM users WHERE qvapay_uuid = $1', [session.uuid]);
-  const userId = rows[0]?.id ?? null;
+  const userId = await userIdOf(pool, session);
 
   const service = deps.sueno ?? getSueno(pool);
   if (service.configured === false) {
@@ -427,13 +426,33 @@ async function handleSuenoPost(req, res, pool, deps) {
     throw err;
   }
 
-  // The art of the chosen numbers, reused from the Significados screens (S5).
-  const elementos = await Promise.all(out.numeros.map(async (numero) => {
+  const elementos = await elementosFor(out.numeros);
+
+  sendJson(res, 200, { ...out, id: out.id ?? null, elementos }, { 'cache-control': 'no-store' });
+}
+
+/**
+ * The art of a list of numbers, reused from the Significados screens (S5).
+ *
+ * @param {number[]} numeros
+ */
+/**
+ * The row id behind a session.
+ *
+ * The cookie carries the QvaPay uuid; the row's id is what the tables
+ * reference. A session for an account with no row yet answers null.
+ */
+async function userIdOf(pool, session) {
+  if (!session?.uuid) return null;
+  const { rows } = await pool.query('SELECT id FROM users WHERE qvapay_uuid = $1', [session.uuid]);
+  return rows[0]?.id ?? null;
+}
+
+async function elementosFor(numeros) {
+  return Promise.all((numeros ?? []).map(async (numero) => {
     const ficha = await getFicha(numero);
     return { numero, significado: ficha?.principal ?? null, icono: ficha?.icon ?? null };
   }));
-
-  sendJson(res, 200, { ...out, elementos }, { 'cache-control': 'no-store' });
 }
 
 /**
@@ -632,12 +651,60 @@ export async function handleApi(req, res, url, pool, deps = {}) {
         return true;
       }
 
-      // The weekly counter of dream signals (S3, S4). Counts only: no texts, no
-      // identities, no other dream's signals.
+      // The week: its signals, the numbers they weigh most, and the playable
+      // combinations those numbers make (S10). Aggregated on purpose: no texts,
+      // no identities.
       case '/api/sueno/senales': {
         const dias = intParam(url.searchParams.get('dias'), 7, { max: 90 });
-        const senales = await (deps.sueno ?? getSueno(pool)).senales({ dias });
-        sendRevalidatedJson(req, res, { dias, senales });
+        const service = deps.sueno ?? getSueno(pool);
+        const [senales, numeros] = await Promise.all([
+          service.senales({ dias }),
+          service.numeros({ dias }),
+        ]);
+        sendRevalidatedJson(req, res, {
+          dias,
+          senales,
+          combinaciones: combinacionesDeLaSemana(numeros),
+        });
+        return true;
+      }
+
+      // The author's own dreams, newest first (S9).
+      case '/api/suenos': {
+        const session = currentSession(req);
+        if (!session) {
+          sendJson(res, 401, { error: 'cuenta_requerida' });
+          return true;
+        }
+        const usuarioId = await userIdOf(pool, session);
+        const items = usuarioId ? await (deps.sueno ?? getSueno(pool)).historial({ usuarioId }) : [];
+        sendRevalidatedJson(req, res, { items });
+        return true;
+      }
+
+      // One stored dream of the author's own, with its reading and its art (S9).
+      case '/api/sueno/lectura': {
+        const session = currentSession(req);
+        if (!session) {
+          sendJson(res, 401, { error: 'cuenta_requerida' });
+          return true;
+        }
+        const id = url.searchParams.get('id');
+        if (!id) {
+          sendJson(res, 400, { error: 'id_requerido' });
+          return true;
+        }
+        const usuarioId = await userIdOf(pool, session);
+        const lectura = usuarioId
+          ? await (deps.sueno ?? getSueno(pool)).lectura({ id, usuarioId })
+          : null;
+        if (!lectura) {
+          // Missing and foreign answer the same: ids must not be probeable.
+          sendJson(res, 404, { error: 'not_found' });
+          return true;
+        }
+        sendJson(res, 200, { ...lectura, elementos: await elementosFor(lectura.numeros) },
+          { 'cache-control': 'no-store' });
         return true;
       }
 

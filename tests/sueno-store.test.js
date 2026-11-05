@@ -9,7 +9,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { guardarSueno, contarSenales, suenosParecidos } from '../src/sueno/store.js';
+import {
+  guardarSueno,
+  contarSenales,
+  contarNumeros,
+  suenosParecidos,
+  historialDeSuenos,
+  suenoDe,
+} from '../src/sueno/store.js';
 
 const ID = '11111111-1111-1111-1111-111111111111';
 
@@ -73,7 +80,7 @@ test('a dream is one envelope plus its signals in one transaction', async () => 
     'commit',
   ]);
   assert.match(pool.statements[1].sql, /insert into suenos/i);
-  assert.deepEqual(pool.statements[1].params, [7, 'fake-model', 1]);
+  assert.deepEqual(pool.statements[1].params, [7, 'fake-model', 1, null, null, []]);
 
   const stored = pool.statements.slice(2, 5).map((s) => s.params);
   assert.deepEqual(stored, [
@@ -84,13 +91,39 @@ test('a dream is one envelope plus its signals in one transaction', async () => 
   assert.equal(pool.released, 1);
 });
 
-test('the dream text never reaches the store', async () => {
+test('the dream, its reading and its numbers are stored under its author', async () => {
   const pool = fakePool();
-  await guardarSueno(pool, { senales: [{ nombre: 'agua', peso: 1, numeros: [9] }] });
+  await guardarSueno(pool, {
+    senales: [{ nombre: 'agua', peso: 1, numeros: [9] }],
+    texto: 'Anoche soñé con el mar',
+    resumen: 'El agua manda en este sueño.',
+    numeros: [9, 3],
+    userId: 7,
+  });
 
-  const everything = JSON.stringify(pool.statements);
-  assert.doesNotMatch(everything, /soñé|soné|sof\u00e9/i);
-  assert.equal(pool.statements.some((s) => /texto|text/i.test(s.sql)), false);
+  const insert = pool.statements.find((entry) => /insert into suenos/i.test(entry.sql));
+  assert.ok(insert, 'the envelope is written');
+  assert.deepEqual(insert.params, [7, null, 1, 'Anoche soñé con el mar',
+    'El agua manda en este sueño.', [9, 3]]);
+});
+
+test('the history is scoped to one account and never lists another', async () => {
+  const pool = fakePool({ read: () => [] });
+  await historialDeSuenos(pool, { usuarioId: 7 });
+
+  const query = pool.reads.find((entry) => /from suenos/i.test(entry.sql));
+  assert.match(query.sql, /where user_id = \$1/i, 'the query filters by author');
+  assert.deepEqual(query.params, [7, 30]);
+});
+
+test('a stored reader filters by author too, and answers null otherwise', async () => {
+  const pool = fakePool({ read: () => [] });
+  const lectura = await suenoDe(pool, { id: 'abc', usuarioId: 7 });
+
+  assert.equal(lectura, null, 'a missing or foreign dream is the same answer');
+  const query = pool.reads.find((entry) => /from suenos/i.test(entry.sql));
+  assert.match(query.sql, /where id = \$1 and user_id = \$2/i);
+  assert.deepEqual(query.params, ['abc', 7]);
 });
 
 test('a failing signal rolls the whole dream back', async () => {
@@ -146,39 +179,57 @@ test('the window and the limit of the counter are the ones asked for', async () 
 test('similar dreams exclude the dream itself and respect the minimum', async () => {
   const pool = fakePool({
     read: () => [
-      { suenoId: 'a', compartidas: '3', total: '2' },
-      { suenoId: 'b', compartidas: 2, total: 2 },
+      { nombre: 'ana', avatar: 'https://media.qvapay.com/a.png', compartidas: '3', total: '2' },
+      { nombre: 'leo', avatar: null, compartidas: 2, total: 2 },
     ],
   });
 
   const out = await suenosParecidos(pool, {
     suenoId: 'self-id',
     senales: ['agua', 'pez'],
+    usuarioId: 7,
     dias: 7,
     minimo: 2,
   });
 
   assert.deepEqual(out, {
     total: 2,
-    muestra: [{ suenoId: 'a', compartidas: 3 }, { suenoId: 'b', compartidas: 2 }],
+    muestra: [
+      { nombre: 'ana', avatar: 'https://media.qvapay.com/a.png', compartidas: 3 },
+      { nombre: 'leo', avatar: null, compartidas: 2 },
+    ],
   });
 
   const [query] = pool.reads;
   assert.match(query.sql, /d\.id <> \$1/i, 'the dream being analysed is not its own coincidence');
+  assert.match(query.sql, /d\.user_id <> \$5/i, 'nor are its own author\'s other dreams');
   assert.match(query.sql, /having count\(distinct s\.senal\) >= \$4/i);
   assert.match(query.sql, /order by compartidas desc/i, 'the closest dreams come first');
   assert.match(query.sql, /limit 5/i, 'the sample is capped');
-  assert.deepEqual(query.params, ['self-id', ['agua', 'pez'], 7, 2]);
+  assert.deepEqual(query.params, ['self-id', ['agua', 'pez'], 7, 2, 7]);
 });
 
-test('another dream is only ever a count, never its signals', async () => {
-  const pool = fakePool({ read: () => [{ suenoId: 'a', compartidas: 2, total: 1 }] });
+test('another dream is its author and a count, never its signals', async () => {
+  const pool = fakePool({
+    read: () => [{ nombre: 'ana', avatar: null, compartidas: 2, total: 1 }],
+  });
   const out = await suenosParecidos(pool, { suenoId: 'self-id', senales: ['agua', 'pez'] });
 
   for (const row of out.muestra) {
-    assert.deepEqual(Object.keys(row).sort(), ['compartidas', 'suenoId']);
+    assert.deepEqual(Object.keys(row).sort(), ['avatar', 'compartidas', 'nombre']);
   }
   assert.doesNotMatch(JSON.stringify(out), /agua|pez/);
+});
+
+test('the week\'s numbers are the material of the play', async () => {
+  const pool = fakePool({ read: () => [{ numero: '9', peso: '1.4' }, { numero: 3, peso: 0.5 }] });
+  const rows = await contarNumeros(pool, { dias: 7 });
+
+  assert.deepEqual(rows, [{ numero: 9, peso: 1.4 }, { numero: 3, peso: 0.5 }]);
+  const [query] = pool.reads;
+  assert.match(query.sql, /unnest\(s\.numeros\)/i, 'the numbers come out of the stored arrays');
+  assert.match(query.sql, /sum\(s\.peso\)/i, 'a number weighs as much as its signals');
+  assert.match(query.sql, /make_interval\(days => \$1\)/i);
 });
 
 test('no signals to compare is no coincidence, without a query', async () => {

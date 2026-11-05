@@ -107,6 +107,9 @@ function fakeService({ configured = true, result = RESULT, error = null } = {}) 
       asked.push(dias);
       return [{ senal: 'agua', suenos: 2 }];
     },
+    async numeros() {
+      return [{ numero: 9, peso: 1.2 }, { numero: 3, peso: 0.8 }, { numero: 44, peso: 0.5 }];
+    },
   };
 }
 
@@ -226,7 +229,13 @@ test('the weekly counter answers alone and is revalidable', async () => {
   });
 
   assert.equal(res.status, 200);
-  assert.deepEqual(json, { dias: 3, senales: [{ senal: 'agua', suenos: 2 }] });
+  assert.equal(json.dias, 3);
+  assert.deepEqual(json.senales, [{ senal: 'agua', suenos: 2 }]);
+  // The play comes from those numbers: the heaviest single digit (9) as prefix
+  // and the heaviest two-digit number (44) as charada; then the two heaviest.
+  assert.deepEqual(json.combinaciones.fijos.map((f) => f.formatted), ['944']);
+  assert.deepEqual(json.combinaciones.corridos.map((c) => c.formatted), ['09', '03']);
+  assert.equal(json.combinaciones.parles.length, 3);
   assert.deepEqual(service.asked, [3]);
   assert.equal(res.headers['cache-control'], 'no-cache');
   assert.match(res.headers.etag, /^W\/"[A-Za-z0-9_-]+"$/);
