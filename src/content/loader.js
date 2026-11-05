@@ -7,13 +7,15 @@
 // línea `clave: valor`, la primera coma separa, y las comillas envolventes son
 // opcionales. Lo que necesite más estructura va en el cuerpo Markdown, no aquí.
 
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 
 const DIR = new URL('./cultura/', import.meta.url);
 const FILE_RE = /^\d{2}-([a-z0-9-]+)\.md$/;
 
 /** @type {null | Array<Article>} */
 let cached = null;
+/** Signature of the files the cache was built from. */
+let cachedStamp = '';
 
 /**
  * @typedef {object} Article
@@ -66,9 +68,21 @@ function unquote(value) {
 
 /** Read every article once; later calls reuse the parsed list. */
 async function load() {
-  if (cached) return cached;
-
   const names = (await readdir(DIR)).filter((name) => FILE_RE.test(name)).sort();
+
+  // Cheap freshness check: seven stat calls instead of trusting the process
+  // forever. Without it, editing an article's frontmatter (its image, say) only
+  // showed up after restarting the server.
+  const stamps = await Promise.all(names.map(async (name) => {
+    try {
+      return String((await stat(new URL(name, DIR))).mtimeMs);
+    } catch {
+      return '?';
+    }
+  }));
+  const stamp = `${names.join('|')}#${stamps.join('|')}`;
+  if (cached && stamp === cachedStamp) return cached;
+
   /** @type {Article[]} */
   const out = [];
 
@@ -88,6 +102,7 @@ async function load() {
   }
 
   cached = out;
+  cachedStamp = stamp;
   return cached;
 }
 
@@ -113,4 +128,5 @@ export async function getArticle(id) {
 /** Test seam: forget the cache so a fixture directory can be re-read. */
 export function __resetCache() {
   cached = null;
+  cachedStamp = '';
 }
