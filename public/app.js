@@ -1022,8 +1022,8 @@ const MORE_TOOLS = [
     title: 'La adivinanza',
     blurb: 'Cada día, un dicharacho con doble sentido armado con las combinaciones del día.',
     icon: 'sun',
-    needsAccount: true,
-    status: 'soon',
+    needsAccount: false,
+    status: 'ready',
   },
   {
     id: 'corazonada',
@@ -1154,6 +1154,11 @@ async function openTool(tool) {
 
   if (tool.id === 'significados') {
     navigate('significados');
+    return;
+  }
+
+  if (tool.id === 'adivinanza') {
+    navigate('adivinanza');
     return;
   }
 
@@ -1613,6 +1618,148 @@ function renderFicha(ficha) {
 // No back control here: the QvaPay header carries the native one, and a browser
 // has its own. Navigation already pushes history, so both return to the list.
 
+// ---------- La adivinanza ----------
+
+// The dicharacho on screen, so the header's share button shares this text and
+// not the app's sales pitch.
+let adivinanzaShown = null;
+
+// A screen that cannot be filled says why; it never shows invented text (S18).
+const ADIV_EMPTY = {
+  sin_tiro: 'Todavía no hay tiro para ese día, así que tampoco hay adivinanza.',
+  unconfigured: 'La adivinanza todavía no está encendida en este servidor.',
+  error: 'El dicharacho se atascó al generarse. Prueba de nuevo en un rato.',
+  rejected: 'El dicharacho de hoy no pasó el filtro de calidad. Prueba de nuevo en un rato.',
+};
+
+/**
+ * The daily adivinanza: one dicharacho, read-only, plus the days behind it.
+ *
+ * The text is generated server-side once per date and stored (S2), so this
+ * screen composes nothing: it asks for a date and prints what comes back.
+ */
+async function viewAdivinanza() {
+  const fecha = new URLSearchParams(location.search).get('fecha');
+  renderSkeleton(3);
+
+  let data;
+  try {
+    data = await getContent(
+      `/api/adivinanza${fecha ? `?fecha=${encodeURIComponent(fecha)}` : ''}`,
+      (d) => typeof d?.disponible === 'boolean',
+      'La adivinanza no llegó completa. Reinicia el servidor y recarga.',
+    );
+  } catch (err) {
+    setState(err.message, true);
+    return;
+  }
+
+  renderAdivinanza(data);
+  fillAdivinanzaHistory(data.date);
+}
+
+function renderAdivinanza(data) {
+  const frag = document.createDocumentFragment();
+
+  const head = el('div', 'morehead adiv__head');
+  // The QvaPay header already says "La adivinanza"; repeating it inside the page
+  // spends the first screenful on a title the user just read.
+  if (!isHosted()) head.append(el('h2', 'panel__title', 'La adivinanza'));
+  head.append(el('p', 'morehead__who', 'Un dicharacho al día, armado con los significados del cargador.'));
+  frag.append(head);
+
+  if (!data.disponible) {
+    adivinanzaShown = null;
+    const empty = el('div', 'panel adiv adiv--empty');
+    empty.append(el('p', 'adiv__texto', ADIV_EMPTY[data.motivo] ?? ADIV_EMPTY.error));
+    frag.append(empty);
+    view.replaceChildren(frag);
+    view.scrollTop = 0;
+    return;
+  }
+
+  adivinanzaShown = data;
+
+  const card = el('article', 'panel adiv');
+  const meta = el('div', 'adiv__meta');
+  meta.append(el('span', 'adiv__date', `${formatDate(data.date)} · ${weekdayOf(data.date)}`));
+  if (data.fijo) meta.append(el('span', 'adiv__fijo', `Fijo ${String(data.fijo).padStart(3, '0')}`));
+  card.append(meta);
+  card.append(el('p', 'adiv__texto', data.texto));
+  card.append(el('p', 'adiv__foot', 'Juego de palabras con los significados del día. No es un pronóstico.'));
+  frag.append(card);
+
+  // Filled after the card, so the text never waits for the list.
+  frag.append(el('div', 'adiv__history'));
+
+  view.replaceChildren(frag);
+  view.scrollTop = 0;
+}
+
+/** Short version of a text, cut on a word so the ellipsis does not orphan one. */
+function snippet(text, limit = 110) {
+  const clean = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (clean.length <= limit) return clean;
+  const cut = clean.slice(0, limit);
+  const space = cut.lastIndexOf(' ');
+  return `${cut.slice(0, space > limit * 0.6 ? space : limit).trimEnd()}…`;
+}
+
+async function fillAdivinanzaHistory(currentDate) {
+  const holder = view.querySelector('.adiv__history');
+  if (!holder) return;
+
+  let data;
+  try {
+    data = await getContent('/api/adivinanzas?limite=20',
+      (d) => Array.isArray(d?.items),
+      'El historial de adivinanzas no llegó completo.');
+  } catch {
+    // A missing history is not worth an error banner over a text that is fine.
+    holder.remove();
+    return;
+  }
+
+  const rows = data.items.filter((row) => row.date !== currentDate);
+  if (rows.length === 0) {
+    holder.remove();
+    return;
+  }
+
+  const head = el('div', 'morehead adiv__histhead');
+  head.append(el('h2', 'panel__title', 'Adivinanzas anteriores'));
+  holder.append(head);
+
+  for (const row of rows) {
+    const btn = el('button', 'adiv__row ripple');
+    btn.type = 'button';
+
+    const line = el('span', 'adiv__rowhead');
+    line.append(el('span', 'adiv__rowdate', formatDate(row.date)));
+    if (row.fijo) line.append(el('span', 'adiv__rowfijo', `Fijo ${String(row.fijo).padStart(3, '0')}`));
+    btn.append(line);
+    btn.append(el('span', 'adiv__rowsnip', snippet(row.texto)));
+
+    btn.addEventListener('click', () => navigate('adivinanza', { extra: { fecha: row.date } }));
+    holder.append(btn);
+  }
+}
+
+/** The header's share button: the dicharacho on its screen, the app elsewhere. */
+async function shareCurrentScreen() {
+  if (currentView === 'adivinanza' && adivinanzaShown?.texto) {
+    const text = `La adivinanza del ${formatDate(adivinanzaShown.date)}:\n\n`
+      + `${adivinanzaShown.texto}\n\nLa charada cubana, en QvaPay.`;
+    try {
+      await share(sdkRef, { text });
+      return;
+    } catch {
+      // Fall through: sharing the app is better than a dead button.
+    }
+  }
+  await shareMiniApp();
+}
+
 // ---------- Router ----------
 
 const VIEWS = {
@@ -1622,6 +1769,7 @@ const VIEWS = {
   mas: viewMas,
   cultura: viewCultura,
   significados: viewSignificados,
+  adivinanza: viewAdivinanza,
 };
 
 async function viewAnalisis() {
@@ -1674,6 +1822,8 @@ function chromeFor(name, context = {}) {
       return isLinked()
         ? { subtitle: `@${getSession().username ?? 'usuario'}` }
         : { subtitle: 'Herramientas', actions: [ACTION.user] };
+    case 'adivinanza':
+      return { subtitle: 'La adivinanza', actions: [ACTION.share] };
     case 'cultura':
       return { subtitle: context.titulo ?? 'Historia y cultura', actions: [ACTION.search] };
     case 'significados':
@@ -1708,7 +1858,7 @@ function applyMainButton(cfg) {
 const HEADER_ACTIONS = {
   calendar: () => openDatePicker(),
   search: () => focusSearch(),
-  share: () => shareMiniApp(),
+  share: () => shareCurrentScreen(),
   user: () => startLink(),
 };
 
@@ -1796,12 +1946,18 @@ function watchTabbarHeight() {
 // QvaPay's back button walks the browser history, so navigation has to write
 // history. Every screen and every in-view step (an article) is an entry (S15).
 
+/** True when the page runs inside the QvaPay WebView, which draws its own bar. */
+function isHosted() {
+  return document.body.classList.contains('is-hosted');
+}
+
 function pushView(name, extra = {}) {
   const params = new URLSearchParams();
   if (name !== 'tiros') params.set('vista', name);
   if (extra.article) params.set('articulo', extra.article);
   if (extra.numero) params.set('numero', extra.numero);
   if (extra.glosario) params.set('glosario', '1');
+  if (extra.fecha) params.set('fecha', extra.fecha);
   const qs = params.toString();
   history.pushState({ view: name, ...extra }, '', `${location.pathname}${qs ? `?${qs}` : ''}`);
 }
@@ -1851,7 +2007,7 @@ async function openBootFicha() {
   await openFicha(number, { push: false });
 }
 
-async function navigate(name, { push = true } = {}) {
+async function navigate(name, { push = true, extra = {} } = {}) {
   clearCountdown();
   currentView = name;
   doc_body_class_toggle('is-analyser', name === 'analisis');
@@ -1864,7 +2020,7 @@ async function navigate(name, { push = true } = {}) {
     btn.classList.toggle('is-active', active);
     btn.setAttribute('aria-selected', String(active));
   }
-  if (push) pushView(name);
+  if (push) pushView(name, extra);
   // Chrome first: the bar and the main button must follow the tap, not the
   // network. The second call after the view renders corrects anything the
   // screen only knows once its data (or its session) is loaded; the dedupe in
@@ -1892,6 +2048,9 @@ function wireTabbar() {
 
 async function start(sdk) {
   sdkRef = sdk;
+  // Inside QvaPay the host draws the bar and names the screen, so the page must
+  // not repeat the title. In a plain browser it does (see `isHosted`).
+  document.body.classList.add('is-hosted');
   splashTimer = setTimeout(hideSplash, SPLASH_MAX_MS);
   const caps = capabilities(sdk);
 

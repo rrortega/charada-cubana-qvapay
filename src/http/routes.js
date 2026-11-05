@@ -9,6 +9,7 @@ import { GLOSSARY } from '../content/glossary.js';
 import { listArticles, getArticle } from '../content/loader.js';
 import { renderMarkdown } from '../markdown/markdown.js';
 import { compactList, getFicha, totals } from '../content/charada.js';
+import { createAdivinanzaService } from '../adivinanza/store.js';
 import { verifyInitData } from '../auth/verifyInitData.js';
 import {
   createSessionToken,
@@ -30,6 +31,18 @@ import {
 } from './draws.js';
 
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' };
+
+// One service per pool, so the single-flight map that stops two requests from
+// spending two model calls is the same one for the whole process.
+const adivinanzaServices = new WeakMap();
+export function getAdivinanza(pool) {
+  let service = adivinanzaServices.get(pool);
+  if (!service) {
+    service = createAdivinanzaService({ pool });
+    adivinanzaServices.set(pool, service);
+  }
+  return service;
+}
 
 function sendJson(res, status, body, extra = {}) {
   res.writeHead(status, { ...JSON_HEADERS, ...extra });
@@ -318,7 +331,7 @@ export async function handleQvapayWebhook(req, res, pool) {
 /**
  * Handle /api/*. Returns true when the request was handled.
  */
-export async function handleApi(req, res, url, pool) {
+export async function handleApi(req, res, url, pool, deps = {}) {
   if (!url.pathname.startsWith('/api/')) return false;
 
   // QvaPay webhook: the only source of truth for a payment. Must accept POST and
@@ -348,6 +361,10 @@ export async function handleApi(req, res, url, pool) {
           return true;
         }
         const out = await drawsForDate(pool, iso);
+        // Tiros is the screen everyone opens first. Warm the day's adivinanza
+        // here, unawaited, so the tap that asks for it is not the one that pays
+        // the model call. A stored row makes this a single cheap select.
+        (deps.adivinanza ?? getAdivinanza(pool)).ensure(iso).catch(() => {});
         sendJson(res, 200, out, { 'cache-control': 'public, max-age=300' });
         return true;
       }
@@ -439,6 +456,49 @@ export async function handleApi(req, res, url, pool) {
         sendJson(res, urls ? 200 : 500,
           urls ? { ...urls } : { error: 'PUBLIC_BASE_URL_not_set' },
           { 'cache-control': 'no-store' });
+        return true;
+      }
+
+      // The dicharacho of the day (S12). One per date, persisted: a stored date
+      // always answers the same text, and the first visitor of a new day is the
+      // one who waits for the model.
+      case '/api/adivinanza': {
+        const wanted = url.searchParams.get('fecha');
+        const date = await resolveDate(pool, wanted);
+        if (!date) {
+          sendJson(res, 400, { error: 'fecha_invalida' });
+          return true;
+        }
+
+        const service = deps.adivinanza ?? getAdivinanza(pool);
+        const result = await service.ensure(date);
+
+        if (result.status === 'stored' || result.status === 'generated') {
+          sendRevalidatedJson(req, res, {
+            disponible: true,
+            date: result.adivinanza.date,
+            texto: result.adivinanza.texto,
+            fijo: result.adivinanza.fijo,
+          });
+          return true;
+        }
+
+        // A screen that cannot be filled says why instead of pretending (S18).
+        sendRevalidatedJson(req, res, {
+          disponible: false,
+          date,
+          motivo: result.status,
+          code: result.code ?? null,
+        });
+        return true;
+      }
+
+      // The history: stored texts, newest first (S13).
+      case '/api/adivinanzas': {
+        const items = await (deps.adivinanza ?? getAdivinanza(pool)).recent({
+          limit: url.searchParams.get('limite'),
+        });
+        sendRevalidatedJson(req, res, { items });
         return true;
       }
 
