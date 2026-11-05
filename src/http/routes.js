@@ -5,6 +5,7 @@
 
 import crypto from 'node:crypto';
 import { analyseNumber } from '../domain/analysis.js';
+import { ARTICLES, GLOSSARY } from '../content/culture.js';
 import { verifyInitData } from '../auth/verifyInitData.js';
 import {
   createSessionToken,
@@ -359,6 +360,47 @@ export async function handleApi(req, res, url, pool) {
         const analysis = analyseNumber(draws, numero);
         const significado = await meaningOf(pool, numero);
         sendJson(res, 200, { ...analysis, significado }, { 'cache-control': 'public, max-age=600' });
+        return true;
+      }
+
+      // The 100 charada meanings with their sprite coordinates.
+      case '/api/significados': {
+        const { rows } = await pool.query(
+          'SELECT entry_number, significados FROM charada_significados ORDER BY entry_number',
+        );
+        sendJson(res, 200, {
+          items: rows.map((r) => {
+            const n = r.entry_number;
+            // Symbols are laid out 10 per row across two 1800x900 sheets:
+            // 1-50 on the first, 51-100 on the second. Column and row are
+            // zero-based so the CSS can multiply by --tile.
+            const index = n - 1;
+            return {
+              number: n,
+              meaning: r.significados,
+              sheet: n <= 50 ? '/sprites/charada-1-50.png' : '/sprites/charada-51-100.png',
+              col: index % 10,
+              row: Math.floor((n <= 50 ? index : index - 50) / 10),
+              hasSymbol: true,
+            };
+          }),
+        }, { 'cache-control': 'public, max-age=3600' });
+        return true;
+      }
+
+      // Culture articles and glossary. Static content, cacheable for a long time.
+      case '/api/cultura': {
+        const id = url.searchParams.get('id');
+        if (id) {
+          const article = ARTICLES.find((a) => a.id === id);
+          if (!article) { sendJson(res, 404, { error: 'not_found' }); return true; }
+          sendJson(res, 200, article, { 'cache-control': 'public, max-age=3600' });
+          return true;
+        }
+        sendJson(res, 200, {
+          articles: ARTICLES.map(({ id: aid, title, kicker, readMinutes, pull }) => ({ id: aid, title, kicker, readMinutes, pull })),
+          glossary: GLOSSARY,
+        }, { 'cache-control': 'public, max-age=3600' });
         return true;
       }
 

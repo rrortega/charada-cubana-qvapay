@@ -717,6 +717,14 @@ function renderAnalysisPanels(a, drawKey, turn) {
 
 const MORE_TOOLS = [
   {
+    id: 'significados',
+    title: 'Los 100 significados',
+    blurb: 'La tabla completa de la charada, con el símbolo de cada número.',
+    icon: 'grid',
+    needsAccount: false,
+    status: 'ready',
+  },
+  {
     id: 'sueno',
     title: 'Cuéntame tu sueño',
     blurb: 'Graba o escribe lo que soñaste y te lo interpretamos en clave de charada.',
@@ -746,7 +754,7 @@ const MORE_TOOLS = [
     blurb: 'De la charada china a la bolita cubana: cómo llegó el juego hasta aquí.',
     icon: 'book',
     needsAccount: false,
-    status: 'soon',
+    status: 'ready',
   },
 ];
 
@@ -755,6 +763,7 @@ const TOOL_ICONS = {
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/>',
   heart: '<path d="M12 20.5s-7.5-4.6-7.5-9.4A4.3 4.3 0 0 1 12 8.4a4.3 4.3 0 0 1 7.5 2.7c0 4.8-7.5 9.4-7.5 9.4Z"/>',
   book: '<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5A2.5 2.5 0 0 0 4 22Zm0 0V22"/>',
+  grid: '<path d="M4 4h7v7H4Zm9 0h7v7h-7ZM4 13h7v7H4Zm9 0h7v7h-7Z"/>',
 };
 
 function toolIcon(name) {
@@ -837,6 +846,16 @@ async function openTool(tool) {
     return;
   }
 
+  if (tool.id === 'cultura') {
+    navigate('cultura');
+    return;
+  }
+
+  if (tool.id === 'significados') {
+    navigate('significados');
+    return;
+  }
+
   if (tool.status === 'soon') {
     sheetMessage({
       title: 'Muy pronto',
@@ -900,6 +919,202 @@ function sheetMessage({ title, body, action, onAction }) {
   document.body.append(overlay);
 }
 
+
+// ---------- Cultura ----------
+//
+// A small reader: article index, full article view and a searchable glossary.
+// Content comes from /api/cultura. Rendering is text-only plus a tiny inline
+// formatter for **bold** and *italic*, so no HTML from the payload is executed.
+
+let cultureIndex = null;
+/** @type {{glossary: object[]}|null} */
+
+function formatInline(text) {
+  const frag = document.createDocumentFragment();
+  // Split on **bold** and *italic*, keeping the delimiters out of the output.
+  const parts = String(text).split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  for (const part of parts) {
+    if (!part) continue;
+    if (part.startsWith('**') && part.endsWith('**')) {
+      frag.append(el('strong', '', part.slice(2, -2)));
+    } else if (part.startsWith('*') && part.endsWith('*')) {
+      frag.append(el('em', '', part.slice(1, -1)));
+    } else {
+      frag.append(document.createTextNode(part));
+    }
+  }
+  return frag;
+}
+
+async function viewCultura() {
+  renderSkeleton(4);
+  if (!cultureIndex) cultureIndex = await getJson('/api/cultura');
+  renderCultureIndex(cultureIndex);
+}
+
+function renderCultureIndex(data) {
+  const frag = document.createDocumentFragment();
+
+  const head = el('div', 'morehead');
+  head.append(el('h2', 'panel__title', 'Historia y cultura'));
+  head.append(el('p', 'morehead__who', 'Cómo llegó la charada a Cuba y por qué sigue viva.'));
+  frag.append(head);
+
+  const list = el('div', 'articlelist');
+  for (const a of data.articles) {
+    const card = el('button', 'articlecard ripple');
+    card.type = 'button';
+    const top = el('div', 'articlecard__top');
+    top.append(el('span', 'articlecard__kicker', a.kicker));
+    top.append(el('span', 'articlecard__time', `${a.readMinutes} min`));
+    card.append(top);
+    card.append(el('span', 'articlecard__title', a.title));
+    if (a.pull) card.append(el('p', 'articlecard__pull', a.pull));
+    card.addEventListener('click', () => openArticle(a.id));
+    list.append(card);
+  }
+  frag.append(list);
+
+  // Glossary with search
+  const glossary = el('div', 'glossary');
+  glossary.append(el('h3', 'glossary__title', 'Diccionario del barrio'));
+  const input = el('input', 'glossary__search');
+  input.type = 'search';
+  input.placeholder = 'Buscar un término…';
+  input.setAttribute('aria-label', 'Buscar en el diccionario');
+  const results = el('div', 'glossary__list');
+
+  const draw = (query) => {
+    const q = query.trim().toLowerCase();
+    const items = data.glossary.filter((g) =>
+      q === '' || g.term.toLowerCase().includes(q) || g.def.toLowerCase().includes(q));
+    results.replaceChildren(...items.slice(0, 60).map((g) => {
+      const row = el('div', 'glassrow');
+      row.append(el('span', 'glassrow__term', g.term));
+      row.append(el('span', 'glassrow__def', g.def));
+      return row;
+    }));
+    if (items.length === 0) results.append(el('p', 'state', 'Sin resultados.'));
+  };
+
+  input.addEventListener('input', () => draw(input.value));
+  draw('');
+  glossary.append(input, results);
+  frag.append(glossary);
+
+  view.replaceChildren(frag);
+}
+
+async function openArticle(id) {
+  renderSkeleton(3);
+  const a = await getJson(`/api/cultura?id=${encodeURIComponent(id)}`);
+  const frag = document.createDocumentFragment();
+
+  const back = el('button', 'backlink ripple', '‹ Cultura');
+  back.type = 'button';
+  back.addEventListener('click', () => renderCultureIndex(cultureIndex));
+  frag.append(back);
+
+  const head = el('header', 'article__head');
+  head.append(el('span', 'articlecard__kicker', a.kicker));
+  head.append(el('h2', 'article__title', a.title));
+  head.append(el('span', 'articlecard__time', `${a.readMinutes} min de lectura`));
+  frag.append(head);
+
+  for (const section of a.sections) {
+    const sec = el('section', 'article__section');
+    if (section.heading) sec.append(el('h3', 'article__heading', section.heading));
+    for (const para of section.body) {
+      const p = el('p', 'article__para');
+      p.append(formatInline(para));
+      sec.append(p);
+    }
+    frag.append(sec);
+  }
+
+  // Honest closing note: culture, not a betting guide.
+  const note = el('p', 'article__note',
+    'Material histórico y cultural sobre la charada cubana. Cada sorteo es independiente: '
+    + 'conocer la tradición no mejora la probabilidad de acertar.');
+  frag.append(note);
+
+  view.replaceChildren(frag);
+}
+
+
+// ---------- Significados ----------
+//
+// The 100 entries with their sprite icon. Each icon is a 180x180 tile cut from
+// an 1800x900 sheet with background-position, so the whole list is two images.
+
+let meaningsIndex = null;
+
+/**
+ * Rendered size of one sprite tile.
+ * Sheet 1770x885 / 10x5 = 177px source tiles; displayed at 46px, so the step
+ * between tiles is 46px (1770 * 46/177 = 460 wide, 885 * 46/177 = 230 tall).
+ */
+const TILE_PX = 46;
+
+async function viewSignificados() {
+  renderSkeleton(6);
+  if (!meaningsIndex) meaningsIndex = await getJson('/api/significados');
+
+  const frag = document.createDocumentFragment();
+
+  const head = el('div', 'morehead');
+  head.append(el('h2', 'panel__title', 'Los 100 significados'));
+  head.append(el('p', 'morehead__who', 'La tabla de la charada cubana, del 1 al 100.'));
+
+  const search = el('input', 'glossary__search');
+  search.type = 'search';
+  search.placeholder = 'Buscar número o símbolo…';
+  search.setAttribute('aria-label', 'Buscar en los significados');
+  head.append(search);
+  frag.append(head);
+
+  const list = el('div', 'signlist');
+  frag.append(list);
+
+  const draw = (query) => {
+    const q = query.trim().toLowerCase();
+    const items = meaningsIndex.items.filter((x) =>
+      q === '' || String(x.number) === q || String(x.number).startsWith(q) || x.meaning.toLowerCase().includes(q));
+
+    list.replaceChildren(...items.map((x) => {
+      const row = el('div', 'signrow');
+
+      // Sprite icon: one element, two background values.
+      //
+      // Positions must be in RENDERED pixels, not source pixels. The sheet is
+      // scaled from 1800x900 to 440x220, so one 180px tile becomes 44px:
+      // offset = col * tileSize, not col * 180.
+      const icon = el('span', 'signrow__icon');
+      icon.style.backgroundImage = `url('${x.sheet}')`;
+      icon.style.backgroundPosition = `-${x.col * TILE_PX}px -${x.row * TILE_PX}px`;
+      icon.setAttribute('role', 'img');
+      icon.setAttribute('aria-label', x.meaning);
+      row.append(icon);
+
+      // The tile is a split rectangle: symbol on one half, number on the other.
+      const tile = el('span', 'signtile');
+      tile.append(el('span', 'signtile__num', String(x.number)));
+      tile.append(icon);
+      row.append(tile);
+
+      // The meaning stays outside the tile, as plain text.
+      row.append(el('span', 'signrow__meaning', x.meaning));
+      return row;
+    }));
+
+    if (items.length === 0) list.append(el('p', 'state', 'Sin resultados.'));
+  };
+
+  search.addEventListener('input', () => draw(search.value));
+  draw('');
+  view.replaceChildren(frag);
+}
+
 // ---------- Router ----------
 
 const VIEWS = {
@@ -907,6 +1122,8 @@ const VIEWS = {
   analisis: viewAnalisis,
   historial: viewHistorial,
   mas: viewMas,
+  cultura: viewCultura,
+  significados: viewSignificados,
 };
 
 async function viewAnalisis() {

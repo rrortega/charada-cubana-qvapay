@@ -1637,3 +1637,104 @@ body:not(.is-analyser) .actionbar { display: none; }
 }
 
 
+/* ---------- Significados (sprite list) -----------------------------------
+ * Icons are 180x180 tiles cut from an 1800x900 sheet. `background-size` scales
+ * the whole sheet so one tile lands on 44px: 1800 * (44/180) = 440.
+ */
+
+.signlist { display: grid; gap: 1px; }
+
+.signrow {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--s3);
+  padding: 8px var(--s1);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.signrow:last-child { border-bottom: 0; }
+
+/* Split tile: number half + symbol half, inside one rounded rectangle. */
+.signtile {
+  display: grid;
+  grid-template-columns: 46px 46px;
+  align-items: stretch;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--card-bg);
+  flex: none;
+}
+
+.signtile__num {
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+  background: var(--accent-soft);
+  border-right: 1px solid var(--hairline);
+  min-height: 46px;
+}
+
+.signrow__icon {
+  width: 46px;
+  height: 46px;
+  background-repeat: no-repeat;
+  /* Sheet 1770x885, tiles 177px. Rendered at 46px per tile means the sheet is
+   * 1770 * 46/177 = 460 wide and 885 * 46/177 = 230 tall. */
+  background-size: 460px 230px;
+  background-position: 0 0;
+}
+
+.signrow__num-unused {
+  font-size: 15px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+  text-align: right;
+}
+
+.signrow__meaning {
+  font-size: 14px;
+  line-height: 1.35;
+  letter-spacing: -0.004em;
+  color: var(--text);
+  min-width: 0;
+}
+
+/* ---------- Search field (glossary + significados) ----------------------- */
+
+.glossary__search {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--hairline);
+  background: var(--card-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  padding: 11px var(--s3);
+  border-radius: var(--radius-panel);
+  margin-bottom: var(--s3);
+}
+
+.glossary__search::placeholder { color: var(--text-3); }
+.glossary__search:focus {
+  outline: none;
+  border-color: var(--accent-hair);
+  background: var(--card-bg-raised);
+}
+
+
+/* A panel whose numbers depend on a draw that has not been published yet. */
+.panel__pending {
+  margin: 0;
+  padding: var(--s4) 0 var(--s2);
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-3);
+  letter-spacing: -0.004em;
+}
