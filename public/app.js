@@ -273,6 +273,54 @@ function startMarquee(strip, { speed = 0.35 } = {}) {
   return () => cancelAnimationFrame(frame);
 }
 
+/**
+ * The other drawings of one number, turning around the principal.
+ *
+ * The ring turns and every item turns back against it, so the drawings stay
+ * upright while they travel. Each one is a way into the ficha of its number.
+ */
+function symbolOrbit(items, numero) {
+  const orbit = el('div', 'orbit');
+  orbit.setAttribute('role', 'list');
+
+  const ring = el('div', 'orbit__ring');
+  const step = 360 / items.length;
+
+  items.forEach((significado, index) => {
+    const slot = el('div', 'orbit__slot');
+    slot.style.setProperty('--angle', `${step * index}deg`);
+
+    const button = el('button', 'orbit__item ripple');
+    button.type = 'button';
+    button.setAttribute('role', 'listitem');
+    button.setAttribute('aria-label', `${significado.nombre}: ver el significado`);
+
+    const spin = el('span', 'orbit__spin');
+    if (significado.icon) {
+      const img = el('img', 'orbit__icon');
+      img.src = significado.icon;
+      img.alt = '';
+      img.loading = 'lazy';
+      spin.append(img);
+    } else {
+      spin.append(el('span', 'orbit__initial', (significado.nombre || '?').charAt(0).toUpperCase()));
+    }
+    button.append(spin);
+
+    // The card flips on a tap: this tap is a ficha, so it must not reach the card.
+    button.addEventListener('click', (evt) => {
+      evt.stopPropagation();
+      openFicha(numero);
+    });
+
+    slot.append(button);
+    ring.append(slot);
+  });
+
+  orbit.append(ring);
+  return orbit;
+}
+
 async function loadCardArt(card) {
   if (card.dataset.art) return;
   card.dataset.art = 'loading';
@@ -284,6 +332,10 @@ async function loadCardArt(card) {
 
     card._art.replaceChildren();
 
+    // The principal and its satellites share one stage: the orbit turns around
+    // the drawing, not under it.
+    const stage = el('div', 'flipcard__stage');
+
     if (principal?.icon) {
       // The principal sits on a white disc, like the ficha's hero.
       const disc = el('div', 'flipcard__disc');
@@ -291,16 +343,18 @@ async function loadCardArt(card) {
       hero.src = principal.icon;
       hero.alt = '';
       disc.append(hero);
-      card._art.append(disc);
-      card._art.append(el('span', 'flipcard__caption', principal.nombre));
+      stage.append(disc);
     }
 
-    if (restantes.length > 0) {
-      const strip = symbolStrip({ significados: restantes }, { inline: true });
-      card._art.append(strip);
-      card._stopMarquee?.();
-      card._stopMarquee = startMarquee(strip);
-    }
+    if (restantes.length > 0) stage.append(symbolOrbit(restantes, card._entry));
+
+    card._art.append(stage);
+    if (principal) card._art.append(el('span', 'flipcard__caption', principal.nombre));
+
+    // The marquee is retired here: the other drawings now travel around the
+    // principal instead of sliding beside it.
+    card._stopMarquee?.();
+    card._stopMarquee = null;
     card.dataset.art = 'ready';
   } catch {
     card._art.replaceChildren(el('p', 'state', 'No se pudo cargar el arte.'));

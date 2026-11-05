@@ -2129,6 +2129,99 @@ html.in-qvapay .actionbar { display: none; }
 
 /* ---------- Cultura: índice de tiles -------------------------------------- */
 
+/* The turn of the fijo card: the principal in the middle, its other drawings
+ * travelling around it. The ring turns and each item turns back against it, so
+ * the art stays upright while it orbits. */
+.flipcard__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  /* Two limits set the radius. Inner: the disc is 132 px across and a satellite
+   * is 46, so below 89 px they would cross it. Outer: the orbit has to fit the
+   * narrowest phone, or the drawings get cut at the sides as they swing past.
+   * 106 px leaves a 17 px gap to the disc and keeps the whole circle inside a
+   * 320 px screen; on a wider one it still stops growing, so the group stays
+   * gathered around the centre instead of drifting to the edges. */
+  --orbit-radius: min(106px, 30vw);
+  min-height: 268px;
+}
+
+.orbit {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.orbit__ring {
+  position: relative;
+  width: 0;
+  height: 0;
+  animation: orbit-turn 32s linear infinite;
+}
+
+/* The slot does the placing: rotate to its angle and push out to the radius.
+ * 120 px keeps a 31 px gap to the edge of the 132 px disc.
+ *
+ * The slot is a point (0x0) anchored at the ring's centre, and its origin is
+ * pinned to 0 0: with the default origin (the centre of the element's box) the
+ * circle was being traced around a point 23 px off the middle, so the orbit was
+ * not concentric and one side grazed the disc. */
+.orbit__slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  transform: rotate(var(--angle)) translate(var(--orbit-radius));
+}
+
+.orbit__item {
+  position: absolute;
+  top: -23px;
+  left: -23px;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--disc-bg);
+  box-shadow: 0 6px 14px -8px rgb(0 0 0 / 0.55);
+  cursor: pointer;
+  pointer-events: auto;
+  animation: orbit-counter 32s linear infinite;
+}
+
+/* Two rotations cancel: the ring's turn (animated) and the slot's angle (static).
+ * Without the static one the drawing travels on its side, which is what a
+ * forever-spinning ring does to everything inside it. */
+.orbit__spin {
+  display: grid;
+  place-items: center;
+  transform: rotate(calc(-1 * var(--angle)));
+}
+
+.orbit__icon { display: block; width: 32px; height: 32px; object-fit: contain; }
+.orbit__initial { font-size: 15px; font-weight: 800; color: var(--primary); }
+
+@keyframes orbit-turn {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes orbit-counter {
+  to { transform: rotate(-360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit__ring,
+  .orbit__item { animation: none; }
+}
+
 /* La adivinanza: a reading panel with its date, and the days behind it. */
 .adiv__head .morehead__who { margin-top: 0; }
 .adiv { padding: var(--s4) var(--s4) var(--s3); }
