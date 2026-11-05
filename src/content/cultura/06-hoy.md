@@ -4,7 +4,7 @@ title: De Táchira al Cash 3
 kicker: Actualidad
 readMinutes: 2
 pull: ""
-image: 
+image: /assets/cultura/hoy.webp
 ---
 
 La bolita no ha tenido siempre la misma referencia. En 1968 se realizó la última lotería oficial en la isla y quedaron prohibidos los juegos de azar. Desde entonces, jugadores y organizadores buscaron resultados externos.

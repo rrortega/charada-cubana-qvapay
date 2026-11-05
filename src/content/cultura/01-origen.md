@@ -4,7 +4,7 @@ title: De la charada china a la cubana
 kicker: Historia
 readMinutes: 4
 pull: "La bolita no nació como lotería menor ni como diversión improvisada: nació como un sistema paralelo de apuestas, pegado a la calle y a la cábala."
-image: 
+image: /assets/cultura/origen.webp
 ---
 
 La palabra «charada» llegó al español desde el francés *charade*. En su sentido más antiguo designaba un juego de ingenio: descubrir una palabra a partir de pistas, a menudo en verso. Se desarrolló en Francia durante el siglo XVIII como acertijo literario y con el tiempo se volvió un pasatiempo popular, primero de palabras y sílabas, después también de mímica.

@@ -4,7 +4,7 @@ title: Soñar y buscar el número
 kicker: Cultura
 readMinutes: 3
 pull: ""
-image: 
+image: /assets/cultura/suenos.webp
 ---
 
 En Cuba mucha gente no recuerda el sueño entero como una historia cerrada, sino como una imagen dominante: un muerto, una serpiente, una casa, una boda, dinero, una pelea. A partir de esa imagen busca el número que le corresponde en la charada.

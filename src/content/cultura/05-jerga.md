@@ -4,7 +4,7 @@ title: Cómo habla el barrio
 kicker: Jerga
 readMinutes: 4
 pull: "Muchas de estas palabras salieron del juego y pasaron al habla popular: «ligar el parlé» hoy nombra cualquier golpe de suerte."
-image: 
+image: /assets/cultura/jerga.webp
 ---
 
 La jerga de la bolita no es un conjunto de tecnicismos: son voces nacidas de la práctica diaria, y muchas ya se usan fuera del juego. Aquí van las más vivas.

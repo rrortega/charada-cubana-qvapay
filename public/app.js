@@ -1359,6 +1359,15 @@ async function openArticle(id, { push = true } = {}) {
   back.addEventListener('click', closeArticle);
   frag.append(back);
 
+  // The article's own illustration, when it has one.
+  if (article.image) {
+    const art = el('img', 'readerart');
+    art.src = article.image;
+    art.alt = '';
+    art.decoding = 'async';
+    frag.append(art);
+  }
+
   const head = el('header', 'readerhead');
   head.append(el('span', 'culturetile__kicker', article.kicker));
   head.append(el('h2', 'readerhead__title', article.title));

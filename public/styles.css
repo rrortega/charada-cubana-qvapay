@@ -2126,6 +2126,9 @@ html.in-qvapay .actionbar { display: none; }
 
 .culturetile {
   display: grid;
+  /* The column is bounded: with an `auto` column the image sized the track and
+   * the tile grew past its container, clipping the text away. */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto 1fr;
   padding: 0;
   text-align: left;
@@ -2143,8 +2146,13 @@ html.in-qvapay .actionbar { display: none; }
 
 /* Artwork slot. Until each article has its image, the order number holds it. */
 .culturetile__art {
+  position: relative;
   display: grid;
   place-items: center;
+  min-width: 0;
+  /* Without clipping the image's own height wins over the aspect ratio and the
+   * band grows back to a square. */
+  overflow: hidden;
   aspect-ratio: 16 / 10;
   border-bottom: 1px solid var(--hairline);
   background:
@@ -2154,7 +2162,20 @@ html.in-qvapay .actionbar { display: none; }
       color-mix(in srgb, var(--primary) 7%, var(--bg)), var(--bg));
 }
 
-.culturetile__img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* Positioned, not laid out: as a grid item the image took its own height and
+ * either grew the band or got clipped. */
+.culturetile__img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* A tile with artwork gets a taller band: a square drawing inside 16/10 left
+ * too much empty room at the sides. */
+.culturetile:has(.culturetile__img) .culturetile__art { aspect-ratio: 4 / 3; }
 
 .culturetile__mark {
   font-size: 32px;
@@ -2214,6 +2235,16 @@ html.in-qvapay .actionbar { display: none; }
   background: none;
   border: 0;
   cursor: pointer;
+}
+
+/* Article illustration: the drawings are square, so they are bounded by height
+ * and centred instead of cropped. */
+.readerart {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  margin: 0 auto var(--s4);
+  object-fit: contain;
 }
 
 .readerhead { display: grid; gap: var(--s2); margin-bottom: var(--s5); }

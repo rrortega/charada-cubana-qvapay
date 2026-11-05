@@ -4,7 +4,7 @@ title: Cómo se organiza la bolita
 kicker: Funcionamiento
 readMinutes: 4
 pull: ""
-image: 
+image: /assets/cultura/bolita.webp
 ---
 
 La bolita funciona como una cadena. En la base están los jugadores. Después vienen los apuntadores, que recogen las apuestas. Por encima, la cabeza de banco reúne las listas de varios apuntadores. Y en la cima, el banquero, que pone el dinero, responde por los premios y trata de mantenerse oculto.

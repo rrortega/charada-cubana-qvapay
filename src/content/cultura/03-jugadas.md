@@ -4,7 +4,7 @@ title: Fijo, corrido, parlé y candado
 kicker: Reglas
 readMinutes: 3
 pull: En la bolita se premian tres números. El primero es el fijo; el segundo y el tercero son los corridos.
-image: 
+image: /assets/cultura/jugadas.webp
 ---
 
 La bolita no tiene sorteo propio: se adapta a los resultados de una lotería tomada como referencia. Por eso las combinaciones tradicionales se ajustan al tipo de sorteo disponible.
