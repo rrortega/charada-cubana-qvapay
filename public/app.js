@@ -1285,7 +1285,7 @@ function cultureTile(article, position, { mark = null, onOpen = null } = {}) {
 function renderCultureIndex(data) {
   const frag = document.createDocumentFragment();
 
-  const head = el('div', 'morehead');
+  const head = el('div', 'morehead culturehead');
   head.append(el('h2', 'panel__title', 'Historia y cultura'));
   head.append(el('p', 'morehead__who', 'Cómo llegó la charada a Cuba y por qué sigue viva.'));
   frag.append(head);

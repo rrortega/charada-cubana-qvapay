@@ -2129,6 +2129,9 @@ html.in-qvapay .actionbar { display: none; }
 
 /* ---------- Cultura: índice de tiles -------------------------------------- */
 
+/* The line under the heading needs air before the first tile. */
+.culturehead { margin-bottom: var(--s5); }
+
 .culturegrid {
   display: grid;
   /* One column: the tiles carry a title and a teaser, and two per row on a phone
