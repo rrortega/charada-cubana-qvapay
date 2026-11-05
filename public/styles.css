@@ -1738,3 +1738,227 @@ body:not(.is-analyser) .actionbar { display: none; }
   color: var(--text-3);
   letter-spacing: -0.004em;
 }
+
+/* ---------- Cultura: índice de tiles -------------------------------------- */
+
+.culturegrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s3);
+  margin-bottom: var(--s5);
+}
+
+.culturetile {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--card-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.culturetile:active { border-color: var(--accent-hair); }
+
+/* Artwork slot. Until each article has its image, the order number holds it. */
+.culturetile__art {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  border-bottom: 1px solid var(--hairline);
+  background:
+    radial-gradient(120% 100% at 20% 0%,
+      color-mix(in srgb, var(--primary) 20%, transparent), transparent 62%),
+    linear-gradient(150deg,
+      color-mix(in srgb, var(--primary) 7%, var(--bg)), var(--bg));
+}
+
+.culturetile__img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.culturetile__mark {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--primary) 55%, var(--text-3));
+}
+
+.culturetile__body { display: grid; gap: 4px; padding: var(--s3); align-content: start; }
+
+.culturetile__kicker {
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.culturetile__title {
+  font-size: 14px;
+  font-weight: 720;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
+  color: var(--text);
+}
+
+.culturetile__pull {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.42;
+  color: var(--text-3);
+}
+
+.culturetile__meta {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+
+/* ---------- Cultura: lector ----------------------------------------------- */
+
+.backlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--s4);
+  padding: 6px 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--primary);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.readerhead { display: grid; gap: var(--s2); margin-bottom: var(--s5); }
+
+.readerhead__title {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 780;
+  line-height: 1.14;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  text-wrap: balance;
+}
+
+.readerhead__meta { font-size: 12px; color: var(--text-3); }
+
+.readerhead__pull {
+  margin: var(--s2) 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--text) 72%, var(--bg));
+  text-wrap: pretty;
+}
+
+/* Body prose. The renderer emits plain tags only, so the reading rhythm is set
+ * here and nowhere else. */
+.prose {
+  font-size: 16px;
+  line-height: 1.68;
+  letter-spacing: -0.003em;
+  color: var(--text);
+  text-wrap: pretty;
+}
+
+.prose > * { margin: 0; }
+.prose > * + * { margin-top: var(--s4); }
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  font-weight: 760;
+  line-height: 1.2;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.prose h1 { font-size: 23px; }
+.prose h2 { font-size: 19px; margin-top: var(--s6); }
+.prose h3 { font-size: 16px; margin-top: var(--s5); }
+.prose h4 { font-size: 15px; }
+.prose h2 + *, .prose h3 + *, .prose h4 + * { margin-top: var(--s2); }
+.prose strong { font-weight: 720; }
+.prose ul, .prose ol { padding-left: 1.1em; display: grid; gap: 6px; }
+.prose li { padding-left: 2px; }
+.prose blockquote {
+  padding: var(--s3) var(--s4);
+  border-left: 3px solid var(--accent-hair);
+  border-radius: 0 var(--radius-panel) var(--radius-panel) 0;
+  background: var(--card-bg);
+  font-style: italic;
+  color: color-mix(in srgb, var(--text) 80%, var(--bg));
+}
+.prose blockquote p { margin: 0; }
+.prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
+.prose code {
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+}
+.prose pre {
+  padding: var(--s3);
+  overflow-x: auto;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-panel);
+  background: var(--card-bg-raised);
+}
+.prose pre code { padding: 0; background: none; }
+.prose hr { border: 0; border-top: 1px solid var(--hairline); }
+.prose img, .prose figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-panel);
+}
+.prose figure { margin: 0; }
+
+.readernote {
+  margin: var(--s6) 0 0;
+  padding-top: var(--s4);
+  border-top: 1px solid var(--hairline);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+/* ---------- Glosario ------------------------------------------------------ */
+
+.glossary { margin-top: var(--s5); }
+
+.glossary__title {
+  margin-bottom: var(--s3);
+  font-size: 15px;
+  font-weight: 720;
+  letter-spacing: -0.012em;
+  color: var(--text);
+}
+
+.glossary__list { display: grid; }
+
+.glassrow {
+  display: grid;
+  gap: 2px;
+  padding: 10px var(--s1);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.glassrow:last-child { border-bottom: 0; }
+
+.glassrow__term {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.008em;
+  color: var(--text);
+}
+
+.glassrow__def { font-size: 13px; line-height: 1.45; color: var(--text-3); }

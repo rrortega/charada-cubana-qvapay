@@ -922,34 +922,46 @@ function sheetMessage({ title, body, action, onAction }) {
 
 // ---------- Cultura ----------
 //
-// A small reader: article index, full article view and a searchable glossary.
-// Content comes from /api/cultura. Rendering is text-only plus a tiny inline
-// formatter for **bold** and *italic*, so no HTML from the payload is executed.
+// The index is a grid of tiles, one per article (S13). Each article is rendered
+// from the Markdown that the server already converted to HTML (S12), so the
+// client never parses Markdown and never builds prose by hand.
 
 let cultureIndex = null;
-/** @type {{glossary: object[]}|null} */
-
-function formatInline(text) {
-  const frag = document.createDocumentFragment();
-  // Split on **bold** and *italic*, keeping the delimiters out of the output.
-  const parts = String(text).split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
-  for (const part of parts) {
-    if (!part) continue;
-    if (part.startsWith('**') && part.endsWith('**')) {
-      frag.append(el('strong', '', part.slice(2, -2)));
-    } else if (part.startsWith('*') && part.endsWith('*')) {
-      frag.append(el('em', '', part.slice(1, -1)));
-    } else {
-      frag.append(document.createTextNode(part));
-    }
-  }
-  return frag;
-}
 
 async function viewCultura() {
   renderSkeleton(4);
   if (!cultureIndex) cultureIndex = await getJson('/api/cultura');
   renderCultureIndex(cultureIndex);
+}
+
+/** One tile: artwork slot on top, kicker, title, teaser and reading time. */
+function cultureTile(article, position) {
+  const tile = el('button', 'culturetile ripple');
+  tile.type = 'button';
+
+  const art = el('span', 'culturetile__art');
+  if (article.image) {
+    const img = el('img', 'culturetile__img');
+    img.src = article.image;
+    img.alt = '';
+    img.loading = 'lazy';
+    art.append(img);
+  } else {
+    // No artwork yet: the order number stands in for the illustration, so the
+    // tile reads as designed rather than as a missing image.
+    art.append(el('span', 'culturetile__mark', String(position + 1).padStart(2, '0')));
+  }
+
+  const body = el('span', 'culturetile__body');
+  body.append(el('span', 'culturetile__kicker', article.kicker));
+  body.append(el('span', 'culturetile__title', article.title));
+  if (article.pull) body.append(el('span', 'culturetile__pull', article.pull));
+  if (article.readMinutes) body.append(el('span', 'culturetile__meta', `${article.readMinutes} min`));
+
+  tile.append(art, body);
+  tile.setAttribute('aria-label', `${article.title} — ${article.readMinutes ?? 0} minutos de lectura`);
+  tile.addEventListener('click', () => openArticle(article.id));
+  return tile;
 }
 
 function renderCultureIndex(data) {
@@ -960,87 +972,86 @@ function renderCultureIndex(data) {
   head.append(el('p', 'morehead__who', 'Cómo llegó la charada a Cuba y por qué sigue viva.'));
   frag.append(head);
 
-  const list = el('div', 'articlelist');
-  for (const a of data.articles) {
-    const card = el('button', 'articlecard ripple');
-    card.type = 'button';
-    const top = el('div', 'articlecard__top');
-    top.append(el('span', 'articlecard__kicker', a.kicker));
-    top.append(el('span', 'articlecard__time', `${a.readMinutes} min`));
-    card.append(top);
-    card.append(el('span', 'articlecard__title', a.title));
-    if (a.pull) card.append(el('p', 'articlecard__pull', a.pull));
-    card.addEventListener('click', () => openArticle(a.id));
-    list.append(card);
-  }
-  frag.append(list);
+  const grid = el('div', 'culturegrid');
+  data.articles.forEach((article, i) => grid.append(cultureTile(article, i)));
+  frag.append(grid);
 
-  // Glossary with search
-  const glossary = el('div', 'glossary');
-  glossary.append(el('h3', 'glossary__title', 'Diccionario del barrio'));
+  frag.append(glossaryBlock(data.glossary));
+  view.replaceChildren(frag);
+}
+
+/** Searchable glossary. Kept inline: it is reference material, not an article. */
+function glossaryBlock(entries) {
+  const wrap = el('div', 'glossary');
+  wrap.append(el('h3', 'glossary__title', 'Diccionario del barrio'));
+
   const input = el('input', 'glossary__search');
   input.type = 'search';
+  input.id = 'glossary-search';
   input.placeholder = 'Buscar un término…';
   input.setAttribute('aria-label', 'Buscar en el diccionario');
-  const results = el('div', 'glossary__list');
+  wrap.append(input);
+
+  const list = el('div', 'glossary__list');
+  wrap.append(list);
 
   const draw = (query) => {
     const q = query.trim().toLowerCase();
-    const items = data.glossary.filter((g) =>
+    const items = entries.filter((g) =>
       q === '' || g.term.toLowerCase().includes(q) || g.def.toLowerCase().includes(q));
-    results.replaceChildren(...items.slice(0, 60).map((g) => {
+    if (items.length === 0) {
+      list.replaceChildren(el('p', 'state', 'Sin resultados.'));
+      return;
+    }
+    list.replaceChildren(...items.slice(0, 60).map((g) => {
       const row = el('div', 'glassrow');
       row.append(el('span', 'glassrow__term', g.term));
       row.append(el('span', 'glassrow__def', g.def));
       return row;
     }));
-    if (items.length === 0) results.append(el('p', 'state', 'Sin resultados.'));
   };
 
   input.addEventListener('input', () => draw(input.value));
   draw('');
-  glossary.append(input, results);
-  frag.append(glossary);
-
-  view.replaceChildren(frag);
+  return wrap;
 }
 
 async function openArticle(id) {
   renderSkeleton(3);
-  const a = await getJson(`/api/cultura?id=${encodeURIComponent(id)}`);
+  const article = await getJson(`/api/cultura?id=${encodeURIComponent(id)}`);
   const frag = document.createDocumentFragment();
 
-  const back = el('button', 'backlink ripple', '‹ Cultura');
+  const back = el('button', 'backlink ripple', '‹ Historia y cultura');
   back.type = 'button';
-  back.addEventListener('click', () => renderCultureIndex(cultureIndex));
+  back.addEventListener('click', closeArticle);
   frag.append(back);
 
-  const head = el('header', 'article__head');
-  head.append(el('span', 'articlecard__kicker', a.kicker));
-  head.append(el('h2', 'article__title', a.title));
-  head.append(el('span', 'articlecard__time', `${a.readMinutes} min de lectura`));
+  const head = el('header', 'readerhead');
+  head.append(el('span', 'culturetile__kicker', article.kicker));
+  head.append(el('h2', 'readerhead__title', article.title));
+  if (article.readMinutes) head.append(el('span', 'readerhead__meta', `${article.readMinutes} min de lectura`));
+  if (article.pull) head.append(el('p', 'readerhead__pull', article.pull));
   frag.append(head);
 
-  for (const section of a.sections) {
-    const sec = el('section', 'article__section');
-    if (section.heading) sec.append(el('h3', 'article__heading', section.heading));
-    for (const para of section.body) {
-      const p = el('p', 'article__para');
-      p.append(formatInline(para));
-      sec.append(p);
-    }
-    frag.append(sec);
-  }
+  // The server renders the Markdown, and its renderer escapes the source before
+  // emitting any tag, so this HTML cannot carry markup from the prose.
+  const prose = el('div', 'prose');
+  prose.innerHTML = article.html;
+  frag.append(prose);
 
-  // Honest closing note: culture, not a betting guide.
-  const note = el('p', 'article__note',
+  const note = el('p', 'readernote',
     'Material histórico y cultural sobre la charada cubana. Cada sorteo es independiente: '
     + 'conocer la tradición no mejora la probabilidad de acertar.');
   frag.append(note);
 
   view.replaceChildren(frag);
+  view.scrollTop = 0;
 }
 
+function closeArticle() {
+  if (cultureIndex) renderCultureIndex(cultureIndex);
+  else viewCultura();
+}
 
 // ---------- Significados ----------
 //
