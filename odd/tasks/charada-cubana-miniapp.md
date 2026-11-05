@@ -17,18 +17,54 @@ Entregable de esta fase: **documentación y plan técnico** (sin código de prod
 - **S10.** La **adivinanza** es un dicharacho casi sin sentido, generado one-to-one con el cargador del día, que tiene alta probabilidad de generar combinaciones usando los significados de cada número. Se genera **una por día** y solo los usuarios de pago tienen acceso.
 - **S11.** Los datos se almacenan en **PostgreSQL**. Las credenciales del servidor de pruebas se configuran en un archivo `.env` (no versionado).
 
+- **S12.** Los artículos de «Historia y cultura» se guardan un Markdown por artículo y la app los carga y renderiza; el contenido deja de modelarse como datos estructurados en JS. Textual: «me imagino que cada articulo lo tenfamos como un makdwon y que lo ue hagamso sea cargarlos y renderiar el markdown. eso es lo mas optimo me parece».
+- **S13.** El índice de «Historia y cultura» es una presentación de artículos en tiles, uno por artículo, preparada para recibir después una imagen por artículo. Textual: «el indice arriba deberian de ser como presetnacion de articulos, luego le pondremos a cada uno su imagen pero por ahora unos tiles con cada articulo».
+- **S14.** La mini-app usa el SDK de QvaPay adaptado a cada pantalla: encabezado con subtítulo y acciones, botón atrás, botón principal, colores, hápticos, avisos, compartir y apertura de enlaces externos. Textual: «Hagamos uso de el SDK de qvapay que tiene para usar los botones y encabezado dinamico , usar boton de atras, buscador y demas cosas» y «hay qeu usar el sdk hacer uso de todo lo que nos ofrece adaptado a nuestra miniapp».
+- **S15.** La navegación interna pasa por el historial del navegador, de modo que el botón atrás nativo de QvaPay retroceda de verdad; el botón atrás propio se mantiene solo fuera del SDK.
+
 ## Tasks
 
-Todas las tareas están **pendientes y sin empezar**. Esta entrega cierra en documentación: no se escribe código de producto.
+Todas las tareas se ejecutan ya sobre el repositorio real. El estado va debajo de la tabla.
 
 | ID | Tarea | Spec | Ruta | Commit |
 |----|-------|------|------|--------|
 | T1 | Cerrar alcance de producto y postura de cumplimiento | S2 | — | — |
-| T2 | Elegir y validar la fuente de datos oficial (ingesta) | S2, S4 | — | — |
+| T2 | Elegir y validar la fuente de datos oficial (ingesta) | S2, S4 | `src/ingest/floridaLottery.js` | — |
+| T3 | Diseñar el modelo de datos en PostgreSQL e histórico | S4, S11 | `migrations/0001_init.sql` | — |
+| T4 | Definir el contrato de cálculo del cargador | S1 | `docs/cargador-contract.md` | — |
+| T5 | Motor de estadísticas (descriptivo) | S5 | `src/domain/stats.js` | — |
+| T6 | Definir arquitectura de despliegue y secretos | S3, S8 | `docs/deploy.md` | — |
+| T7 | Integración con el SDK de QvaPay | S3, S6 | `src/sdk/qvapay.js` | — |
+| T8 | Login QvaPay, sesión y gate del menú Más | S6, S9 | `src/auth/`, `src/ui/session.js` | — |
+| T9 | Redactar la lista de publicación de QvaPay | S2 | — | — |
+| T10 | Diseñar el generador de la adivinanza diaria | S10 | — | — |
+| T11 | Diseñar la entrega por Telegram | S9 | — | — |
+| T12 | Viabilidad de push dentro de QvaPay | S9 | — | — |
+| T13 | Cuéntame tu sueño (audio/texto + interpretación) | S9 | — | — |
+| T14 | La adivinanza diaria | S10 | — | — |
+| T15 | Tengo una corazonada (feed + aciertos) | S9 | — | — |
+| T16 | Origen y cultura: lectura de los artículos | S2, S12, S13 | `src/content/` | — |
+| T17 | Artículos en Markdown con frontmatter, cargados desde disco | S12 | `src/content/cultura/*.md` | — |
+| T18 | Renderer de Markdown propio, escapado y con tests | S12 | `src/markdown/markdown.js` | — |
+| T19 | Índice de tiles y lector de artículos con tipografía propia | S13 | `public/app.js`, `public/styles.css` | — |
+| T20 | Integración del SDK por pantalla | S14, S15 | `src/sdk/qvapay.js`, `public/app.js` | — |
+| T21 | Verificación funcional en navegador y en el simulador | S14, S15 | `tests/`, Playwright | — |
 
-**Estado:** T2, T3 y T4 completadas con evidencia ejecutada. Fuente validada con datos reales (sección 2); esquema aplicado (sección 9); contrato fijado y cubierto por 37 tests en verde.
+**Estado.** Completadas con evidencia ejecutada: T2, T3, T4, T5, T6, T7 y la parte
+de servidor de T8. En curso: T16, desglosada en T17–T21. Pendientes: T9–T15.
 
-**Archivos de la entrega:**
+**Corte de slices del trabajo acumulado.** El trabajo de las sesiones anteriores
+estaba sin commitear (793 líneas + archivos nuevos). Se entrega en la rama
+`feat/cultura-sdk` en unidades revisables:
+
+| Slice | Contenido | Commit |
+|-------|-----------|--------|
+| 1 | Logo recortado y hoja con área segura | `5c93200` |
+| 2 | Perfil de QvaPay y sesión tolerante a cookies bloqueadas (S6) | `b7bafbd` |
+| 3 | Ingesta de Pick 4 y sorteos incompletos (S4) | — |
+| 4 | Tabla de 100 significados y lectura de cultura (base a refactorizar) | — |
+
+**Entrega de la fase de documentación:**
 
 ```
 migrations/0001_init.sql        esquema (9 tablas)
@@ -38,22 +74,6 @@ docs/cargador-contract.md       contrato normativo del cargador
 tests/cargador.test.js          17 tests del contrato
 tests/ingest.test.js            20 tests de la ingesta
 ```
-
-No se hizo commit: el usuario no lo pidió.
-| T3 | Diseñar el modelo de datos en PostgreSQL e histórico | S4, S11 | `migrations/0001_init.sql` | — |
-| T4 | Definir el contrato de cálculo del cargador | S1 | `docs/cargador-contract.md` | — |
-| T5 | Motor de estadísticas (descriptivo) | S5 | `src/domain/stats.js` | — |
-| T6 | Definir arquitectura de despliegue y secretos | S3, S8 | — | — |
-| T7 | Integración con el SDK de QvaPay | S3, S6 | `src/sdk/qvapay.js` | — |
-| T8 | Login QvaPay, sesión y gate del menú Más | S6, S9 | `src/auth/`, `src/ui/session.js` | — |
-| T9 | Redactar la lista de publicación de QvaPay | S2 | — | — |
-| T13 | Cuéntame tu sueño (audio/texto + interpretación) | S9 | — | — |
-| T14 | La adivinanza diaria | S10 | — | — |
-| T15 | Tengo una corazonada (feed + aciertos) | S9 | — | — |
-| T16 | Origen y cultura (contenido) | S2 | — | — |
-| T10 | Diseñar el generador de la adivinanza diaria | S10 | — | — |
-| T11 | Diseñar la entrega por Telegram | S9 | — | — |
-| T12 | Viabilidad de push dentro de QvaPay | S9 | — | — |
 
 ## Plan técnico
 
@@ -368,6 +388,8 @@ Reglas: migraciones versionadas en `migrations/`, sin `psql` como dependencia de
 - **L14.** "En Cuba, cuando se habla del cargador del día se dice el número de tres cifras tal cual (por ejemplo, 570) o se menciona por su nombre según la charada tradicional, pero sin desglosarlo cifra por cifra... se toman principalmente los dos últimos dígitos... (570) los dos últimos números son el 70 (Coco). Se diría 'el 5 con el Coco' o 'el 570'."
 - **L15.** T5 completada. Motor descriptivo en `src/domain/stats.js` con 21 tests. Histórico ampliado a 3.536 sorteos (2022-2026). Las tres posiciones resultan uniformes; patrones coinciden con la teoría; la repetición entre sorteos es inferior a la esperada por azar.
 - **L16.** T7 completada. SDK integrado y verificado en navegador real (Playwright): fuera de QvaPay y dentro de un iframe que implementa el protocolo del simulador. Dos defectos encontrados y corregidos (getTheme rechazado tumbaba la página; tema claro ilegible).
+- **L17.** «En historia y Cultura la presentacion es un desastre, me imagino que cada articulo lo tenfamos como un makdwon y que lo ue hagamso sea cargarlos y renderiar el markdown. eso es lo mas optimo me parece. y el indice arriba deberian de ser como presetnacion de articulos, luego le pondremos a cada uno su imagen pero por ahora unos tiles con cada articulo. Hagamos uso de el SDK de qvapay que tiene para usar los botones y encabezado dinamico , usar boton de atras, buscador y demas cosas. https://www.qvapay.com/docs/miniapps/sdk mira cuantas cosas hay para usar aqui. hay qeu usar el sdk hacer uso de todo lo que nos ofrece adaptado a nuestra miniapp». Specs S12–S15, tareas T17–T21.
+- **L18.** Decisiones de esta sesión: renderer de Markdown propio sin dependencias (no `marked`), y el trabajo pendiente se commitea en una rama nueva por unidad revisable antes de empezar. Estado del árbol al retomar: 793 líneas modificadas sin commitear, 171 tests en verde, base de datos al día con la migración `0004` aplicada.
 
 ## Menú Más (T8 parcial)
 
