@@ -19,15 +19,15 @@ la coherencia del conjunto y enseña el arte de los elementos.
 
 | ID | Tarea | Specs | Ruta | Commit |
 |----|-------|-------|------|--------|
-| T1 | Esquema: señales por envío, sin texto (`migrations/0006_suenos.sql`) | S1, S2, S3 | — | |
-| T2 | Analizador: prompt con salida estructurada y validación (`src/sueno/analizar.js`) | S5, S8 | — | |
-| T3 | Coherencia: elegir el conjunto de números del sueño (`src/sueno/coherencia.js`) | S6 | — | |
-| T4 | Persistencia de señales y contadores de la semana (`src/sueno/store.js`) | S2, S3 | — | |
-| T5 | Parecidos: sueños que comparten señales en la ventana | S3, S4 | — | |
-| T6 | Rutas `POST /api/sueno` y `GET /api/sueno/senales` | S2, S4 | — | |
-| T7 | Pantalla: texto, análisis, coincidencias y arte | S1, S4, S5 | — | |
-| T8 | Tests de analizador, coherencia, persistencia, rutas y UI | S1–S8 | — | |
-| T9 | Verificación en navegador y documentación | — | — | |
+| T1 | Esquema: señales por envío, sin texto (`migrations/0006_suenos.sql`) | S1, S2, S3 | 824c644 | |
+| T2 | Analizador: prompt con salida estructurada y validación (`src/sueno/analizar.js`) | S5, S8 | 824c644 | |
+| T3 | Coherencia: elegir el conjunto de números del sueño (`src/sueno/coherencia.js`) | S6 | 824c644 | |
+| T4 | Persistencia de señales y contadores de la semana (`src/sueno/store.js`) | S2, S3 | 824c644 | |
+| T5 | Parecidos: sueños que comparten señales en la ventana | S3, S4 | 824c644 | |
+| T6 | Rutas `POST /api/sueno` y `GET /api/sueno/senales` | S2, S4 | 824c644 | |
+| T7 | Pantalla: texto, análisis, coincidencias y arte | S1, S4, S5 | f2186fc | |
+| T8 | Tests de analizador, coherencia, persistencia, rutas y UI | S1–S8 | 824c644, f2186fc | |
+| T9 | Verificación en navegador y documentación | — | f2186fc | |
 
 ## Log
 
@@ -37,3 +37,4 @@ la coherencia del conjunto y enseña el arte de los elementos.
 - **L4.** Decisión sobre el acceso: «Abierto con cuenta, gate después».
 - **L5.** Decisión sobre el motor: «LLM con salida estructurada y coherencia».
 - **L6.** Base de la rama: `feat/adivinanza`, porque el transporte LLM (`src/llm/openai.js`) vive ahí. Cuando ese PR entre, esta rama se reapunta a `main`.
+- **L7.** Reutiliza las variables `ADIVINANZA_LLM_*` del transporte: son el proveedor del servidor, no de una función. El texto del sueño viaja al proveedor para analizarlo (es inherente al análisis) y no se guarda; la pantalla lo dice en una línea.
